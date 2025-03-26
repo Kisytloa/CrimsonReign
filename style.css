@@ -1,0 +1,178 @@
+/* ------ Styles Généraux ------ */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #121212;
+    color: #e0c28b;
+    margin: 0;
+    padding: 0;
+}
+
+/* ------ Header ------ */
+header {
+    background: url('https://assets.playlostark.com/static/f47b0b52cc50476e9cdcb2260265d226/ac92f/header_background.jpg') no-repeat center;
+    background-size: cover;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 3px solid #d4af37;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.6);
+}
+
+h1 {
+    font-size: 2.5em;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
+    color: #fff;
+}
+
+/* ------ Navigation ------ */
+nav ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+nav ul li a {
+    color: #e0c28b;
+    text-decoration: none;
+    font-size: 1.2em;
+    padding: 10px 15px;
+    transition: all 0.3s ease-in-out;
+    border-bottom: 2px solid transparent;
+}
+
+nav ul li a:hover {
+    color: #fff;
+    border-bottom: 2px solid #d4af37;
+    transform: scale(1.1);
+}
+
+/* ------ Sections ------ */
+main {
+    padding: 40px 10%;
+    text-align: center;
+}
+
+section {
+    background: rgba(20, 20, 20, 0.9);
+    border: 2px solid #d4af37;
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 40px;
+    box-shadow: 0px 0px 15px rgba(212, 175, 55, 0.3);
+    transition: transform 0.3s ease-in-out;
+}
+
+section:hover {
+    transform: scale(1.02);
+}
+
+h2 {
+    font-size: 2.2em;
+    margin-bottom: 15px;
+    color: #d4af37;
+    text-shadow: 1px 1px 10px rgba(212, 175, 55, 0.5);
+}
+
+/* ------ Boutons ------ */
+button {
+    background-color: #d4af37;
+    color: black;
+    font-weight: bold;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+}
+
+button:hover {
+    background-color: #fff;
+    color: #222;
+    box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
+}
+
+/* ------ Formulaires ------ */
+input, select {
+    margin: 10px;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #d4af37;
+    background: rgba(50, 50, 50, 0.8);
+    color: white;
+    width: 100%;
+    max-width: 400px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #d4af37;
+    box-shadow: 0 0 5px rgba(212, 175, 55, 0.7);
+}
+
+/* ------ Pop-up ------ */
+.popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.popup-content {
+    background-color: #222;
+    padding: 20px;
+    margin: 50px auto;
+    width: 350px;
+    text-align: center;
+    border-radius: 10px;
+    border: 2px solid #d4af37;
+    box-shadow: 0px 0px 15px rgba(212, 175, 55, 0.4);
+}
+
+.popup-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    color: #d4af37;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.popup-close-btn:hover {
+    color: #fff;
+}
+
+/* ------ Footer ------ */
+footer {
+    text-align: center;
+    background-color: black;
+    padding: 20px;
+    color: #e0c28b;
+    font-size: 0.9em;
+}
+/* ------ Logos de la guilde ------ */
+.logo {
+    width: 80px; /* Taille du logo */
+    height: auto;
+    position: absolute;
+    top: 20px;
+}
+
+.logo.gauche {
+    left: 20px; /* Position gauche */
+}
+
+.logo.droite {
+    right: 20px; /* Position droite */
+}

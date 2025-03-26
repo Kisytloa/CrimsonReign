@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des membres</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <header>
+            <img src="image/Logo guilde.jpg" alt="Logo Guilde" class="logo gauche">
+            <img src="image/Logo guilde.jpg" alt="Logo Guilde" class="logo droite">
+            <h1>Lost Ark BloodShadow</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Planning de Raid</a></li>
+                    <li><a href="https://maxroll.gg/lost-ark/raids" target="_blank">Guide Raid</a></li>
+                    <li><a href="https://www.lostark.nexus" target="_blank">Build Personnages</a></li>
+                    <li><a href="https://www.playlostark.com/fr-fr/news" target="_blank">News Lost Ark</a></li>
+                    <li><a href="https://www.playlostark.com/fr-fr/support/server-status" target="_blank">Server Status</a></li>
+                </ul>
+            </nav>
+
+    </header>
+
+    <main>
+        <main>
+            <section id="membre_guilde">
+                <h2>Gestion des membres</h2>
+                <div>
+                    <strong>JOUEURS</strong>
+                    <button id="add-joueur-btn">+</button>
+                </div>
+                <div id="liste-joueurs">
+                    <!-- Les joueurs apparaîtront ici -->
+                </div>
+            </section>
+        
+            <!-- Pop-up d'ajout de joueur -->
+            <div id="popup-ajout-joueur" class="popup">
+                <div class="popup-content">
+                    <span class="popup-close-btn" id="close-popup-joueur">×</span>
+                    <h3>Entrez le nom du joueur :</h3>
+                    <input type="text" id="nouveau-joueur-nom" placeholder="Nom du joueur">
+                    <button id="valider-ajout-joueur">Ajouter</button>
+                </div>
+            </div>
+        
+            <!-- Pop-up d'ajout de personnage -->
+            <div id="popup-ajout-personnage" class="popup">
+                <div class="popup-content">
+                    <span class="popup-close-btn" id="close-popup-personnage">×</span>
+                    <h3>Ajouter un personnage à <span id="joueur-selectionne"></span></h3>
+                    <label>Nom du perso :</label>
+                    <input type="text" id="nom-personnage">
+                    <label>Classe :</label>
+                    <input type="text" id="classe-personnage">
+                    <label>iLvl :</label>
+                    <input type="number" id="ilvl-personnage">
+                    <button id="valider-ajout-personnage">Ajouter</button>
+                </div>
+            </div>
+        </main>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
