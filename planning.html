@@ -7,6 +7,9 @@
     <title>Planning de Raid BS</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     <link rel="stylesheet" href="style.css">
+    <!-- Ajoutez Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>
 
 <body>
@@ -78,7 +81,7 @@
             <select id="raid-select-inscription">
                 <option value="">-- Sélectionner un raid --</option>
             </select>
-            <button id="inscription-btn">S'inscrire</button>
+            <button id="inscrire-btn">S'inscrire</button>
         </section>
 
         <!-- Pop-up pour afficher les détails du raid -->
@@ -90,280 +93,269 @@
                 <ul id="raid-players-list"></ul>
             </div>
         </div>
-
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-    <script>
-        // Membres et persos provenant du localStorage
-        let joueurs = JSON.parse(localStorage.getItem('joueurs')) || [];
-        let raids = JSON.parse(localStorage.getItem('raids')) || [];
+    <script type="module">
+        // Importation de Firebase et Firestore avec la syntaxe ES Module
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-firestore.js";
 
+        // Configuration de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfJubhqQFQNo8fxVLKh1DKlfisJhZYwGI",
+            authDomain: "bloodshadowsite-d35ce.firebaseapp.com",
+            projectId: "bloodshadowsite-d35ce",
+            storageBucket: "bloodshadowsite-d35ce.firebasestorage.app",
+            messagingSenderId: "368188025874",
+            appId: "1:368188025874:web:cfdd31f87651f1a3737ccb",
+            measurementId: "G-1PJ7HXSP6J"
+        };
+
+        // Initialiser Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Variables globales
         const calendarEl = document.getElementById('calendar');
-        const raidSelectRemove = document.getElementById('raid-select-inscription');
-        const raidListToday = document.getElementById('raid-list-today');
+        const raidSelectInscription = document.getElementById('raid-select-inscription'); // Sélecteur pour l'inscription
+        const raidRemoveSelect = document.getElementById('raid-remove-select');
         const memberSelect = document.getElementById('member-select');
         const characterSelect = document.getElementById('character-select');
-
         let calendar;
+        let raids = []; // Déclarer raids globalement ici
 
-        // Sauvegarder les données dans localStorage
-        function sauvegarder() {
-            localStorage.setItem('raids', JSON.stringify(raids));  // Sauvegarde des raids dans localStorage
-            localStorage.setItem('joueurs', JSON.stringify(joueurs));  // Sauvegarde des joueurs dans localStorage
+        // Fonction pour charger les données (membres et personnages)
+        async function loadData() {
+            try {
+                // Récupérer tous les documents dans la collection 'joueurs'
+                const joueursSnapshot = await getDocs(collection(db, 'joueurs'));
+                const raidsSnapshot = await getDocs(collection(db, 'raids'));
+
+                raids = []; // Réinitialiser raids
+                raidsSnapshot.forEach(doc => {
+                    const raid = doc.data();
+                    raids.push({
+                        id: doc.id,
+                        nom: raid.nom,
+                        date: raid.date,
+                        time: raid.time,
+                        inscriptions: raid.inscriptions || []
+                    });
+                });
+
+                // Mettre à jour la liste des raids dans le sélecteur d'inscription
+                raidSelectInscription.innerHTML = '<option value="">-- Sélectionner un raid --</option>'; // Réinitialiser la liste
+                raids.forEach(raid => {
+                    const option = document.createElement('option');
+                    option.value = raid.id;
+                    option.textContent = `${raid.nom} - ${raid.date} à ${raid.time}`;
+                    raidSelectInscription.appendChild(option);
+                });
+
+                // Parcourir les membres et afficher leurs personnages
+                joueursSnapshot.forEach(doc => {
+                    const joueur = doc.data();
+                    const membreNom = joueur.nom;
+
+                    // Créer une option pour chaque membre dans le sélecteur des membres
+                    const memberOption = document.createElement('option');
+                    memberOption.value = membreNom;
+                    memberOption.textContent = membreNom;
+                    memberSelect.appendChild(memberOption);
+                });
+
+                // Retourner les données des raids et des joueurs
+                return { raids, joueursSnapshot };
+
+            } catch (error) {
+                console.error("Erreur lors de la récupération des membres et personnages : ", error);
+            }
         }
 
+        // Fonction pour mettre à jour la liste des personnages du membre sélectionné
+        function updateCharacterList(joueursSnapshot) {
+            const selectedMember = memberSelect.value; // Récupérer le membre sélectionné
+            characterSelect.innerHTML = '<option value="">-- Sélectionner un personnage --</option>'; // Réinitialiser la liste des personnages
 
-        // Initialisation du calendrier
-        function initialiserCalendrier() {
-            // Créer le calendrier avec FullCalendar
+            // Parcourir les joueurs pour trouver le membre sélectionné
+            joueursSnapshot.forEach(doc => {
+                const joueur = doc.data();
+                if (joueur.nom === selectedMember) {
+                    // Pour chaque personnage du membre, créer des options dans le sélecteur de personnages
+                    joueur.personnages.forEach(personnage => {
+                        const characterOption = document.createElement('option');
+                        characterOption.value = personnage.nom;  // Utiliser le nom du personnage comme valeur
+                        characterOption.textContent = `${personnage.nom} - ${personnage.classe} (${personnage.ilvl})`;
+                        characterSelect.appendChild(characterOption);
+                    });
+                }
+            });
+        }
+
+        // Initialisation du calendrier avec les raids
+        function initialiserCalendrier(raids) {
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 events: raids.map(r => ({
                     id: r.id,
-                    title: `${r.nom} - ${r.time}`,  // Affichage du nom du raid et de l'heure dans le titre
-                    start: `${r.date}T${r.time}:00`,  // Format date et heure pour FullCalendar
-                    description: r.inscriptions || []  // Description des inscriptions (si présentes)
+                    title: `${r.nom} - ${r.time}`,
+                    start: `${r.date}T${r.time}:00`,
+                    description: r.inscriptions || [],
                 })),
-                eventClick: function (info) {
-                    afficherDetailsRaid(info.event.id);  // Affiche les détails du raid lorsqu'on clique sur un événement
-                }
+                eventClick: function(info) {
+                    afficherDetailsRaid(info.event.id); // Appeler afficherDetailsRaid avec l'id du raid
+                },
             });
-
             calendar.render();
-            majRaidSelect();  // Mettre à jour le sélecteur de raid pour l'inscription
-            majRaidRemoveSelect();  // Mettre à jour le sélecteur de raid à retirer
-            majRaidToday();  // Mettre à jour la liste des raids pour aujourd'hui
         }
 
+        // Affichage des détails du raid dans le popup
+        function afficherDetailsRaid(raidId) {
+            const raidDetails = raids.find(r => r.id === raidId);  // Utiliser raids directement
 
-        function ajouterRaid() {
+            if (!raidDetails) {
+                console.error("Raid non trouvé");
+                return; // Si le raid n'est pas trouvé, on arrête l'exécution
+            }
+
+            const raidName = document.getElementById("raid-name");
+            const raidDateTime = document.getElementById("raid-date-time");
+            const raidPlayersList = document.getElementById("raid-players-list");
+
+            raidName.textContent = raidDetails.nom;
+            raidDateTime.textContent = `${raidDetails.date} à ${raidDetails.time}`;
+
+            raidPlayersList.innerHTML = ""; // Réinitialiser la liste des joueurs
+            raidDetails.inscriptions.forEach(player => {
+                const li = document.createElement("li");
+                li.textContent = player; // Afficher le nom, la classe et l'ilvl du joueur inscrit
+                raidPlayersList.appendChild(li);
+            });
+
+            document.getElementById("raid-popup").style.display = "block";
+        }
+
+        // Fermer le popup
+        document.getElementById("close-popup").addEventListener("click", () => {
+            document.getElementById("raid-popup").style.display = "none";
+        });
+
+        window.addEventListener("click", (event) => {
+            const popup = document.getElementById("raid-popup");
+            if (event.target === popup) {
+                popup.style.display = "none";
+            }
+        });
+
+        // Ajouter un raid
+        async function ajouterRaid() {
             const nom = document.getElementById('raid-select').value;
             const date = document.getElementById('raid-date').value;
             const time = document.getElementById('raid-time').value;
             if (!nom || !date || !time) return alert("Remplissez tous les champs");
 
-            const id = Date.now().toString();
-            const raid = { id, nom, date, time, inscriptions: [] };
-            raids.push(raid);  // Ajouter le raid dans le tableau
+            const raid = { nom, date, time, inscriptions: [] };
+            await addDoc(collection(db, 'raids'), raid);  // Sauvegarde dans Firestore
 
-            // Sauvegarder dans localStorage
-            sauvegarder();  // Appel à la fonction de sauvegarde
-
-            // Ajout de l'événement dans le calendrier
-            calendar.addEvent({
-                id,
-                title: `${nom} - ${time}`,  // Affichage du nom du raid et de l'heure dans le titre
-                start: `${date}T${time}:00`,  // Format date et heure pour FullCalendar
-                description: raid.inscriptions || []  // Description des inscriptions (si présentes)
-            });
-
-            majRaidSelect();
-            majRaidRemoveSelect();  // Appel à majRaidRemoveSelect après l'ajout
-            majRaidToday();
-        }
-
-
-
-
-        // Afficher les détails du raid sélectionné
-        function afficherDetailsRaid(id) {
-            const raid = raids.find(r => r.id === id);
-            if (!raid) return;
-
-            // Mettre à jour les informations de la pop-up
-            document.getElementById('raid-name').textContent = raid.nom;
-            document.getElementById('raid-date-time').textContent = `Date: ${raid.date} à ${raid.time}`;  // Affichage de la date et de l'heure
-
-            const list = document.getElementById('raid-players-list');
-            list.innerHTML = "";
-            if (raid.inscriptions.length === 0) {
-                list.innerHTML = "<li>Aucun inscrit</li>";
-            } else {
-                raid.inscriptions.forEach(p => {
-                    const li = document.createElement('li');
-                    li.textContent = `${p.membre} - ${p.personnage} (${p.classe} - iLvl ${p.ilvl})`;
-                    list.appendChild(li);
-                });
-            }
-
-            // Afficher la pop-up
-            const popup = document.getElementById('raid-popup');
-            popup.style.display = 'block';
-
-            // Fermer la pop-up si l'utilisateur clique en dehors de la pop-up
-            popup.addEventListener('click', function(event) {
-                if (event.target === popup) {
-                    popup.style.display = 'none';
-                }
+            loadData().then(({ raids }) => {
+                initialiserCalendrier(raids);  // Réinitialiser le calendrier
+                mettreAJourListeRaids(raids);  // Mettre à jour la liste des raids pour retirer un raid
             });
         }
-
-
-
-        function majRaidSelect() {
-            const raidSelect = document.getElementById('raid-select-inscription');
-            raidSelect.innerHTML = '<option value="">-- Sélectionner un raid --</option>';
-            
-            raids.forEach(r => {
-                const opt = document.createElement('option');
-                // Afficher le nom du raid avec la date et l'heure
-                opt.value = r.id;
-                opt.textContent = `${r.nom} - ${r.date} à ${r.time}`;  // Inclure l'heure dans l'affichage
-                raidSelect.appendChild(opt);
-            });
-        }
-
-
-        
-        function majRaidRemoveSelect() {
-            const raidRemoveSelect = document.getElementById('raid-remove-select');
-            raidRemoveSelect.innerHTML = '<option value="">-- Sélectionner un raid --</option>';
-
-            if (raids.length === 0) return;
-
-            raids.forEach(r => {
-                const opt = document.createElement('option');
-                // Afficher le nom du raid avec la date et l'heure
-                opt.value = r.id;
-                opt.textContent = `${r.nom} - ${r.date} à ${r.time}`;  // Inclure l'heure dans l'affichage
-                raidRemoveSelect.appendChild(opt);
-            });
-        }
-
 
         // Retirer un raid
-        function retirerRaid() {
+        async function retirerRaid() {
             const raidId = document.getElementById('raid-remove-select').value;
             if (!raidId) return alert("Sélectionnez un raid à retirer.");
-
-            if (!confirm("Êtes-vous sûr de vouloir supprimer ce raid ?")) return;
-
-            // Supprimer du tableau raids
-            raids = raids.filter(r => r.id !== raidId);
-
-            // Supprimer de l'affichage du calendrier
-            const event = calendar.getEventById(raidId);
-            if (event) event.remove();
-
-            sauvegarder();
-            majRaidSelect();
-            majRaidRemoveSelect(); // Mettre à jour le sélecteur de retrait après suppression
-            majRaidToday();
-        }
-
-        // Mettre à jour la liste des raids pour aujourd'hui
-        function majRaidToday() {
-            raidListToday.innerHTML = "";
-            const today = new Date().toISOString().split('T')[0];
-            const todayRaids = raids.filter(r => r.date === today);
-            if (todayRaids.length === 0) {
-                raidListToday.innerHTML = "<li>Aucun raid prévu aujourd'hui.</li>";
-            } else {
-                todayRaids.forEach(r => {
-                    const li = document.createElement('li');
-                    li.textContent = `${r.nom} à ${r.time}`;
-                    raidListToday.appendChild(li);
-                });
-            }
-        }
-
-        // Afficher les détails du raid sélectionné
-        // Afficher les détails du raid sélectionné
-        function afficherDetailsRaid(id) {
-            const raid = raids.find(r => r.id === id);
-            if (!raid) return;
-
-            // Mettre à jour les informations de la pop-up
-            document.getElementById('raid-name').textContent = raid.nom;
-            document.getElementById('raid-date-time').textContent = `Date: ${raid.date} à ${raid.time}`;  // Affichage de la date et de l'heure
-
-            const list = document.getElementById('raid-players-list');
-            list.innerHTML = "";
-            if (raid.inscriptions.length === 0) {
-                list.innerHTML = "<li>Aucun inscrit</li>";
-            } else {
-                raid.inscriptions.forEach(p => {
-                    const li = document.createElement('li');
-                    li.textContent = `${p.membre} - ${p.personnage} (${p.classe} - iLvl ${p.ilvl})`;
-                    list.appendChild(li);
-                });
-            }
-
-            // Afficher la pop-up
-            const popup = document.getElementById('raid-popup');
-            popup.style.display = 'block';
-
-            // Fermer la pop-up si l'utilisateur clique en dehors de la pop-up
-            popup.addEventListener('click', function(event) {
-                if (event.target === popup) {
-                    popup.style.display = 'none';
-                }
+        
+            await deleteDoc(doc(db, 'raids', raidId));  // Supprimer le raid
+        
+            loadData().then(({ raids }) => {
+                initialiserCalendrier(raids);  // Réinitialiser le calendrier
+                mettreAJourListeRaids(raids);  // Mettre à jour la liste des raids pour retirer un raid
             });
         }
 
-
-
-        // Mettre à jour le sélecteur de membres
-        function majMembres() {
-            memberSelect.innerHTML = '<option value="">-- Sélectionner un membre --</option>';
-
-            joueurs.forEach(j => {
-                const opt = document.createElement('option');
-                opt.value = j.nom;
-                opt.textContent = j.nom;
-                memberSelect.appendChild(opt);
+        // Mettre à jour la liste des raids dans le menu de retrait
+        function mettreAJourListeRaids(raids) {
+            raidRemoveSelect.innerHTML = '<option value="">-- Sélectionner un raid --</option>'; // Réinitialiser la liste
+            raids.forEach(raid => {
+                const option = document.createElement('option');
+                option.value = raid.id;
+                option.textContent = `${raid.nom} - ${raid.date} à ${raid.time}`;
+                raidRemoveSelect.appendChild(option);
             });
         }
 
-        // Quand un membre est sélectionné, mettre à jour les personnages
-        memberSelect.addEventListener('change', () => {
-            characterSelect.innerHTML = '<option value="">-- Sélectionner un personnage --</option>';
-            const membre = joueurs.find(j => j.nom === memberSelect.value);
-            if (membre) {
-                membre.personnages.forEach(p => {
-                    const opt = document.createElement('option');
-                    opt.value = p.nom;
-                    opt.textContent = `${p.nom} (${p.classe} - iLvl ${p.ilvl})`;
-                    characterSelect.appendChild(opt);
-                });
+        // Inscrire un membre à un raid
+        async function inscrireMembre(joueursSnapshot) {
+            const raidId = raidSelectInscription.value; // Récupérer l'ID du raid sélectionné
+            const membreNom = memberSelect.value; // Récupérer le nom du membre
+            const personnageNom = characterSelect.value; // Récupérer le personnage sélectionné
+
+            if (!raidId || !membreNom || !personnageNom) {
+                return alert("Veuillez sélectionner un raid, un membre et un personnage.");
             }
-        });
 
-        // Inscrire un personnage à un raid
-        function inscrireRaid() {
-            const raidId = document.getElementById('raid-select-inscription').value;  // Utilisez le bon sélecteur ici
-            const membre = document.getElementById('member-select').value;
-            const persoNom = document.getElementById('character-select').value;
-            if (!raidId || !membre || !persoNom) return alert("Remplissez tous les champs");
+            // Convertir joueursSnapshot en un tableau de documents
+            const joueursDocs = joueursSnapshot.docs.map(doc => doc.data());
 
+            // Trouver le joueur sélectionné
+            const selectedJoueur = joueursDocs.find(joueur => joueur.nom === membreNom);
+            if (!selectedJoueur) {
+                return alert("Joueur introuvable.");
+            }
+
+            // Trouver le personnage sélectionné
+            const personnage = selectedJoueur.personnages.find(p => p.nom === personnageNom);
+            if (!personnage) {
+                return alert("Personnage introuvable.");
+            }
+
+            const personnageDetails = { classe: personnage.classe, ilvl: personnage.ilvl };
+
+            // Trouver le raid dans les données locales
             const raid = raids.find(r => r.id === raidId);
-            const joueur = joueurs.find(j => j.nom === membre);
-            const perso = joueur.personnages.find(p => p.nom === persoNom);
+            if (!raid) {
+                return alert("Raid introuvable.");
+            }
 
-            raid.inscriptions.push({
-                membre,
-                personnage: persoNom,
-                classe: perso.classe,
-                ilvl: perso.ilvl
+            // Ajouter le membre au raid (on stocke le nom du membre, du personnage, la classe et l'ilvl)
+            const inscription = `${membreNom} (${personnageNom}, ${personnageDetails.classe}, ilvl: ${personnageDetails.ilvl})`;
+            if (!raid.inscriptions.includes(inscription)) {
+                raid.inscriptions.push(inscription); // Ajouter l'inscription à la liste
+                // Mettre à jour le raid dans Firestore
+                await updateDoc(doc(db, 'raids', raidId), {
+                    inscriptions: raid.inscriptions
+                });
+            } else {
+                alert("Le membre est déjà inscrit à ce raid.");
+            }
+
+            loadData().then(({ raids }) => {
+                initialiserCalendrier(raids); // Réinitialiser le calendrier avec les mises à jour
             });
-
-            sauvegarder();
-            afficherDetailsRaid(raidId);
-            majRaidToday();
         }
 
-        // Écouteurs d'événements
-        document.getElementById('add-raid-btn').addEventListener('click', ajouterRaid);
-        document.getElementById('remove-raid-btn').addEventListener('click', retirerRaid);
-        document.getElementById('inscription-btn').addEventListener('click', inscrireRaid);
+        // Charger les données et gérer l'événement pour le membre sélectionné
+        loadData().then(({ raids, joueursSnapshot }) => {
+            initialiserCalendrier(raids);  // Initialiser le calendrier avec les raids
+            mettreAJourListeRaids(raids);  // Mettre à jour la liste des raids pour retirer un raid
+            updateCharacterList(joueursSnapshot);  // Mettre à jour la liste des personnages au chargement initial
 
-        majMembres();
-        initialiserCalendrier();
-        majRaidSelect();
-        majRaidToday();
-        majRaidRemoveSelect();
+            // Ajouter les écouteurs d'événements une fois les données chargées
+            document.getElementById('add-raid-btn').addEventListener('click', ajouterRaid);
+            document.getElementById('remove-raid-btn').addEventListener('click', retirerRaid);
+            document.getElementById('inscrire-btn').addEventListener('click', () => inscrireMembre(joueursSnapshot)); // Passer joueursSnapshot
+            memberSelect.addEventListener('change', () => {
+                updateCharacterList(joueursSnapshot); 
+            });
+        });
     </script>
+
+
+
 </body>
 
 </html>

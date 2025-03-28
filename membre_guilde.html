@@ -74,7 +74,25 @@
         </div>
     </main>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-firestore.js";
+        
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfJubhqQFQNo8fxVLKh1DKlfisJhZYwGI",
+            authDomain: "bloodshadowsite-d35ce.firebaseapp.com",
+            projectId: "bloodshadowsite-d35ce",
+            storageBucket: "bloodshadowsite-d35ce.firebasestorage.app",
+            messagingSenderId: "368188025874",
+            appId: "1:368188025874:web:cfdd31f87651f1a3737ccb",
+            measurementId: "G-1PJ7HXSP6J"
+        };
+    
+        // Initialiser Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         const archetypesClasses = {
             "Guerrier": ["Berserker", "Paladin", "Destructeur", "Gunlancer"],
             "Guerrière": ["Slayer", "Paladine"],
@@ -87,34 +105,47 @@
             "Spécialiste": ["Artiste", "Helètempète", "Ame sauvage"]
         };
 
-        let joueurs = JSON.parse(localStorage.getItem('joueurs')) || [];
-
-        function sauvegarder() {
-            localStorage.setItem('joueurs', JSON.stringify(joueurs));
+        // Charger les joueurs depuis Firestore
+        async function chargerJoueurs() {
+            const joueursRef = collection(db, "joueurs");
+            const snapshot = await getDocs(joueursRef);
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         }
 
-        function afficherJoueurs() {
+        // Afficher les joueurs et leurs personnages
+        async function afficherJoueurs() {
+            const joueurs = await chargerJoueurs(); // Récupère les joueurs
             const listeJoueurs = document.getElementById("liste-joueurs");
-            listeJoueurs.innerHTML = "";
-            joueurs.forEach(joueur => {
-                const div = document.createElement("div");
-                div.innerHTML = `
-                    <h3>${joueur.nom}</h3>
-                    <button onclick="ouvrirAjoutPerso('${joueur.nom}')">Ajouter un personnage</button>
-                    <ul>
-                        ${joueur.personnages.map(p => `<li>${p.nom} (${p.classe}) - iLvl ${p.ilvl}</li>`).join('')}
-                    </ul>
-                    <hr>
-                `;
-                listeJoueurs.appendChild(div);
-            });
+            listeJoueurs.innerHTML = ""; // Vider la liste avant de la remplir
+
+            if (joueurs.length === 0) {
+                listeJoueurs.innerHTML = "<p>Aucun joueur trouvé.</p>";
+            } else {
+                joueurs.forEach(joueur => {
+                    const div = document.createElement("div");
+                    div.innerHTML = `
+                        <h3>${joueur.nom}</h3>
+                        <button onclick="ouvrirAjoutPerso('${joueur.id}')">Ajouter un personnage</button>
+                        <ul>
+                            ${joueur.personnages && joueur.personnages.length > 0 ? 
+                                joueur.personnages.map(p => 
+                                    `<li>${p.nom} (${p.classe}) - iLvl ${p.ilvl}</li>`).join('') :
+                                "<li>Aucun personnage</li>"
+                            }
+                        </ul>
+                        <hr>
+                    `;
+                    listeJoueurs.appendChild(div);
+                });
+            }
         }
 
-        // Fonction d'ouverture de la pop-up
-        function ouvrirAjoutPerso(nomJoueur) {
-            document.getElementById("joueur-selectionne").textContent = nomJoueur;
+        // Fonction pour ouvrir la pop-up d'ajout de personnage
+        window.ouvrirAjoutPerso = function(joueurId) {
+            // Afficher la pop-up
+            document.getElementById("joueur-selectionne").textContent = joueurId;
             document.getElementById("popup-ajout-personnage").style.display = "block";
-            
+           
             // Remplir la liste des archétypes
             const archetypeSelect = document.getElementById("archetype-personnage");
             archetypeSelect.innerHTML = '<option value="">Sélectionner un archétype</option>';
@@ -130,18 +161,33 @@
             classeSelect.innerHTML = '<option value="">Sélectionner une classe</option>';
             classeSelect.disabled = true;
 
-            // Remplir la liste des personnages du joueur sélectionné
-            const joueur = joueurs.find(j => j.nom === nomJoueur);
+            // Récupérer les personnages du joueur sélectionné pour remplir la liste déroulante
+            remplirListePersonnages(joueurId);
+        }
+
+        // Fonction pour remplir la liste des personnages
+        async function remplirListePersonnages(joueurId) {
+            const joueurRef = doc(db, "joueurs", joueurId);
+            const joueurDoc = await getDoc(joueurRef);
+            const joueur = joueurDoc.data();
+
+            // Réinitialiser la liste des personnages
             const selectCharacter = document.getElementById("select-character");
             selectCharacter.innerHTML = '<option value="">-- Sélectionner un personnage --</option>';
 
-            if (joueur) {
-                joueur.personnages.forEach(p => {
+            // Ajouter les personnages à la liste déroulante
+            if (joueur.personnages && joueur.personnages.length > 0) {
+                joueur.personnages.forEach(perso => {
                     const option = document.createElement("option");
-                    option.value = p.nom;
-                    option.textContent = `${p.nom} (${p.classe}) - iLvl ${p.ilvl}`;
+                    option.value = perso.nom;
+                    option.textContent = `${perso.nom} (${perso.classe}) - iLvl ${perso.ilvl}`;
                     selectCharacter.appendChild(option);
                 });
+            } else {
+                const option = document.createElement("option");
+                option.value = "";
+                option.textContent = "Aucun personnage";
+                selectCharacter.appendChild(option);
             }
         }
 
@@ -166,66 +212,69 @@
             }
         });
 
-        // Valider l'ajout du personnage
-        document.getElementById("valider-ajout-personnage").addEventListener('click', function() {
-            const joueurNom = document.getElementById("joueur-selectionne").textContent;
+        // Ajouter un personnage à un joueur
+        document.getElementById("valider-ajout-personnage").addEventListener('click', async function() {
+            const joueurId = document.getElementById("joueur-selectionne").textContent;
             const archetype = document.getElementById("archetype-personnage").value;
             const classe = document.getElementById("classe-personnage").value;
             const nomPerso = document.getElementById("nom-personnage").value;
             const ilvl = document.getElementById("ilvl-personnage").value;
 
             if (archetype && classe && nomPerso && ilvl) {
-                const joueur = joueurs.find(j => j.nom === joueurNom);
+                const joueurRef = doc(db, "joueurs", joueurId);
+                const joueurDoc = await getDoc(joueurRef);
+                const joueur = joueurDoc.data();
                 joueur.personnages.push({
                     nom: nomPerso,
                     archetype: archetype,
                     classe: classe,
                     ilvl: ilvl
                 });
-                sauvegarder();
+                await updateDoc(joueurRef, {
+                    personnages: joueur.personnages
+                });
                 afficherJoueurs();
                 document.getElementById("popup-ajout-personnage").style.display = "none"; // Fermer la fenêtre
             }
         });
 
-        // Mise à jour de l'iLvl du personnage sélectionné
-        document.getElementById("update-ilvl-btn").addEventListener('click', function() {
-            const joueurNom = document.getElementById("joueur-selectionne").textContent;
+        // Mise à jour de l'iLvl du personnage
+        document.getElementById("update-ilvl-btn").addEventListener('click', async function() {
+            const joueurId = document.getElementById("joueur-selectionne").textContent;
             const personnageNom = document.getElementById("select-character").value;
             const nouveauIlvl = document.getElementById("update-ilvl-personnage").value;
 
-            const joueur = joueurs.find(j => j.nom === joueurNom);
-            if (joueur) {
-                const personnage = joueur.personnages.find(p => p.nom === personnageNom);
-                if (personnage && nouveauIlvl) {
-                    personnage.ilvl = nouveauIlvl;
-                    sauvegarder();
-                    afficherJoueurs();
-                    alert("iLvl mis à jour !");
-                } else {
-                    alert("Personnage non trouvé ou iLvl invalide !");
-                }
+            const joueurRef = doc(db, "joueurs", joueurId);
+            const joueurDoc = await getDoc(joueurRef);
+            const joueur = joueurDoc.data();
+            const personnage = joueur.personnages.find(p => p.nom === personnageNom);
+            if (personnage && nouveauIlvl) {
+                personnage.ilvl = nouveauIlvl;
+                await updateDoc(joueurRef, {
+                    personnages: joueur.personnages
+                });
+                alert("iLvl mis à jour !");
+                afficherJoueurs();
+            } else {
+                alert("Personnage non trouvé ou iLvl invalide !");
             }
         });
 
-        // Suppression du personnage sélectionné
-        document.getElementById("delete-character-btn").addEventListener('click', function() {
-            const joueurNom = document.getElementById("joueur-selectionne").textContent;
+        // Supprimer un personnage
+        document.getElementById("delete-character-btn").addEventListener('click', async function() {
+            const joueurId = document.getElementById("joueur-selectionne").textContent;
             const personnageNom = document.getElementById("select-character").value;
 
-            const joueur = joueurs.find(j => j.nom === joueurNom);
-            if (joueur) {
-                const personnageIndex = joueur.personnages.findIndex(p => p.nom === personnageNom);
-                if (personnageIndex !== -1) {
-                    joueur.personnages.splice(personnageIndex, 1); // Supprimer le personnage
-                    sauvegarder();
-                    afficherJoueurs();
-                    alert("Personnage supprimé !");
-                    document.getElementById("popup-ajout-personnage").style.display = "none"; // Fermer la fenêtre
-                } else {
-                    alert("Personnage non trouvé !");
-                }
-            }
+            const joueurRef = doc(db, "joueurs", joueurId);
+            const joueurDoc = await getDoc(joueurRef);
+            const joueur = joueurDoc.data();
+            joueur.personnages = joueur.personnages.filter(p => p.nom !== personnageNom);
+            await updateDoc(joueurRef, {
+                personnages: joueur.personnages
+            });
+            alert("Personnage supprimé !");
+            afficherJoueurs();
+            document.getElementById("popup-ajout-personnage").style.display = "none"; // Fermer la fenêtre
         });
 
         // Fermer la fenêtre popup
@@ -240,8 +289,9 @@
             }
         });
 
-        afficherJoueurs();
+        afficherJoueurs(); // Appeler la fonction pour afficher les joueurs
     </script>
+
 </body>
 
 </html>
