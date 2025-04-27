@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cagnotte - Roue de la Chance</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+  <!-- Librairie Winwheel -->
+  <script src="https://cdn.jsdelivr.net/gh/zarocknz/javascript-winwheel@2.7.0/Winwheel.min.js"></script>
+
+  <!-- TweenMax pour les animations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+
+    #mokoko-container {
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    #mokoko-img {
+    height: 120px;
+    margin-right: 20px;
+    }
+
+    #mokoko-bulle {
+    position: relative;
+    background: #ffffff;
+    border: 2px solid #000;
+    border-radius: 15px;
+    padding: 10px 15px;
+    max-width: 250px;
+    color: red;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    font-size: 16px;
+    box-shadow: 4px 4px 0 #000;
+    }
+
+    #mokoko-bulle::after {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: -20px;
+    border-width: 10px 10px 10px 0;
+    border-style: solid;
+    border-color: transparent #ffffff transparent transparent;
+    display: block;
+    width: 0;
+    }
+
+    #mokoko-bulle::before {
+    content: "";
+    position: absolute;
+    top: 18px;
+    left: -22px;
+    border-width: 12px 12px 12px 0;
+    border-style: solid;
+    border-color: transparent #000000 transparent transparent;
+    display: block;
+    width: 0;
+    }
+    #wheel-and-info {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 50px;
+    margin-top: 30px;
+    }
+
+    #wheel-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    }
+
+    #info-section {
+    max-width: 350px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-start;
+    }
+
+
+
+
+    #canvas {
+      margin: 20px auto;
+      display: block;
+      position: relative;
+    }
+    #tirage-btn {
+      display: block;
+      margin: 20px auto;
+      font-size: 18px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    #resultat {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .palier-btn {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    
+    /* Style pour le bouton Voir le Gagnant */
+    #voir-gagnant-btn {
+      font-size: 18px;
+      padding: 10px 20px;
+      cursor: pointer;
+      margin-top: 20px;
+      display: block;
+      margin: 20px auto;
+
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="Logo guilde.jpg" alt="Logo Guilde" class="logo gauche" />
+    <h1>Roue de la Chance</h1>
+    <img src="Logo guilde.jpg" alt="Logo Guilde" class="logo droite" />
+    <nav>
+      <ul>
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="Objectifs.html">Objectifs de Guilde</a></li>
+        <li><a href="planning.html">Planning de Raid</a></li>
+        <li><a href="https://maxroll.gg/lost-ark/raids" target="_blank">Guide Raid</a></li>
+        <li><a href="membre_guilde.html">Membre de la Guilde</a></li>
+        <li><a href="https://www.playlostark.com/fr-fr/news" target="_blank">News Lost Ark</a></li>
+        <li><a href="https://www.playlostark.com/fr-fr/support/server-status" target="_blank">Server Status</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section id="cagnotte">
+      <h2>🎰 Choisissez votre Palier de Récompenses</h2>
+
+      <!-- Boutons pour choisir les paliers -->
+      <button class="palier-btn" id="base-btn">Palier de Base</button>
+      <button class="palier-btn" id="500pts-btn">Palier 500 pts</button>
+      <button class="palier-btn" id="800pts-btn">Palier 800 pts</button>
+      <button class="palier-btn" id="1100pts-btn">Palier 1100 pts</button>
+      <button class="palier-btn" id="legendary-btn">Palier 3000 pts Tirage Légendaire</button>
+  
+      <div id="wheel-and-info">
+        <div id="wheel-section">
+          <canvas id="canvas" width="500" height="500"></canvas>
+          <div class="flèche" id="arrow"></div>
+          <button id="tirage-btn" style="display: none;">🎡 Lancer la Roue</button>
+        </div>
+      
+        <div id="info-section">
+          <div id="resultat">
+            <h3>🎉 Récompense :</h3>
+            <p id="recompense">Aucune pour le moment...</p>
+            <p id="gagnant">Gagnant : Aucun</p>
+          </div>
+      
+          <button id="voir-gagnant-btn" style="display: none;">Voir le Gagnant</button>
+      
+          <div id="mokoko-container">
+            <img src="mokoko_content.gif" alt="Mokoko" id="mokoko-img" />
+            <div id="mokoko-bulle">
+              <p id="mokoko-texte">Bonne chance, aventurier ! 🍀</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Guilde Blood Shadow - Tous droits réservés.</p>
+  </footer>
+
+  <!-- Audio -->
+  <audio id="spin-sound" src="audio/spin.mp3"></audio>
+  <audio id="win-sound" src="audio/mokoko_son.mp3"></audio>
+
+  <script>
+    const recompensesBase = [
+      { text: "Abidos x10", weight: 60 },
+      { text: "5k Gold", weight: 25 },
+      { text: "Gemme 2", weight: 10 },
+      { text: "Gemme 3", weight: 5 }
+    ];
+
+    const recompenses500 = [
+      { text: "Abidos x20", weight: 50 },
+      { text: "10k Gold", weight: 30 },
+      { text: "Gemme 4", weight: 15 },
+      { text: "Gemme 5", weight: 5 }
+    ];
+
+    const recompenses800 = [
+      { text: "Abidos x30", weight: 60 },
+      { text: "25k Gold", weight: 20 },
+      { text: "Gemme 6", weight: 20 }
+    ];
+
+    const recompenses1100 = [
+      { text: "Abidos x40", weight: 35 },
+      { text: "50k Gold", weight: 30 },
+      { text: "Gemme 6", weight: 20 },
+      { text: "Gemme 7", weight: 15 }
+    ];
+
+    const recompensesLegendary = [
+      { text: "Gemme 8", weight: 5 },
+      { text: "500k Gold", weight: 5 },
+      { text: "Skin", weight: 35 },
+      { text: "Abidos x2000", weight: 55 },
+    ];
+
+    const gagnants = ["Raghnar", "Soulmania", "Ragga", "Kimo", "Circê", "Aathea"];
+    let winner = ""; // Stocke le gagnant
+
+    // Fonction pour générer la roue avec probabilités respectées
+    function createWheel(recompenses) {
+      const roue = new Winwheel({
+        numSegments: recompenses.length,
+        outerRadius: 200,
+        textFontSize: 18,
+        segments: recompenses.map(r => ({ fillStyle: getRandomColor(), text: r.text, weight: r.weight })),
+        animation: {
+          type: 'spinToStop',
+          duration: 5,
+          spins: 8,
+          callbackFinished: (indicatedSegment) => {
+            document.getElementById("recompense").textContent = indicatedSegment.text;
+            document.getElementById("win-sound").play();
+            winner = gagnants[Math.floor(Math.random() * gagnants.length)];
+            document.getElementById("voir-gagnant-btn").style.display = 'block';
+
+            // Changer la bulle du Mokoko
+            document.getElementById("mokoko-texte").textContent = "Voyons voir qui a gagné... 👀";
+            }
+
+        }
+      });
+      return roue;
+    }
+
+    // Fonction pour afficher une roue et le bouton pour la lancer
+    function displayWheel(palier) {
+      const canvas = document.getElementById("canvas");
+      const context = canvas.getContext("2d");
+      context.clearRect(0, 0, canvas.width, canvas.height); // Effacer le canvas
+
+      let roue;
+      switch(palier) {
+        case 'base':
+          roue = createWheel(recompensesBase);
+          break;
+        case '500pts':
+          roue = createWheel(recompenses500);
+          break;
+        case '800pts':
+          roue = createWheel(recompenses800);
+          break;
+        case '1100pts':
+          roue = createWheel(recompenses1100);
+          break;
+        case 'legendary':
+          roue = createWheel(recompensesLegendary);
+          break;
+      }
+
+      // Afficher le bouton de tirage
+      document.getElementById("tirage-btn").style.display = 'block';
+
+      // Lancer la roue
+      document.getElementById("tirage-btn").addEventListener("click", () => {
+        document.getElementById("spin-sound").play();
+        roue.stopAnimation(false);
+        roue.rotationAngle = 0;
+        roue.draw();
+        roue.startAnimation();
+
+        // Faire tourner la flèche avec la roue
+        const arrow = document.getElementById("arrow");
+        const deg = roue.rotationAngle + roue.getRotationAngle();
+        arrow.style.transform = `rotate(${deg}deg)`; // Applique la rotation à la flèche
+      });
+    }
+
+    // Ajout des événements pour chaque bouton
+    document.getElementById("base-btn").addEventListener("click", () => displayWheel('base'));
+    document.getElementById("500pts-btn").addEventListener("click", () => displayWheel('500pts'));
+    document.getElementById("800pts-btn").addEventListener("click", () => displayWheel('800pts'));
+    document.getElementById("1100pts-btn").addEventListener("click", () => displayWheel('1100pts'));
+    document.getElementById("legendary-btn").addEventListener("click", () => displayWheel('legendary'));
+    document.getElementById("tirage-btn").addEventListener("click", () => {
+    document.getElementById("mokoko-message").textContent = "On croise les feuilles ! 🌱";
+});
+
+    document.getElementById("voir-gagnant-btn").addEventListener("click", () => {
+    document.getElementById("mokoko-message").textContent = `Bravo ${winner} ! 🥳`;
+});
+
+
+    // Afficher le gagnant lorsque le bouton est cliqué
+    document.getElementById("voir-gagnant-btn").addEventListener("click", () => {
+        document.getElementById("gagnant").textContent = `Gagnant : ${winner}`;
+        document.getElementById("mokoko-texte").textContent = `C'est ${winner} qui l'emporte ! 🎉`;
+    });
+
+
+    // Couleurs aléatoires pour segments
+    function getRandomColor() {
+      const letters = "0123456789ABCDEF";
+      let color = "#";
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+  </script>
+</body>
+</html>
