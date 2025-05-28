@@ -96,7 +96,19 @@
                 <span id="close-popup" class="close">&times;</span>
                 <h2 id="raid-name"></h2>
                 <p id="raid-date-time"></p>
-                <ul id="raid-players-list"></ul>
+                <h3>Joueurs inscrits :</h3> <ul id="raid-players-list"></ul>
+                <div id="unsubscribe-section" style="margin-top: 20px;">
+                    <h4>Se désinscrire :</h4>
+                    <label for="member-select-unsubscribe">Membre :</label>
+                    <select id="member-select-unsubscribe">
+                        <option value="">-- Sélectionner un membre --</option>
+                    </select>
+                    <label for="character-select-unsubscribe">Personnage :</label>
+                    <select id="character-select-unsubscribe">
+                        <option value="">-- Sélectionner un personnage --</option>
+                    </select>
+                    <button id="unsubscribe-btn">Se désinscrire</button>
+                </div>
             </div>
         </div>
     </main>
@@ -130,7 +142,73 @@
         const characterSelect = document.getElementById('character-select');
         let calendar;
         let raids = []; // Déclarer raids globalement ici
+        // NOUVEAU : Variables pour la désinscription dans la pop-up
+        const memberSelectUnsubscribe = document.getElementById('member-select-unsubscribe');
+        const characterSelectUnsubscribe = document.getElementById('character-select-unsubscribe');
+        const unsubscribeBtn = document.getElementById('unsubscribe-btn');
+
+        let currentRaidId = null; // Pour stocker l'ID du raid actuellement affiché dans la pop-up
         
+        // NOUVELLE FONCTION : Désinscrire un membre d'un raid
+        async function desinscrireMembre() {
+            if (!currentRaidId) {
+                return alert("Aucun raid sélectionné pour la désinscription.");
+            }
+
+            const membreNom = memberSelectUnsubscribe.value;
+            const personnageNom = characterSelectUnsubscribe.value;
+
+            if (!membreNom || !personnageNom) {
+                return alert("Veuillez sélectionner votre membre et personnage pour la désinscription.");
+            }
+
+            const raidDocRef = doc(db, 'raids', currentRaidId);
+            const raidDocSnap = await getDoc(raidDocRef);
+
+            if (!raidDocSnap.exists()) {
+                return alert("Raid introuvable dans la base de données.");
+            }
+
+            const raidData = raidDocSnap.data();
+            let inscriptions = raidData.inscriptions || [];
+
+            // Construire la chaîne d'inscription telle qu'elle est stockée
+            // Nous devons retrouver les détails complets (classe, ilvl) pour la correspondance exacte
+            const joueursSnapshot = await getDocs(collection(db, 'joueurs'));
+            const selectedJoueur = joueursSnapshot.docs.map(doc => doc.data()).find(joueur => joueur.nom === membreNom);
+
+            if (!selectedJoueur) {
+                return alert("Membre introuvable.");
+            }
+
+            const personnage = selectedJoueur.personnages.find(p => p.nom === personnageNom);
+            if (!personnage) {
+                return alert("Personnage introuvable.");
+            }
+
+            const inscriptionAEnlever = `${membreNom} (${personnageNom}, ${personnage.classe}, ilvl: ${personnage.ilvl})`;
+
+            // Filtrer l'inscription à enlever
+            const nouvellesInscriptions = inscriptions.filter(insc => insc !== inscriptionAEnlever);
+
+            if (nouvellesInscriptions.length === inscriptions.length) {
+                alert("Vous n'êtes pas inscrit à ce raid avec ce personnage.");
+                return;
+            }
+
+            await updateDoc(raidDocRef, {
+                inscriptions: nouvellesInscriptions
+            });
+
+            alert("Désinscription réussie !");
+
+            // Recharger les données et actualiser le calendrier et la pop-up
+            loadData().then(({ raids }) => {
+                initialiserCalendrier(raids);
+                // Réafficher les détails du raid pour que la liste des inscrits soit à jour
+                afficherDetailsRaid(currentRaidId); // Important pour rafraîchir la pop-up
+            });
+        }
 
         // Fonction pour charger les données (membres et personnages)
         // Fonction pour charger les données (membres et personnages)
@@ -244,13 +322,17 @@
         }
 
         // Affichage des détails du raid dans le popup
-        function afficherDetailsRaid(raidId) {
-            const raidDetails = raids.find(r => r.id === raidId);  // Utiliser raids directement
+        // Affichage des détails du raid dans le popup
+        async function afficherDetailsRaid(raidId) { // Rendre la fonction async pour fetch les joueurs
+            const raidDetails = raids.find(r => r.id === raidId);
 
             if (!raidDetails) {
                 console.error("Raid non trouvé");
-                return; // Si le raid n'est pas trouvé, on arrête l'exécution
+                return;
             }
+
+            // NOUVEAU : Stocker l'ID du raid actuel pour la désinscription
+            currentRaidId = raidId;
 
             const raidName = document.getElementById("raid-name");
             const raidDateTime = document.getElementById("raid-date-time");
@@ -258,20 +340,65 @@
 
             raidName.textContent = raidDetails.nom;
 
-            // Formater la date et l'heure du raid
             const formattedDate = formatDate(raidDetails.date + "T" + raidDetails.time + ":00");
             raidDateTime.textContent = formattedDate;
 
             raidPlayersList.innerHTML = ""; // Réinitialiser la liste des joueurs
-            raidDetails.inscriptions.forEach(player => {
+            // NOUVEAU : Gérer le cas où il n'y a pas d'inscriptions
+            if (raidDetails.inscriptions && raidDetails.inscriptions.length > 0) {
+                raidDetails.inscriptions.forEach(player => {
+                    const li = document.createElement("li");
+                    li.textContent = player; // Afficher le nom, la classe et l'ilvl du joueur inscrit
+                    raidPlayersList.appendChild(li);
+                });
+            } else {
                 const li = document.createElement("li");
-                li.textContent = player; // Afficher le nom, la classe et l'ilvl du joueur inscrit
+                li.textContent = "Aucune inscription pour l'instant.";
                 raidPlayersList.appendChild(li);
+            }
+
+            // --- NOUVEAU : Logique pour la désinscription dans la pop-up ---
+            // Charger les joueurs et les personnages pour les sélecteurs de désinscription
+            const joueursSnapshot = await getDocs(collection(db, 'joueurs'));
+
+            // Remplir le sélecteur des membres pour la désinscription
+            memberSelectUnsubscribe.innerHTML = '<option value="">-- Sélectionner un membre --</option>';
+            joueursSnapshot.forEach(doc => {
+                const joueur = doc.data();
+                const memberOption = document.createElement('option');
+                memberOption.value = joueur.nom;
+                memberOption.textContent = joueur.nom;
+                memberSelectUnsubscribe.appendChild(memberOption);
             });
+
+            // Réinitialiser le sélecteur de personnage pour la désinscription
+            characterSelectUnsubscribe.innerHTML = '<option value="">-- Sélectionner un personnage --</option>';
+
+            // Écouteur d'événement pour le changement de membre dans la section de désinscription
+            memberSelectUnsubscribe.onchange = () => {
+                updateCharacterListUnsubscribe(joueursSnapshot);
+            };
+            // --- Fin de la logique pour la désinscription ---
 
             document.getElementById("raid-popup").style.display = "block";
         }
+        // NOUVELLE FONCTION : Pour mettre à jour la liste des personnages dans le sélecteur de désinscription
+        function updateCharacterListUnsubscribe(joueursSnapshot) {
+            const selectedMember = memberSelectUnsubscribe.value;
+            characterSelectUnsubscribe.innerHTML = '<option value="">-- Sélectionner un personnage --</option>';
 
+            joueursSnapshot.forEach(doc => {
+                const joueur = doc.data();
+                if (joueur.nom === selectedMember) {
+                    joueur.personnages.forEach(personnage => {
+                        const characterOption = document.createElement('option');
+                        characterOption.value = personnage.nom;
+                        characterOption.textContent = `${personnage.nom} - ${personnage.classe} (${personnage.ilvl})`;
+                        characterSelectUnsubscribe.appendChild(characterOption);
+                    });
+                }
+            });
+        }
 
         // Fermer le popup
         document.getElementById("close-popup").addEventListener("click", () => {
@@ -422,8 +549,10 @@
             document.getElementById('remove-raid-btn').addEventListener('click', retirerRaid);
             document.getElementById('inscrire-btn').addEventListener('click', () => inscrireMembre(joueursSnapshot)); // Passer joueursSnapshot
             memberSelect.addEventListener('change', () => {
-                updateCharacterList(joueursSnapshot); 
+                updateCharacterList(joueursSnapshot);
             });
+            // NOUVEAU : Écouteur d'événement pour le bouton de désinscription dans la pop-up
+            unsubscribeBtn.addEventListener('click', desinscrireMembre);
         });
     </script>
 
