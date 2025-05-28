@@ -1,24 +1,50 @@
 /* ------ Variables ------ */
 :root {
-    --background: #1b1f23;
-    --card-background: #24292f; /* couleur solide sans transparence */
-    --primary-color: #00bcd4;
-    --hover-background: rgba(0, 188, 212, 0.1);
-    --input-background: #2f363d;
+    --background: #12151a; /* Plus sombre, comme les fonds d'écran de Lost Ark */
+    --card-background: rgba(30, 35, 42, 0.9); /* Un fond légèrement transparent et bleuté/gris */
+    --primary-color: #ffd700; /* Or éclatant, très présent dans le jeu */
+    --secondary-color: #00bcd4; /* Bleu sarcelle, pour les accents */
+    --accent-color: #8a2be2; /* Violet sombre, pour le côté arcane/magique */
+    --hover-background: rgba(255, 215, 0, 0.15); /* Lumière dorée au survol */
+    --input-background: #282e35;
     --text-color: #ffffff;
-    --accent-color: #7c4dff;
+    --border-color: #4a4f57; /* Gris foncé pour les bordures */
+    --shadow-strong: rgba(0, 0, 0, 0.6);
     --transition-fast: all 0.3s ease-in-out;
+
+    /* NOUVEAU : Polices spécifiques (si vous pouvez les importer) */
+    /* Exemple : 'Cinzel Decorative' pour les titres, 'Roboto Condensed' pour le texte */
+    --font-heading: 'Cinzel Decorative', serif; /* Ou une police similaire */
+    --font-body: 'Roboto Condensed', sans-serif; /* Ou une police plus lisible */
 }
 
 /* ------ Reset de Base ------ */
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-body); /* Utilisation de la nouvelle variable */
     background-color: var(--background);
     color: var(--text-color);
     margin: 0;
     padding: 0;
     overflow-x: hidden;
     transition: var(--transition-fast);
+    /* NOUVEAU : Image de fond */
+    background-image: url('chemin/vers/votre/image_de_fond_lostark.jpg'); /* REMPLACEZ PAR VOTRE IMAGE */
+    background-size: cover;
+    background-attachment: fixed; /* L'image reste fixe lors du défilement */
+    background-position: center;
+    position: relative; /* Pour le pseudo-élément */
+}
+
+/* NOUVEAU : Overlay sombre sur l'image de fond pour améliorer la lisibilité */
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Overlay sombre */
+    z-index: -1;
 }
 
 /* ------ Header ------ */
@@ -26,16 +52,18 @@ header {
     padding: 2rem 1rem;
     text-align: center;
     border-bottom: 2px solid var(--primary-color);
-    background: var(--card-background);
-    position: static;
-    top: 0;
+    background: var(--card-background); /* Utilise la couleur de fond des cartes */
+    position: relative; /* Pour positionner les logos par rapport au header */
     z-index: 10;
+    box-shadow: 0 5px 15px var(--shadow-strong); /* Ombre plus prononcée */
 }
 
 h1 {
-    font-size: 3rem;
+    font-family: var(--font-heading); /* Nouvelle police pour les titres */
+    font-size: 3.5rem; /* Plus grand pour l'impact */
     color: var(--primary-color);
-    text-shadow: 0 0 10px var(--primary-color);
+    text-shadow: 0 0 15px var(--primary-color), 0 0 25px var(--accent-color); /* Ombre texturée */
+    letter-spacing: 2px; /* Un peu d'espacement pour les titres */
 }
 
 /* ------ Navigation ------ */
@@ -44,20 +72,39 @@ nav ul {
     padding: 0;
     display: flex;
     justify-content: center;
-    gap: 2rem;
-    margin-top: 1rem;
+    gap: 2.5rem; /* Plus d'espace entre les liens */
+    margin-top: 1.5rem;
 }
 
 nav ul li a {
     color: var(--text-color);
     text-decoration: none;
-    font-size: 1.2rem;
+    font-size: 1.3rem; /* Plus grand */
     transition: var(--transition-fast);
+    position: relative; /* Pour l'effet de soulignement */
+    padding-bottom: 5px; /* Espace pour le soulignement */
 }
 
 nav ul li a:hover {
     color: var(--primary-color);
-    text-shadow: 0 0 5px var(--primary-color);
+    text-shadow: 0 0 8px var(--primary-color);
+}
+
+/* NOUVEAU : Effet de soulignement stylisé pour la navigation */
+nav ul li a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 3px;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    transition: width 0.3s ease-in-out;
+}
+
+nav ul li a:hover::after {
+    width: 100%;
 }
 
 /* ------ Main ------ */
@@ -71,60 +118,146 @@ main {
 /* ------ Sections ------ */
 section {
     background: var(--card-background);
-    border: 2px solid var(--primary-color);
+    /* NOUVEAU : Bordure plus complexe */
+    border: 2px solid var(--border-color); /* Bordure principale */
+    border-image: linear-gradient(45deg, var(--primary-color) 0%, var(--accent-color) 50%, var(--primary-color) 100%) 1; /* Dégradé pour la bordure */
     border-radius: 15px;
     padding: 2rem;
-    box-shadow: 0 8px 20px rgba(0, 188, 212, 0.2);
+    box-shadow: 0 8px 25px var(--shadow-strong); /* Ombre plus sombre */
     transition: var(--transition-fast);
 }
 
 section:hover {
-    box-shadow: 0 8px 30px rgba(0, 188, 212, 0.4);
+    box-shadow: 0 8px 40px rgba(255, 215, 0, 0.4); /* Effet d'éclat doré au survol */
 }
 
 h2 {
-    font-size: 2.2rem;
+    font-family: var(--font-heading); /* Nouvelle police pour les sous-titres */
+    font-size: 2.5rem; /* Plus grand */
     color: var(--primary-color);
     text-align: center;
+    margin-bottom: 1.5rem; /* Plus d'espace */
+    text-shadow: 0 0 10px var(--primary-color);
+}
+
+/* NOUVEAU : Séparateur sous les h2 (optionnel) */
+h2::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    margin: 10px auto 0;
+    border-radius: 5px;
+}
+
+/* ------ Section Membres ------ */
+/* ... (gardez .membre-card existant, mais il bénéficiera des nouvelles variables) */
+
+.membre-card {
+    background: var(--card-background);
+    border: 2px solid var(--border-color); /* Utilise la couleur de bordure générique */
+    border-radius: 15px;
+    padding: 2rem;
+    width: 280px;
+    text-align: center;
+    transition: var(--transition-fast);
+    box-shadow: 0 4px 20px var(--shadow-strong);
+}
+
+.membre-card:hover {
+    transform: translateY(-5px); /* Un léger déplacement vers le haut */
+    box-shadow: 0 6px 30px rgba(255, 215, 0, 0.5); /* Éclat doré */
+}
+
+.membre-card h3 {
+    font-family: var(--font-heading); /* Police des titres */
     margin-bottom: 1rem;
+    color: var(--primary-color);
+    text-shadow: 0 0 5px var(--primary-color);
+}
+
+.membre-card li {
+    background: var(--input-background);
+    padding: 0.8rem;
+    margin: 0.7rem 0; /* Plus d'espace */
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem; /* Plus d'espace */
+    border-left: 3px solid var(--secondary-color); /* Nouvelle bordure */
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3); /* Ombre interne subtile */
+}
+
+.membre-card li:before {
+    content: "⚔️ "; /* Changer l'icône, ou utiliser une image */
 }
 
 /* ------ Boutons ------ */
 button {
-    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color)); /* Dégradé plus complexe */
     color: var(--text-color);
     font-weight: bold;
-    padding: 1rem 2rem;
+    padding: 1rem 2.5rem; /* Plus de padding */
     border-radius: 10px;
     border: none;
     cursor: pointer;
     transition: var(--transition-fast);
-    font-size: 1rem;
-    box-shadow: 0 4px 10px rgba(0, 188, 212, 0.4);
+    font-size: 1.1rem; /* Plus grand */
+    box-shadow: 0 5px 15px var(--shadow-strong); /* Ombre plus sombre */
+    text-transform: uppercase; /* Texte en majuscules */
+    letter-spacing: 1px;
+    border: 1px solid var(--primary-color); /* Petite bordure autour du dégradé */
 }
 
 button:hover {
-    transform: scale(1.05);
-    background: var(--primary-color);
+    transform: translateY(-3px) scale(1.02); /* Léger mouvement vers le haut et agrandissement */
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color)); /* Changement de dégradé au survol */
+    box-shadow: 0 8px 20px rgba(255, 215, 0, 0.6); /* Effet d'éclat intense */
+}
+
+/* NOUVEAU : Styles pour les boutons secondaires (ajouter/supprimer personnage) */
+.ajouter-personnage-btn,
+.supprimer-personnage-btn {
+    margin-top: 1.5rem;
+    width: auto; /* Laisser le bouton s'adapter à son contenu */
+    padding: 0.8rem 1.5rem;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    display: inline-block; /* Pour qu'ils ne prennent pas toute la largeur */
+    margin-right: 10px;
+    box-shadow: 0 2px 8px var(--shadow-strong);
+}
+
+.supprimer-personnage-btn {
+    background: linear-gradient(90deg, #dc3545, #b22222); /* Rouge plus profond */
+    border: 1px solid #dc3545;
+}
+
+.supprimer-personnage-btn:hover {
+    background: linear-gradient(90deg, #b22222, #8b0000);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.5);
 }
 
 /* ------ Formulaires ------ */
 input, select, textarea {
     background: var(--input-background);
-    border: 2px solid var(--primary-color);
+    border: 2px solid var(--border-color); /* Bordure plus neutre */
     border-radius: 10px;
     padding: 1rem;
     color: var(--text-color);
     font-size: 1rem;
-    width: 100%;
-    margin-bottom: 1rem;
+    width: calc(100% - 24px); /* Ajuster la largeur pour le padding et la bordure */
+    margin-bottom: 1.2rem; /* Plus d'espace */
     transition: var(--transition-fast);
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.3); /* Ombre interne pour un effet de profondeur */
 }
 
 input:focus, select:focus, textarea:focus {
     outline: none;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 8px var(--primary-color);
+    border-color: var(--primary-color); /* Bordure dorée au focus */
+    box-shadow: 0 0 10px var(--primary-color); /* Éclat doré au focus */
 }
 
 /* ------ Pop-up ------ */
@@ -135,19 +268,60 @@ input:focus, select:focus, textarea:focus {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8); /* Fond plus sombre */
     z-index: 999;
+    display: flex; /* Utilisation de flexbox pour centrer */
     align-items: center;
     justify-content: center;
+    animation: fadeIn 0.3s ease-out forwards; /* Animation d'apparition */
 }
 
 .popup-content {
     background: var(--card-background);
-    padding: 2rem;
-    border: 2px solid var(--primary-color);
-    border-radius: 12px;
-    box-shadow: 0 0 20px var(--primary-color);
+    padding: 2.5rem; /* Plus de padding */
+    border: 3px solid var(--primary-color); /* Bordure plus épaisse et dorée */
+    border-radius: 15px; /* Arrondi légèrement plus grand */
+    box-shadow: 0 0 30px var(--primary-color), 0 0 50px var(--accent-color); /* Ombre plus intense */
     text-align: center;
+    max-width: 500px; /* Limite la largeur de la pop-up */
+    width: 90%;
+    position: relative; /* Pour le bouton de fermeture */
+    transform: scale(0.9); /* Démarre légèrement plus petit */
+    animation: popUpScale 0.3s ease-out forwards; /* Animation de scale */
+}
+
+/* NOUVEAU : Styles pour les titres et listes dans la pop-up */
+.popup-content h2, .popup-content h3, .popup-content h4 {
+    font-family: var(--font-heading);
+    color: var(--primary-color);
+    text-shadow: 0 0 8px var(--primary-color);
+}
+
+.popup-content ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+}
+
+.popup-content li {
+    background: var(--input-background);
+    padding: 0.7rem;
+    margin-bottom: 0.5rem;
+    border-radius: 5px;
+    border-left: 3px solid var(--secondary-color);
+    text-align: left;
+    box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+/* NOUVEAU : Animation d'apparition du popup */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes popUpScale {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
 /* ------ Footer ------ */
@@ -157,6 +331,24 @@ footer {
     padding: 2rem;
     border-top: 2px solid var(--primary-color);
     margin-top: 4rem;
+    box-shadow: 0 -5px 15px var(--shadow-strong); /* Ombre vers le haut */
+}
+
+/* ------ Logos ------ */
+.logo {
+    width: 100px; /* Plus grand */
+    position: absolute;
+    top: 50%; /* Centrer verticalement */
+    transform: translateY(-50%);
+    filter: drop-shadow(0 0 10px var(--primary-color)); /* Effet lumineux autour du logo */
+}
+
+.logo.gauche {
+    left: 40px; /* Plus d'espace */
+}
+
+.logo.droite {
+    right: 40px; /* Plus d'espace */
 }
 
 /* ------ Logos ------ */
