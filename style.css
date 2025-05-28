@@ -514,10 +514,10 @@ footer {
 /* Conteneur principal pour organiser le planning et les actions */
 .planning-container {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    flex-direction: column; /* Organise les sections en colonne */
+    align-items: center;
     gap: 20px;
-    min-height: 100vh; /* Remplit toute la hauteur de l'écran */
+    min-height: 100vh;
 }
 
 /* Section Planning */
@@ -539,11 +539,12 @@ footer {
     min-height: 800px; /* Augmente la taille pour occuper plus d'espace */
 }
 
-/* Étendre la section "Inscription aux Raids" pour combler le vide */
 #inscription {
-    width: 100%; /* Occupe toute la largeur sous le planning */
+    width: 100%;
     padding: 20px;
-    background-color: rgba(0, 0, 0, 0.8); /* Uniformise le fond */
+    background-color: rgba(0, 0, 0, 0.8);
+    position: relative;
+    min-height: 300px; /* Force une hauteur minimale */
 }
 
 /* Ajout d’un footer pour la mise en page */
