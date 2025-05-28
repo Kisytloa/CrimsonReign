@@ -511,39 +511,44 @@ footer {
 }
 
 
+/* Conteneur général du planning */
 .planning-container {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 20px;
-    min-height: 700px; /* Évite les espaces vides */
+    min-height: 100vh; /* Remplit toute la hauteur de l'écran */
 }
 
+/* Gestion du planning */
 #planning {
-    flex: 2;
+    flex: 2; /* Prend plus d'espace */
 }
 
+/* Sections d'actions à droite du planning */
 .raid-actions {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 15px;
-    width: 350px;
+    width: 350px; /* Ajuste la largeur */
 }
 
-/* Remplissage du bas de la page */
+/* Ajustement du calendrier */
 #calendar {
-    min-height: 600px;
+    min-height: 800px; /* Augmente la taille pour éviter le vide */
 }
 
-/* Ajoute un footer avec fond pour combler l’espace */
+/* Footer pour combler le bas de page */
 footer {
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.9);
     text-align: center;
-    padding: 20px;
+    padding: 40px;
     color: white;
     width: 100%;
-    position: relative;
+    position: absolute;
+    bottom: 0;
 }
+
 
 
