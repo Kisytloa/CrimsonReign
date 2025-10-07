@@ -1,3 +1,18 @@
+/* Boutons + et - du planning */
+#show-add-raid-popup {
+    border: 3px solid #FFD600 !important;
+    box-shadow: 0 0 0 4px rgba(255, 214, 0, 0.25), 0 2px 8px #0002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#show-remove-raid-popup {
+    border: 3px solid #d32f2f !important;
+    box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.25), 0 2px 8px #0002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 /* ------ Variables ------ */
 :root {
     --background: #1b1f23;
@@ -140,6 +155,7 @@ section {
     border-image: linear-gradient(45deg, var(--primary-color) 0%, var(--accent-color) 50%, var(--primary-color) 100%) 1; /* Dégradé pour la bordure */
     border-radius: 15px;
     padding: 2rem;
+    
     box-shadow: 0 8px 20px rgba(0, 188, 212, 0.2);
     box-shadow: 0 8px 25px var(--shadow-strong); /* Ombre plus sombre */
     transition: var(--transition-fast);
