@@ -42,9 +42,7 @@
 
 <body>
     <header>
-        <img src="Logo guilde.jpg" alt="Logo Guilde" class="logo gauche" style="height:80px;width:80px;object-fit:contain;background:#fff;border-radius:50%;box-shadow:0 2px 12px #0005;margin:0 18px;margin-top:32px;">
     <h1 style="margin-top:0;margin-bottom:18px;">Planning de Raid BS</h1>
-        <img src="Logo guilde.jpg" alt="Logo Guilde" class="logo droite" style="height:80px;width:80px;object-fit:contain;background:#fff;border-radius:50%;box-shadow:0 2px 12px #0005;margin:0 18px;margin-top:32px;">
         <nav>
             <ul>
                 <li><a href="index.html">Accueil</a></li>
@@ -64,6 +62,7 @@
     <main>
     <div class="planning-container">
         <section id="planning">
+            <img src="Logo guilde.jpg" alt="Logo Guilde" style="display:block;margin:0 auto 18px auto;height:90px;width:90px;object-fit:contain;background:#fff;border-radius:50%;box-shadow:0 2px 12px #0005;">
             <h2>Planning de Raid</h2>
             <div style="width:100%;display:flex;flex-direction:column;align-items:center;margin-bottom:10px;">
                 <div style="display:flex;justify-content:center;align-items:center;gap:16px;">
@@ -600,6 +599,16 @@ logoutBtn.addEventListener('click', async function() {
             // Ajout de l'écouteur d'inscription pop-up (une seule fois)
             if (!window._popupInscriptionListenerAdded) {
                 document.getElementById('popup-inscrire-btn').addEventListener('click', async function() {
+                    // Fonction utilitaire pour obtenir la semaine ISO d'une date
+                    function getISOWeek(dateStr) {
+                        const date = new Date(dateStr);
+                        date.setHours(0,0,0,0);
+                        // Jeudi pour la semaine ISO
+                        date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
+                        const week1 = new Date(date.getFullYear(),0,4);
+                        return 1 + Math.round(((date - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+                    }
+
                     if (!membreConnecte) {
                         alert('Aucun membre connecté.');
                         return;
@@ -620,6 +629,57 @@ logoutBtn.addEventListener('click', async function() {
                     const raid = raids.find(r => r.id === currentRaidId);
                     if (!raid) {
                         alert('Raid introuvable.');
+                        return;
+                    }
+                    // Vérifier si le personnage a déjà fait ce raid cette semaine
+                    const raidWeek = getISOWeek(raid.date);
+                    const raidYear = new Date(raid.date).getFullYear();
+                    let dejaInscritCetteSemaine = false;
+                    for (const r of raids) {
+                        if (r.nom === raid.nom) {
+                            const rWeek = getISOWeek(r.date);
+                            const rYear = new Date(r.date).getFullYear();
+                            if (rWeek === raidWeek && rYear === raidYear) {
+                                if (r.inscriptions && r.inscriptions.some(insc => insc.includes(`(${personnageNom},`))) {
+                                    dejaInscritCetteSemaine = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (dejaInscritCetteSemaine) {
+                        alert('Ce personnage a déjà participé à ce raid cette semaine.');
+                        return;
+                    }
+                    // Tableau des ilvl minimum par raid
+                    const ilvlMinByRaid = {
+                        'Behemoth': 1620,
+                        'Prélude Echidna NM': 1620,
+                        'Prélude Echidna HM': 1630,
+                        'Aegir NM': 1660,
+                        'Aegir HM': 1680,
+                        'Brelshaza NM': 1670,
+                        'Brelshaza HM': 1690,
+                        'Mordum NM': 1680,
+                        'Mordum HM': 1700,
+                        'Kazéros NM': 1700,
+                        'Kazéros HM': 1720,
+                        'Final Day NM': 1710,
+                        'Final DayHM': 1730
+                    };
+                    // Détecte le nom du raid (sans NM/HM/ilvl)
+                    let raidNom = raid.nom.trim();
+                    // Nettoyage pour correspondance
+                    raidNom = raidNom.replace(/\s+$/, '').replace(/\s*NM$/i, '').replace(/\s*HM$/i, '').replace(/\s*\-.*$/, '');
+                    // Recherche ilvl minimum
+                    let ilvlMin = ilvlMinByRaid[raid.nom.trim()];
+                    if (typeof ilvlMin !== 'number') {
+                        // Si non trouvé, tente de parser le ilvl dans le nom
+                        const match = /iLvl\s*(\d+)/i.exec(raid.nom);
+                        ilvlMin = match ? parseInt(match[1], 10) : 0;
+                    }
+                    if (parseFloat(personnageDetails.ilvl) < ilvlMin) {
+                        alert(`Ce personnage n'a pas l'iLvl minimum requis (${ilvlMin}) pour ce raid.`);
                         return;
                     }
                     const inscription = `${membreNom} (${personnageNom}, ${personnageDetails.classe}, ilvl: ${personnageDetails.ilvl})`;

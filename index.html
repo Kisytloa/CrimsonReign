@@ -54,9 +54,7 @@
 <body>
     <div id="user-info" style="position:fixed;top:0;left:0;width:100%;background:#222;color:#fff;padding:8px 0;text-align:center;z-index:1000;font-weight:bold;">Vous êtes connecté en tant que : <span id="user-name">Invité</span></div>
     <header>
-        <img src="Logo guilde.jpg" alt="Logo Guilde" class="logo gauche">
         <h1>Accueil</h1>
-        <img src="Logo guilde.jpg" alt="Logo Guilde" class="logo droite">
         <nav>
             <ul>
                 <li><a href="Objectifs.html">Objectifs de Guilde</a></li>
@@ -99,87 +97,6 @@
     </footer>
 
     <button id="logout-btn" style="background:#d32f2f;color:#fff;border:none;padding:18px 32px;font-size:1.3rem;font-weight:bold;border-radius:12px;position:fixed;bottom:24px;right:32px;z-index:9999;box-shadow:0 4px 16px #0004;cursor:pointer;transition:transform 0.2s;">Déconnexion</button>
-
-    // ...existing code...
-            const todayString = today.toISOString().split('T')[0];
-
-            console.log("Date d'aujourd'hui : ", todayString);  // Debug
-
-            // Afficher la date du jour sous la section des raids
-            const dateAjdElement = document.querySelector("#date-ajd");
-            const formattedDate = today.toLocaleDateString("fr-FR", {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            dateAjdElement.textContent = `Date actuelle : ${formattedDate}`;
-
-            // Récupérer les raids depuis Firestore
-            db.collection("raids").get().then((querySnapshot) => {
-                let raidsFound = false;  // Vérifier s'il y a des raids aujourd'hui
-                let raids = [];  // Tableau pour stocker les raids récupérés
-
-                querySnapshot.forEach((doc) => {
-                    const raid = doc.data(); // Données du raid
-                    console.log("Raid trouvé : ", raid);  // Debug
-
-                    // Vérifier que la date du raid est une chaîne et la convertir en Date
-                    let raidDate = raid.date;
-                    if (raidDate && typeof raidDate === 'string') {
-                        raidDate = new Date(raidDate); // Convertir la chaîne en Date
-                    }
-
-                    // Vérifier que la date du raid est un objet Date valide
-                    if (raidDate instanceof Date && !isNaN(raidDate)) {
-                        const raidDateString = raidDate.toISOString().split('T')[0];
-
-                        console.log("Date du raid : ", raidDateString);  // Debug
-
-                        // Si la date du raid est aujourd'hui, l'ajouter au tableau
-                        if (raidDateString === todayString) {
-                            raids.push({
-                                nom: raid.nom || "Nom non défini",
-                                ilvl: raid.ilvl || "iLvl non défini",
-                                time: raid.time || "Heure non définie",
-                                date: raidDate
-                            });
-                            raidsFound = true;
-                        }
-                    }
-                });
-
-                // Si des raids ont été trouvés, les trier par heure
-                if (raidsFound) {
-                    raids.sort((a, b) => {
-                        // Comparer les heures des raids
-                        const timeA = new Date(`1970-01-01T${a.time}:00`);
-                        const timeB = new Date(`1970-01-01T${b.time}:00`);
-                        return timeA - timeB;
-                    });
-
-                    // Afficher les raids triés
-                    raids.forEach((raid) => {
-                        const li = document.createElement("li");
-                        li.textContent = `${raid.nom}  - ${raid.date.toLocaleDateString()} à ${raid.time}`;
-                        raidsList.appendChild(li);
-                    });
-                } else {
-                    raidsList.innerHTML = "<li>Aucun raid prévu pour aujourd'hui.</li>";
-                }
-
-            }).catch((error) => {
-                console.error("Erreur de récupération des raids: ", error);
-            });
-        }
-
-        // Charger les raids d'aujourd'hui lorsque la page est chargée
-        window.onload = loadRaidsAujourdHui;
-
-        document.getElementById('logout-btn').addEventListener('click', function() {
-            localStorage.removeItem('user');
-            window.location.href = 'connexion.html';
-        });
     </script>
 </body>
 </html>
