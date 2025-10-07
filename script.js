@@ -29,35 +29,31 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log("📅 Script chargé - Initialisation du calendrier");
 
     let calendarEl = document.getElementById('calendar');
-    if (!calendarEl) {
-        console.error("🚨 Erreur : Élément #calendar introuvable !");
-        return;
-    }
-
-    // Configuration FullCalendar
-    let calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        firstDay:3,
-        locale: 'fr',
-        editable: false,
-        selectable: false,
-        eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false },
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        },
-        events: [], // Initialement vide, les événements seront chargés via Firestore
-        eventClick: function(info) {
-            // Mettre à jour le tableau avec les informations du raid sélectionné
-            updateRaidDetails(info.event.id);
+        let calendar = null;
+        if (calendarEl) {
+            // Configuration FullCalendar
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                firstDay:3,
+                locale: 'fr',
+                editable: false,
+                selectable: false,
+                eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false },
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: [], // Initialement vide, les événements seront chargés via Firestore
+                eventClick: function(info) {
+                    // Mettre à jour le tableau avec les informations du raid sélectionné
+                    updateRaidDetails(info.event.id);
+                }
+            });
+            calendar.render(); // Rendu du calendrier
+            console.log("✅ Calendrier FullCalendar rendu avec succès");
         }
-    });
-
-    calendar.render(); // Rendu du calendrier
-    console.log("✅ Calendrier FullCalendar rendu avec succès");
-
-    // Charger les raids en temps réel depuis Firestore
+        // Charger les raids en temps réel depuis Firestore
     function loadRaidsFromFirestore() {
         const today = new Date();
         const startOfDay = new Date(today.setHours(0, 0, 0, 0)).getTime();  // 00:00:00
@@ -78,15 +74,15 @@ document.addEventListener('DOMContentLoaded', function () {
             .onSnapshot((snapshot) => {
                 // Nettoyer les événements existants dans le calendrier
                 calendar.getEvents().forEach(event => event.remove());
-    
+
                 // Vider les options des sélecteurs
                 let raidSelectRemove = document.getElementById('raid-select-remove');
                 let raidSelectInscription = document.getElementById('raid-select-inscription');
                 raidSelectRemove.innerHTML = '<option value="">-- Sélectionner un Raid --</option>';
                 raidSelectInscription.innerHTML = '<option value="">-- Sélectionner un Raid --</option>';
-    
+
                 let raidsTodayAdded = false;  // Flag pour savoir si des raids sont ajoutés pour aujourd'hui
-    
+
                 // Ajouter de nouveaux événements à partir de Firestore
                 snapshot.forEach(doc => {
                     let raid = doc.data();
@@ -94,7 +90,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     let raidTimestamp = raidDateTime.getTime();
                     let formattedDate = raidDateTime.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
                     let formattedTime = raidDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    
+
+                    // LOG pour debug : afficher chaque raid et sa date
+                    console.log(`[DEBUG] Raid Firestore:`, raid.title, raidDateTime, raidTimestamp);
+
                     // Créer un événement pour FullCalendar
                     let newEvent = { 
                         id: doc.id, 
@@ -106,28 +105,28 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     };
                     calendar.addEvent(newEvent);
-    
+
                     // Ajouter l'option avec le titre, la date et l'heure formatée
                     let optionRemove = new Option(`${raid.title} - ${formattedDate} à ${formattedTime}`, doc.id);
                     let optionInscription = new Option(`${raid.title} - ${formattedDate} à ${formattedTime}`, doc.id);
                     raidSelectRemove.appendChild(optionRemove);
                     raidSelectInscription.appendChild(optionInscription);
-    
+
                     // Vérifier si le raid a lieu aujourd'hui
                     if (raidTimestamp >= startOfDay && raidTimestamp <= endOfDay) {
                         let optionToday = new Option(`${raid.title} - ${formattedDate} à ${formattedTime}`, doc.id);
-    
+
                         // Ajouter un élément à la liste des raids d'aujourd'hui
                         const listItem = document.createElement('li');
                         listItem.textContent = `${raid.title} - ${formattedDate} à ${formattedTime}`;
                         listItem.setAttribute('data-raid-id', doc.id); // Ajouter l'ID du raid pour l'utiliser plus tard
                         raidListToday.appendChild(listItem);
-    
+
                         // Ajouter un écouteur d'événement pour ouvrir la popup lors du clic
                         listItem.addEventListener('click', function() {
                             openRaidPopup(doc.id);
                         });
-    
+
                         raidsTodayAdded = true;  // Indiquer qu'un raid a été ajouté pour aujourd'hui
                     }
                 });
@@ -203,66 +202,76 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     
     // Fermer la popup en cliquant n'importe où en dehors de la pop-up
-    document.getElementById('raid-detail-popup').addEventListener('click', function(event) {
-        if (event.target === this) {  // Vérifie si le clic est effectué sur l'arrière-plan
-            this.style.display = 'none';
-        }
-    });
-    
-    loadRaidsFromFirestore(); // Charger les raids dès que le script est chargé
-    
-    // Ajouter un raid
-    document.getElementById('add-raid-btn').addEventListener('click', function () {
-        let raidName = document.getElementById('raid-select').value;
-        let raidDate = document.getElementById('raid-date').value;
-        let raidTime = document.getElementById('raid-time').value;
-
-        if (!raidName || !raidDate || !raidTime) {
-            alert("❌ Veuillez sélectionner un raid, une date et une heure !");
-            return;
-        }
-
-        let raidDateTime = new Date(`${raidDate}T${raidTime}:00`); // Création d'une date complète en format Date
-
-        // Ajouter le raid à Firestore
-        db.collection("raids").add({
-            title: raidName,
-            datTime: firebase.firestore.Timestamp.fromDate(raidDateTime),  // Envoi au format Firestore Timestamp
-            inscriptions: [],
-            maxPlayers: 10 // Ajouter un champ maxPlayers pour définir la limite d'inscriptions
-        }).then((docRef) => {
-        console.log("✅ Raid ajouté à Firestore !");
-
-        // Ajouter immédiatement l'événement au calendrier
-        let formattedDate = raidDateTime.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        let formattedTime = raidDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-
-        let newEvent = {
-            id: docRef.id,
-            title: raidName,
-            start: raidDateTime,  // Ajout de l'événement directement avec la date et l'heure
-            extendedProps: {
-                formattedDate,
-                formattedTime
-            }
-        };
-
-        // Ajouter l'événement au calendrier uniquement après avoir confirmé l'ajout dans Firestore
-        if (!calendar.getEventById(docRef.id)) {
-            // Vérifier qu'un événement avec ce ID n'existe pas déjà
-            calendar.addEvent(newEvent);
-            console.log("✅ Événement ajouté au calendrier !");
-        } else {
-            console.log("⚠️ L'événement existe déjà dans le calendrier.");
-        }
-
-        }).catch(error => {
-            console.error("❌ Erreur lors de l'ajout du raid :", error);
-            alert("❌ " + error.message);
+    var popupCloseBtn = document.getElementById('popup-close-btn');
+    var raidDetailPopup = document.getElementById('raid-detail-popup');
+    if (popupCloseBtn && raidDetailPopup) {
+        popupCloseBtn.addEventListener('click', function() {
+            raidDetailPopup.style.display = 'none';
         });
-    });
+        raidDetailPopup.addEventListener('click', function(event) {
+            if (event.target === this) {  // Vérifie si le clic est effectué sur l'arrière-plan
+                this.style.display = 'none';
+            }
+        });
+    }
 
-    // Retirer un raid
+    loadRaidsFromFirestore(); // Charger les raids dès que le script est chargé
+
+    // Ajouter un raid
+    var addRaidBtn = document.getElementById('add-raid-btn');
+    if (addRaidBtn) {
+        addRaidBtn.addEventListener('click', function () {
+            let raidName = document.getElementById('raid-select').value;
+            let raidDate = document.getElementById('raid-date').value;
+            let raidTime = document.getElementById('raid-time').value;
+
+            if (!raidName || !raidDate || !raidTime) {
+                alert("❌ Veuillez sélectionner un raid, une date et une heure !");
+                return;
+            }
+
+            let raidDateTime = new Date(`${raidDate}T${raidTime}:00`); // Création d'une date complète en format Date
+
+            // Ajouter le raid à Firestore
+            db.collection("raids").add({
+                title: raidName,
+                datTime: firebase.firestore.Timestamp.fromDate(raidDateTime),  // Envoi au format Firestore Timestamp
+                inscriptions: [],
+                maxPlayers: 10 // Ajouter un champ maxPlayers pour définir la limite d'inscriptions
+            }).then((docRef) => {
+            console.log("✅ Raid ajouté à Firestore !");
+
+            // Ajouter immédiatement l'événement au calendrier
+            let formattedDate = raidDateTime.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            let formattedTime = raidDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+            let newEvent = {
+                id: docRef.id,
+                title: raidName,
+                start: raidDateTime,  // Ajout de l'événement directement avec la date et l'heure
+                extendedProps: {
+                    formattedDate,
+                    formattedTime
+                }
+            };
+
+            // Ajouter l'événement au calendrier uniquement après avoir confirmé l'ajout dans Firestore
+            if (calendar && !calendar.getEventById(docRef.id)) {
+                // Vérifier qu'un événement avec ce ID n'existe pas déjà
+                calendar.addEvent(newEvent);
+                console.log("✅ Événement ajouté au calendrier !");
+            } else {
+                console.log("⚠️ L'événement existe déjà dans le calendrier.");
+            }
+
+            }).catch(error => {
+                console.error("❌ Erreur lors de l'ajout du raid :", error);
+                alert("❌ " + error.message);
+            });
+        });
+    }
+
+    // Supprimer un raid
     document.getElementById('remove-raid-btn').addEventListener('click', function () {
         let raidToRemoveId = document.getElementById('raid-select-remove').value;
 

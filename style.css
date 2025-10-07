@@ -15,22 +15,16 @@
 }
 /* ------ Variables ------ */
 :root {
-    --background: #1b1f23;
-    --card-background: #24292f; /* couleur solide sans transparence */
-    --primary-color: #00bcd4;
-    --hover-background: rgba(0, 188, 212, 0.1);
-    --input-background: #2f363d;
-    --background: #12151a; /* Plus sombre, comme les fonds d'écran de Lost Ark */
-    --card-background: rgba(30, 35, 42, 0.9); /* Un fond légèrement transparent et bleuté/gris */
-    --primary-color: #ffd700; /* Or éclatant, très présent dans le jeu */
-    --secondary-color: #00bcd4; /* Bleu sarcelle, pour les accents */
-    --accent-color: #8a2be2; /* Violet sombre, pour le côté arcane/magique */
-    --hover-background: rgba(255, 215, 0, 0.15); /* Lumière dorée au survol */
-    --input-background: #282e35;
-    --text-color: #ffffff;
-    --accent-color: #7c4dff;
-    --border-color: #4a4f57; /* Gris foncé pour les bordures */
-    --shadow-strong: rgba(0, 0, 0, 0.6);
+    --background: #141015;
+    --card-background: #1a151a;
+    --primary-color: #b3001b; /* Rouge sang accent */
+    --hover-background: rgba(179, 0, 27, 0.10); /* Rouge sang très subtil au survol */
+    --input-background: #232026;
+    --secondary-color: #ffd700; /* Or pour l'accent */
+    --accent-color: #b3001b; /* Rouge sang pour les accents */
+    --text-color: #f8f6f2;
+    --border-color: #7a0010; /* Rouge foncé pour les bordures */
+    --shadow-strong: rgba(179, 0, 27, 0.25);
     --transition-fast: all 0.3s ease-in-out;
 
     /* NOUVEAU : Polices spécifiques (si vous pouvez les importer) */
@@ -50,7 +44,7 @@ body {
     overflow-x: hidden;
     transition: var(--transition-fast);
     /* NOUVEAU : Image de fond */
-    background-image: url('chemin/vers/votre/image_de_fond_lostark.jpg'); /* REMPLACEZ PAR VOTRE IMAGE */
+    background-image: url('chemin/vers/votre/image_de_fond_lostark.jpg'); /* Optionnel : image sombre, peu saturée */
     background-size: cover;
     background-attachment: fixed; /* L'image reste fixe lors du défilement */
     background-position: center;
@@ -65,7 +59,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Overlay sombre */
+    background-color: rgba(0, 0, 0, 0.55); /* Overlay noir doux */
     z-index: -1;
 }
 
@@ -74,13 +68,10 @@ header {
     padding: 2rem 1rem;
     text-align: center;
     border-bottom: 2px solid var(--primary-color);
-    background: var(--card-background);
-    position: static;
-    top: 0;
-    background: var(--card-background); /* Utilise la couleur de fond des cartes */
+    background: linear-gradient(180deg, #1a151a 80%, #232026 100%);
     position: relative; /* Pour positionner les logos par rapport au header */
     z-index: 10;
-    box-shadow: 0 5px 15px var(--shadow-strong); /* Ombre plus prononcée */
+    box-shadow: 0 5px 18px var(--shadow-strong);
 }
 
 h1 {
@@ -88,8 +79,7 @@ h1 {
     font-family: var(--font-heading); /* Nouvelle police pour les titres */
     font-size: 3.5rem; /* Plus grand pour l'impact */
     color: var(--primary-color);
-    text-shadow: 0 0 10px var(--primary-color);
-    text-shadow: 0 0 15px var(--primary-color), 0 0 25px var(--accent-color); /* Ombre texturée */
+    text-shadow: 0 0 8px #b3001b;
     letter-spacing: 2px; /* Un peu d'espacement pour les titres */
 }
 
@@ -423,7 +413,7 @@ footer {
     padding: 1.5rem;
     border: 2px solid var(--primary-color);
     border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0, 188, 212, 0.2);
+    box-shadow: 0 0 16px #b3001b22;
     max-height: 600px;
     overflow-y: auto;
 }
@@ -440,10 +430,11 @@ footer {
 #raid-list-today li {
     background: var(--input-background);
     padding: 1rem;
-    border-left: 5px solid var(--primary-color);
+    border-left: 4px solid var(--primary-color);
     border-radius: 10px;
     font-size: 1rem;
     transition: var(--transition-fast);
+    box-shadow: 0 0 8px #b3001b33;
 }
 
 #raid-list-today li:hover {
