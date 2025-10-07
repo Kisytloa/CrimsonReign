@@ -48,6 +48,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 eventClick: function(info) {
                     // Mettre à jour le tableau avec les informations du raid sélectionné
                     updateRaidDetails(info.event.id);
+                },
+                eventDidMount: function(info) {
+                    // Ajoute le badge HM/NM en HTML dans l'événement
+                    let titleText = info.event.title.replace(/^\s*\d{1,2}\s*(a|p|am|pm)\s*:*/i, "");
+                    let badge = '';
+                    if (/HM/i.test(titleText)) {
+                        badge = '<span style="display:inline-block;font-size:0.95em;font-weight:bold;padding:2px 8px;border-radius:8px;margin-left:6px;color:#fff;background:#d32f2f;">HM</span>';
+                    } else if (/NM/i.test(titleText)) {
+                        badge = '<span style="display:inline-block;font-size:0.95em;font-weight:bold;padding:2px 8px;border-radius:8px;margin-left:6px;color:#fff;background:#0074d9;">NM</span>';
+                    }
+                    const titleEl = info.el.querySelector('.fc-event-title');
+                    if (titleEl) {
+                        titleEl.innerHTML = titleText + (badge ? ' ' + badge : '');
+                    }
                 }
             });
             calendar.render(); // Rendu du calendrier
@@ -118,16 +132,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         // Ajouter un élément à la liste des raids d'aujourd'hui
                         const listItem = document.createElement('li');
-                        listItem.textContent = `${raid.title} - ${formattedDate} à ${formattedTime}`;
-                        listItem.setAttribute('data-raid-id', doc.id); // Ajouter l'ID du raid pour l'utiliser plus tard
+                        let badge = '';
+                        if (raid.title.toUpperCase().includes('HM')) {
+                            badge = '<span style="display:inline-block;font-size:0.95em;font-weight:bold;padding:2px 8px;border-radius:8px;margin-left:6px;color:#fff;background:#d32f2f;">HM</span>';
+                        } else if (raid.title.toUpperCase().includes('NM')) {
+                            badge = '<span style="display:inline-block;font-size:0.95em;font-weight:bold;padding:2px 8px;border-radius:8px;margin-left:6px;color:#fff;background:#0074d9;">NM</span>';
+                        }
+                        listItem.innerHTML = `${raid.title} ${badge} - ${formattedDate} à ${formattedTime}`;
+                        listItem.setAttribute('data-raid-id', doc.id);
                         raidListToday.appendChild(listItem);
 
-                        // Ajouter un écouteur d'événement pour ouvrir la popup lors du clic
                         listItem.addEventListener('click', function() {
                             openRaidPopup(doc.id);
                         });
 
-                        raidsTodayAdded = true;  // Indiquer qu'un raid a été ajouté pour aujourd'hui
+                        raidsTodayAdded = true;
                     }
                 });
     

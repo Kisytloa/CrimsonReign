@@ -33,6 +33,9 @@
             max-width: 100%;
             display: block;
         }
+        .fc-event-time {
+            display: none !important;
+        }
         .fc-event {
             min-width: 0;
         }
@@ -73,6 +76,7 @@
                     <span><b>+</b> : Ajouter un raid &nbsp;&nbsp; <b>-</b> : Retirer un raid</span>
                 </div>
             </div>
+            <ul id="raid-list-today" style="width:100%;max-width:700px;margin:18px auto 0 auto;padding:0;list-style:none;"></ul>
             <div id="calendar"></div>
         </section>
 
@@ -95,12 +99,12 @@
                         <option value="Kazéros NM ">Kazéros NM - iLvl 1700</option>
                         <option value="Kazéros HM">Kazéros HM - iLvl 1720</option>
                         <option value="Final Day NM ">Final Day  NM - iLvl 1710</option>
-                        <option value="Final DayHM">Final Day HM - iLvl 1730</option>
+                        <option value="Final Day HM">Final Day HM - iLvl 1730</option>
                     </select>
                     <label for="raid-date">Date :</label>
                     <input type="date" id="raid-date">
                     <label for="raid-time">Heure :</label>
-                    <input type="time" id="raid-time">
+                    <input type="time" id="raid-time" min="00:00" max="23:59">
                     <button id="add-raid-btn">Ajouter le Raid</button>
                 </div>
             </div>
@@ -850,7 +854,61 @@ logoutBtn.addEventListener('click', async function() {
         // ...existing code...
     </script>
 
+    <script>
+// Correction JS FullCalendar : force le style identique pour tous les événements, même après 23h
 
+document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(function() {
+        document.querySelectorAll('.fc-timegrid-event, .fc-event').forEach(function(el) {
+            el.style.width = '100%';
+            el.style.left = '0';
+            el.style.right = '0';
+            el.style.borderRadius = '8px';
+            el.style.background = '#1a151a';
+            el.style.boxShadow = 'none';
+            el.style.border = 'none';
+            el.style.margin = '0';
+            el.style.overflow = 'hidden';
+            el.style.position = 'relative';
+        });
+    }, 500); // Laisse le temps à FullCalendar de rendre les événements
+});
+</script>
+
+<script>
+// Correction FullCalendar : applique le style à chaque rendu d'événement
+function uniformizeRaidEvents() {
+    document.querySelectorAll('.fc-timegrid-event, .fc-event').forEach(function(el) {
+        el.style.width = '100%';
+        el.style.left = '0';
+        el.style.right = '0';
+        el.style.borderRadius = '8px';
+        el.style.background = '#1a151a';
+        el.style.boxShadow = 'none';
+        el.style.border = 'none';
+        el.style.margin = '0';
+        el.style.overflow = 'hidden';
+        el.style.position = 'relative';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Applique le style à l'initialisation
+    setTimeout(uniformizeRaidEvents, 500);
+    // Réapplique le style à chaque navigation ou changement de vue
+    document.querySelectorAll('.fc-prev-button, .fc-next-button, .fc-today-button').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            setTimeout(uniformizeRaidEvents, 500);
+        });
+    });
+    // Réapplique le style à chaque changement de vue
+    document.querySelectorAll('.fc-button').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            setTimeout(uniformizeRaidEvents, 500);
+        });
+    });
+});
+</script>
 
 </body>
 
