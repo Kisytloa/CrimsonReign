@@ -8,8 +8,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     <link rel="stylesheet" href="style.css">
     <!-- Ajoutez Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>
 
 <body>
@@ -35,60 +33,59 @@
     <div class="planning-container">
         <section id="planning">
             <h2>Planning de Raid</h2>
+            <div style="width:100%;display:flex;flex-direction:column;align-items:center;margin-bottom:10px;">
+                <div style="display:flex;justify-content:center;align-items:center;gap:16px;">
+                    <button id="show-add-raid-popup" style="font-size:2rem; background:#FFD600; color:#222; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; box-shadow:0 2px 8px #0002;" title="Ajouter un raid">+</button>
+                    <button id="show-remove-raid-popup" style="font-size:2rem; background:#FF5252; color:#fff; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; box-shadow:0 2px 8px #0002;" title="Retirer un raid">-</button>
+                </div>
+                <div style="margin-top:6px; font-size:1rem; color:#444; text-align:center;">
+                    <span><b>+</b> : Ajouter un raid &nbsp;&nbsp; <b>-</b> : Retirer un raid</span>
+                </div>
+            </div>
             <div id="calendar"></div>
         </section>
 
         <div class="raid-actions">
-            <section id="ajout-raid">
-                <h2>Ajouter un Raid</h2>
-                <label for="raid-select">Choisir un Raid :</label>
-                <select id="raid-select">
-                <option value="Behemoth">Behemoth - iLvl 1620</option>
-                <option value="Prélude Echidna NM">Prélude Echidna NM - iLvl 1620</option>
-                <option value="Prélude Echidna HM">Prélude Echidna HM - iLvl 1630</option>
-                <option value="Act 1 Aegir NM">Act 1 Aegir NM - iLvl 1660</option>
-                <option value="Act 1 Aegir HM">Act 1 Aegir HM - iLvl 1680</option>
-                <option value="Act 2 Brelshaza NM">Act 2 Brelshaza NM - iLvl 1670</option>
-                <option value="Act 2 Brelshaza HM">Act 2 Brelshaza HM - iLvl 1690</option>
-                <option value="Act 3 Mordum NM">Act 3 Mordum NM - iLvl 1680</option>
-                <option value="Act 3 Mordum HM">Act 3 Mordum HM - iLvl 1700</option>
-                <option value="Act 4 Kazéros 1st Part NM ">Act 4 Kazéros 1st Part NM - iLvl 1700</option>
-                <option value="Act 4 Kazéros 1st Part HM">Act 4 Kazéros 1st Part HM - iLvl 1720</option>
-                <option value="Act 4 Kazéros 2nd Part NM ">Act 4 Kazéros 2nd Part NM - iLvl 1710</option>
-                <option value="Act 4 Kazéros 2nd Part HM">Act 4 Kazéros 2nd Part HM - iLvl 1730</option>
-            </select>
-                <label for="raid-date">Date :</label>
-                <input type="date" id="raid-date">
-                <label for="raid-time">Heure :</label>
-                <input type="time" id="raid-time">
-                <button id="add-raid-btn">Ajouter le Raid</button>
-            </section>
+            <div id="add-raid-popup" class="popup" style="display:none;">
+                <div class="popup-content">
+                    <span id="close-add-raid-popup" class="close">&times;</span>
+                    <h2>Ajouter un Raid</h2>
+                    <label for="raid-select">Choisir un Raid :</label>
+                    <select id="raid-select">
+                        <option value="Behemoth">Behemoth - iLvl 1620</option>
+                        <option value="Prélude Echidna NM">Prélude Echidna NM - iLvl 1620</option>
+                        <option value="Prélude Echidna HM">Prélude Echidna HM - iLvl 1630</option>
+                        <option value="Act 1 Aegir NM">Act 1 Aegir NM - iLvl 1660</option>
+                        <option value="Act 1 Aegir HM">Act 1 Aegir HM - iLvl 1680</option>
+                        <option value="Act 2 Brelshaza NM">Act 2 Brelshaza NM - iLvl 1670</option>
+                        <option value="Act 2 Brelshaza HM">Act 2 Brelshaza HM - iLvl 1690</option>
+                        <option value="Act 3 Mordum NM">Act 3 Mordum NM - iLvl 1680</option>
+                        <option value="Act 3 Mordum HM">Act 3 Mordum HM - iLvl 1700</option>
+                        <option value="Act 4 Kazéros 1st Part NM ">Act 4 Kazéros 1st Part NM - iLvl 1700</option>
+                        <option value="Act 4 Kazéros 1st Part HM">Act 4 Kazéros 1st Part HM - iLvl 1720</option>
+                        <option value="Act 4 Kazéros 2nd Part NM ">Act 4 Kazéros 2nd Part NM - iLvl 1710</option>
+                        <option value="Act 4 Kazéros 2nd Part HM">Act 4 Kazéros 2nd Part HM - iLvl 1730</option>
+                    </select>
+                    <label for="raid-date">Date :</label>
+                    <input type="date" id="raid-date">
+                    <label for="raid-time">Heure :</label>
+                    <input type="time" id="raid-time">
+                    <button id="add-raid-btn">Ajouter le Raid</button>
+                </div>
+            </div>
 
-            <section id="retrait-raid">
-                <h2>Retirer un Raid</h2>
-                <label for="raid-remove-select">Sélectionner un Raid :</label>
-                <select id="raid-remove-select">
-                    <option value="">-- Sélectionner un raid --</option>
-                </select>
-                <button id="remove-raid-btn">Retirer le Raid</button>
-            </section>
+            <div id="remove-raid-popup" class="popup" style="display:none;">
+                <div class="popup-content">
+                    <span id="close-remove-raid-popup" class="close">&times;</span>
+                    <h2>Retirer un Raid</h2>
+                    <label for="raid-remove-select">Sélectionner un Raid :</label>
+                    <select id="raid-remove-select">
+                        <option value="">-- Sélectionner un raid --</option>
+                    </select>
+                    <button id="remove-raid-btn">Retirer le Raid</button>
+                </div>
+            </div>
 
-            <section id="inscription">
-                <h2>Inscription aux Raids</h2>
-                <label for="member-select">Membre :</label>
-                <select id="member-select">
-                    <option value="">-- Sélectionner un membre --</option>
-                </select>
-                <label for="character-select">Personnage :</label>
-                <select id="character-select">
-                    <option value="">-- Sélectionner un personnage --</option>
-                </select>
-                <label for="raid-select-inscription">Raid :</label>
-                <select id="raid-select-inscription">
-                    <option value="">-- Sélectionner un raid --</option>
-                </select>
-                <button id="inscrire-btn">S'inscrire</button>
-            </section>
         <!-- Pop-up pour afficher les détails du raid -->
         <div id="raid-popup" class="popup">
             <div class="popup-content">
@@ -96,6 +93,18 @@
                 <h2 id="raid-name"></h2>
                 <p id="raid-date-time"></p>
                 <h3>Joueurs inscrits :</h3> <ul id="raid-players-list"></ul>
+                    <div id="popup-inscription-section" style="margin-top: 20px;">
+                        <h4>S'inscrire à ce raid :</h4>
+                        <label for="popup-member-select">Membre :</label>
+                        <select id="popup-member-select">
+                            <option value="">-- Sélectionner un membre --</option>
+                        </select>
+                        <label for="popup-character-select">Personnage :</label>
+                        <select id="popup-character-select">
+                            <option value="">-- Sélectionner un personnage --</option>
+                        </select>
+                        <button id="popup-inscrire-btn">S'inscrire</button>
+                    </div>
                 <div id="unsubscribe-section" style="margin-top: 20px;">
                     <h4>Se désinscrire :</h4>
                     <label for="member-select-unsubscribe">Membre :</label>
@@ -114,6 +123,42 @@
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script type="module">
+        // Gestion des boutons + et - pour ouvrir les popups
+        document.addEventListener('DOMContentLoaded', () => {
+            const showAddRaidBtn = document.getElementById('show-add-raid-popup');
+            const addRaidPopup = document.getElementById('add-raid-popup');
+            const closeAddRaidPopup = document.getElementById('close-add-raid-popup');
+            if (showAddRaidBtn && addRaidPopup && closeAddRaidPopup) {
+                showAddRaidBtn.addEventListener('click', () => {
+                    addRaidPopup.style.display = 'block';
+                });
+                closeAddRaidPopup.addEventListener('click', () => {
+                    addRaidPopup.style.display = 'none';
+                });
+                window.addEventListener('click', (event) => {
+                    if (event.target === addRaidPopup) {
+                        addRaidPopup.style.display = 'none';
+                    }
+                });
+            }
+
+            const showRemoveRaidBtn = document.getElementById('show-remove-raid-popup');
+            const removeRaidPopup = document.getElementById('remove-raid-popup');
+            const closeRemoveRaidPopup = document.getElementById('close-remove-raid-popup');
+            if (showRemoveRaidBtn && removeRaidPopup && closeRemoveRaidPopup) {
+                showRemoveRaidBtn.addEventListener('click', () => {
+                    removeRaidPopup.style.display = 'block';
+                });
+                closeRemoveRaidPopup.addEventListener('click', () => {
+                    removeRaidPopup.style.display = 'none';
+                });
+                window.addEventListener('click', (event) => {
+                    if (event.target === removeRaidPopup) {
+                        removeRaidPopup.style.display = 'none';
+                    }
+                });
+            }
+        });
         // Importation de Firebase et Firestore avec la syntaxe ES Module
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-firestore.js";
@@ -134,11 +179,8 @@
         const db = getFirestore(app);
 
         // Variables globales
-        const calendarEl = document.getElementById('calendar');
-        const raidSelectInscription = document.getElementById('raid-select-inscription'); // Sélecteur pour l'inscription
-        const raidRemoveSelect = document.getElementById('raid-remove-select');
-        const memberSelect = document.getElementById('member-select');
-        const characterSelect = document.getElementById('character-select');
+    const calendarEl = document.getElementById('calendar');
+    const raidRemoveSelect = document.getElementById('raid-remove-select');
         let calendar;
         let raids = []; // Déclarer raids globalement ici
         // NOUVEAU : Variables pour la désinscription dans la pop-up
@@ -233,35 +275,15 @@
                 // Trier les raids par date d'ajout (du plus récent au plus ancien)
                 raids.sort((a, b) => new Date(b.date_ajout) - new Date(a.date_ajout));
 
-                // Mettre à jour la liste des raids dans le sélecteur d'inscription
-                raidSelectInscription.innerHTML = '<option value="">-- Sélectionner un raid --</option>'; // Réinitialiser la liste
-                raids.forEach(raid => {
-                    const option = document.createElement('option');
-                    option.value = raid.id;
-                    option.textContent = `${raid.nom} - ${raid.date} à ${raid.time}`;
-                    raidSelectInscription.appendChild(option);
-                });
-
                 // Mettre à jour la liste des raids dans le menu de retrait
                 mettreAJourListeRaids(raids);
-
-                // Parcourir les membres et afficher leurs personnages
-                joueursSnapshot.forEach(doc => {
-                    const joueur = doc.data();
-                    const membreNom = joueur.nom;
-
-                    // Créer une option pour chaque membre dans le sélecteur des membres
-                    const memberOption = document.createElement('option');
-                    memberOption.value = membreNom;
-                    memberOption.textContent = membreNom;
-                    memberSelect.appendChild(memberOption);
-                });
 
                 // Retourner les données des raids et des joueurs
                 return { raids, joueursSnapshot };
 
             } catch (error) {
                 console.error("Erreur lors de la récupération des membres et personnages : ", error);
+                return { raids: [], joueursSnapshot: [] };
             }
         }
 
@@ -361,10 +383,11 @@
             }
 
             // --- NOUVEAU : Logique pour la désinscription dans la pop-up ---
-            // Charger les joueurs et les personnages pour les sélecteurs de désinscription
+
+            // Charger les joueurs et les personnages pour les sélecteurs de désinscription ET inscription pop-up
             const joueursSnapshot = await getDocs(collection(db, 'joueurs'));
 
-            // Remplir le sélecteur des membres pour la désinscription
+            // Désinscription (inchangé)
             memberSelectUnsubscribe.innerHTML = '<option value="">-- Sélectionner un membre --</option>';
             joueursSnapshot.forEach(doc => {
                 const joueur = doc.data();
@@ -373,15 +396,81 @@
                 memberOption.textContent = joueur.nom;
                 memberSelectUnsubscribe.appendChild(memberOption);
             });
-
-            // Réinitialiser le sélecteur de personnage pour la désinscription
             characterSelectUnsubscribe.innerHTML = '<option value="">-- Sélectionner un personnage --</option>';
-
-            // Écouteur d'événement pour le changement de membre dans la section de désinscription
             memberSelectUnsubscribe.onchange = () => {
                 updateCharacterListUnsubscribe(joueursSnapshot);
             };
-            // --- Fin de la logique pour la désinscription ---
+
+            // Inscription pop-up
+            const popupMemberSelect = document.getElementById('popup-member-select');
+            const popupCharacterSelect = document.getElementById('popup-character-select');
+            popupMemberSelect.innerHTML = '<option value="">-- Sélectionner un membre --</option>';
+            popupCharacterSelect.innerHTML = '<option value="">-- Sélectionner un personnage --</option>';
+            joueursSnapshot.forEach(doc => {
+                const joueur = doc.data();
+                const memberOption = document.createElement('option');
+                memberOption.value = joueur.nom;
+                memberOption.textContent = joueur.nom;
+                popupMemberSelect.appendChild(memberOption);
+            });
+            popupMemberSelect.onchange = () => {
+                popupCharacterSelect.innerHTML = '<option value="">-- Sélectionner un personnage --</option>';
+                const selectedMember = popupMemberSelect.value;
+                joueursSnapshot.forEach(doc => {
+                    const joueur = doc.data();
+                    if (joueur.nom === selectedMember) {
+                        joueur.personnages.forEach(personnage => {
+                            const characterOption = document.createElement('option');
+                            characterOption.value = personnage.nom;
+                            characterOption.textContent = `${personnage.nom} - ${personnage.classe} (${personnage.ilvl})`;
+                            popupCharacterSelect.appendChild(characterOption);
+                        });
+                    }
+                });
+            };
+
+            // Ajout de l'écouteur d'inscription pop-up (une seule fois)
+            if (!window._popupInscriptionListenerAdded) {
+                document.getElementById('popup-inscrire-btn').addEventListener('click', async function() {
+                    const membreNom = popupMemberSelect.value;
+                    const personnageNom = popupCharacterSelect.value;
+                    if (!membreNom || !personnageNom) {
+                        alert('Veuillez sélectionner un membre et un personnage.');
+                        return;
+                    }
+                    // Trouver le joueur et le personnage
+                    const joueursDocs = joueursSnapshot.docs.map(doc => doc.data());
+                    const selectedJoueur = joueursDocs.find(joueur => joueur.nom === membreNom);
+                    if (!selectedJoueur) {
+                        alert('Joueur introuvable.');
+                        return;
+                    }
+                    const personnage = selectedJoueur.personnages.find(p => p.nom === personnageNom);
+                    if (!personnage) {
+                        alert('Personnage introuvable.');
+                        return;
+                    }
+                    const personnageDetails = { classe: personnage.classe, ilvl: personnage.ilvl };
+                    // Trouver le raid
+                    const raid = raids.find(r => r.id === currentRaidId);
+                    if (!raid) {
+                        alert('Raid introuvable.');
+                        return;
+                    }
+                    const inscription = `${membreNom} (${personnageNom}, ${personnageDetails.classe}, ilvl: ${personnageDetails.ilvl})`;
+                    if (!raid.inscriptions.includes(inscription)) {
+                        raid.inscriptions.push(inscription);
+                        await updateDoc(doc(db, 'raids', currentRaidId), {
+                            inscriptions: raid.inscriptions
+                        });
+                        alert('Inscription réussie !');
+                        afficherDetailsRaid(currentRaidId); // Rafraîchir la pop-up
+                    } else {
+                        alert('Le membre est déjà inscrit à ce raid.');
+                    }
+                });
+                window._popupInscriptionListenerAdded = true;
+            }
 
             document.getElementById("raid-popup").style.display = "block";
         }
@@ -477,17 +566,7 @@
             });
 
             // Pour inscription aux raids
-            raidSelectInscription.innerHTML = '<option value="">-- Sélectionner un raid --</option>'; // Réinitialiser la liste
-            raids.forEach(raid => {
-                const option = document.createElement('option');
-                option.value = raid.id;
-
-                // Formater la date du raid
-                const formattedDate = formatDate(raid.date + "T" + raid.time + ":00");
-                option.textContent = `${raid.nom} - ${formattedDate}`;
-
-                raidSelectInscription.appendChild(option);
-            });
+                // Code pour la mise à jour de la liste des raids supprimé
         }
 
         // Inscrire un membre à un raid
@@ -564,3 +643,4 @@
 </body>
 
 </html>
+

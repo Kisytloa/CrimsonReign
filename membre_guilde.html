@@ -55,7 +55,7 @@
                 <label for="ilvl-personnage">iLvl :</label>
                 <input type="number" id="ilvl-personnage">
 
-                <button id="valider-ajout-personnage">Ajouter</button>
+                <button id="valider-ajout-personnage">Ajouter ou modifier</button>
 
                 <hr>
 
@@ -127,7 +127,7 @@
                     const div = document.createElement("div");
                     div.innerHTML = `
                         <h3>${joueur.nom}</h3>
-                        <button onclick="ouvrirAjoutPerso('${joueur.id}')">Ajouter un personnage</button>
+                        <button onclick="ouvrirAjoutPerso('${joueur.id}')">Ajouter ou modifier</button>
                         <ul>
                             ${joueur.personnages && joueur.personnages.length > 0 ? 
                                 joueur.personnages.map(p => 
