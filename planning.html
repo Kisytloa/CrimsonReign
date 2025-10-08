@@ -483,6 +483,40 @@ logoutBtn.addEventListener('click', async function() {
                             titleEl.innerHTML += ' ' + info.event.extendedProps.badgeHtml;
                         }
                     }
+                       // Tooltip on hover: show registered members
+                       info.el.addEventListener('mouseenter', function() {
+                           let oldTooltip = document.getElementById('raid-tooltip');
+                           if (oldTooltip) oldTooltip.remove();
+                           const tooltip = document.createElement('div');
+                           tooltip.id = 'raid-tooltip';
+                           tooltip.style.position = 'fixed';
+                           tooltip.style.background = 'rgba(30, 30, 30, 0.97)';
+                           tooltip.style.color = '#fff';
+                           tooltip.style.padding = '8px 14px';
+                           tooltip.style.borderRadius = '8px';
+                           tooltip.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+                           tooltip.style.zIndex = '9999';
+                           tooltip.style.fontSize = '15px';
+                           tooltip.style.maxWidth = '320px';
+                           tooltip.style.pointerEvents = 'none';
+                           // Content: raid name as header and registered members
+                           let content = `<strong>${info.event.title}</strong><div style='height:7px;'></div>`;
+                           if (info.event.extendedProps.description && info.event.extendedProps.description.length > 0) {
+                               content += info.event.extendedProps.description.map(m => `<span style='display:block;margin-bottom:8px;'>${m}</span>`).join('');
+                           } else {
+                               content += '<em>Aucun inscrit</em>';
+                           }
+                           tooltip.innerHTML = content;
+                           document.body.appendChild(tooltip);
+                           info.el.addEventListener('mousemove', function(e) {
+                               tooltip.style.left = (e.clientX + 18) + 'px';
+                               tooltip.style.top = (e.clientY + 18) + 'px';
+                           });
+                       });
+                       info.el.addEventListener('mouseleave', function() {
+                           let oldTooltip = document.getElementById('raid-tooltip');
+                           if (oldTooltip) oldTooltip.remove();
+                       });
                 },
                 eventClick: function(info) {
                     afficherDetailsRaid(info.event.id); // Appeler afficherDetailsRaid avec l'id du raid
@@ -915,7 +949,6 @@ document.addEventListener('DOMContentLoaded', function () {
 </body>
 
 </html>
-
 
 
 
