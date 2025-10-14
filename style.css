@@ -13,40 +13,27 @@
     align-items: center;
     justify-content: center;
 }
-/* ------ Variables ------ */
+/* ------ Variables et style global body ------ */
 :root {
-    --background: #141015;
-    --card-background: #1a151a;
-    --primary-color: #b3001b; /* Rouge sang accent */
-    --hover-background: rgba(179, 0, 27, 0.10); /* Rouge sang très subtil au survol */
-    --input-background: #232026;
-    --secondary-color: #ffd700; /* Or pour l'accent */
-    --accent-color: #b3001b; /* Rouge sang pour les accents */
-    --text-color: #f8f6f2;
-    --border-color: #7a0010; /* Rouge foncé pour les bordures */
-    --shadow-strong: rgba(179, 0, 27, 0.25);
-    --transition-fast: all 0.3s ease-in-out;
-
-    /* NOUVEAU : Polices spécifiques (si vous pouvez les importer) */
-    /* Exemple : 'Cinzel Decorative' pour les titres, 'Roboto Condensed' pour le texte */
-    --font-heading: 'Cinzel Decorative', serif; /* Ou une police similaire */
-    --font-body: 'Roboto Condensed', sans-serif; /* Ou une police plus lisible */
+    --primary-color:#b3001b;
+    --secondary-color:#ffd700;
+    --accent-color:#ff6f00;
+    --background-color:#120f13;
+    --card-background:#1a151a;
+    --border-color:#b3001b;
+    --text-color:#e6e0e6;
+    --input-background:#251f25;
+    --shadow-strong:rgba(0,0,0,0.7);
+    --font-heading:'Cinzel', serif;
+    --transition-fast:.25s ease;
 }
 
-/* ------ Reset de Base ------ */
 body {
-    font-family: 'Poppins', sans-serif;
-    font-family: var(--font-body); /* Utilisation de la nouvelle variable */
-    background-color: var(--background);
-    color: var(--text-color);
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-    transition: var(--transition-fast);
-    /* NOUVEAU : Image de fond */
-    background-image: url('chemin/vers/votre/image_de_fond_lostark.jpg'); /* Optionnel : image sombre, peu saturée */
-    background-size: cover;
-    background-attachment: fixed; /* L'image reste fixe lors du défilement */
+    margin:0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background:url('background.jpg') no-repeat center/cover fixed #120f13;
+    color:var(--text-color);
+    min-height:100vh;
     background-position: center;
     position: relative; /* Pour le pseudo-élément */
 }
@@ -63,43 +50,7 @@ body::before {
     z-index: -1;
 }
 
-/* ------ Icône engrenage Administration ------ */
-.admin-gear {
-    position: fixed;
-    top: 8px;
-    left: 8px;
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #2b272c, #1a151a);
-    border: 2px solid var(--primary-color);
-    display: none; /* Masquée par défaut jusqu'à vérification du rôle */
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 2000; /* Au-dessus de la bannière user-info */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 10px var(--shadow-strong);
-    transition: background .25s ease, transform .25s ease, box-shadow .25s ease;
-}
-
-.admin-gear:hover {
-    background: linear-gradient(135deg, var(--primary-color), #7a0010);
-    transform: scale(1.08) rotate(8deg);
-    box-shadow: 0 0 12px var(--primary-color), 0 0 22px rgba(179,0,27,0.55);
-}
-
-.admin-gear svg {
-    width: 24px;
-    height: 24px;
-    fill: var(--secondary-color);
-    filter: drop-shadow(0 0 4px rgba(255,215,0,0.6));
-    transition: transform .6s linear;
-}
-
-.admin-gear:hover svg {
-    transform: rotate(140deg);
-    fill: #fff4b3;
-}
+/* Anciennes classes admin-gear supprimées (remplacées par menu nav) */
 
 
 /* ------ Header ------ */

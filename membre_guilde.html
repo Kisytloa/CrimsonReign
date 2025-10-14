@@ -27,6 +27,18 @@
         }
     });
     </script>
+    <script>
+    // Gestion dropdown
+    document.addEventListener('DOMContentLoaded',()=>{
+        const t=document.getElementById('nav-gestion-toggle');
+        const m=document.getElementById('nav-gestion-menu');
+        if(!t||!m)return; const close=()=>{m.style.display='none';t.setAttribute('aria-expanded','false');}; const open=()=>{m.style.display='block';t.setAttribute('aria-expanded','true');};
+        t.addEventListener('click',e=>{e.preventDefault();(m.style.display==='block'?close():open());});
+        document.addEventListener('click',e=>{if(!m.contains(e.target)&& e.target!==t && !t.contains(e.target)) close();});
+        document.addEventListener('keydown',e=>{if(e.key==='Escape') close();});
+        m.querySelectorAll('a').forEach(a=>{a.addEventListener('mouseenter',()=>a.style.background='#272229');a.addEventListener('mouseleave',()=>a.style.background='transparent');});
+    });
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Membres de la Guilde CrimsonReign</title>
@@ -34,31 +46,70 @@
 </head>
 
 <body>
-    <a href="admin.html" class="admin-gear" id="admin-gear" aria-label="Administration" title="Administration">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Zm8.94-2.89c.04-.43.06-.86.06-1.31 0-.45-.02-.88-.07-1.31l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a8.3 8.3 0 0 0-2.27-1.31l-.38-2.65A.5.5 0 0 0 12.94.5h-3.88a.5.5 0 0 0-.5.42l-.38 2.65a8.3 8.3 0 0 0-2.27 1.31l-2.5-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L3.06 9.7a9 9 0 0 0 0 2.62l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.14.24.43.34.69.22l2.49-1c.68.54 1.44.98 2.27 1.31l.38 2.65c.04.24.25.42.5.42h3.88c.25 0 .46-.18.5-.42l.38-2.65a8.3 8.3 0 0 0 2.27-1.31l2.49 1c.26.12.55.02.69-.22l2-3.46a.5.5 0 0 0-.12-.64L20.94 12.31Zm-5.3 4.38-.57.33-.08.64-.32 2.26h-3.34l-.32-2.26-.08-.64-.57-.33a6.9 6.9 0 0 1-1.95-1.12l-.5-.45-2.14.85-1.67-2.9 1.82-1.42.5-.38-.08-.63a7.5 7.5 0 0 1 0-2.24l.08-.63-.5-.38-1.82-1.42 1.67-2.9 2.14.85.5-.45c.6-.5 1.25-.88 1.95-1.12l.57-.33.08-.64.32-2.26h3.34l.32 2.26.08.64.57.33c.7.24 1.35.62 1.95 1.12l.5.45 2.14-.85 1.67 2.9-1.82 1.42-.5.38.08.63c.05.74.05 1.5 0 2.24l-.08.63.5.38 1.82 1.42-1.67 2.9-2.14-.85-.5.45c-.6.5-1.25.88-1.95 1.12Z"/></svg>
-    </a>
     <div id="user-info" style="position:fixed;top:0;left:0;width:100%;background:#222;color:#fff;padding:8px 0;text-align:center;z-index:1000;font-weight:bold;">Vous êtes connecté en tant que : <span id="user-name">Invité</span></div>
 
     <header>
         <h1>Membres de la Guilde Crimson Reign</h1>
         <nav>
             <ul>
-                <li><a href="index.html">Accueil</a></li>
-                <li><a href="planning.html">Planning de Raid</a></li>
-                <li><a href="excel_raid.html">Excel Raid</a></li>
-                <li><a href="https://maxroll.gg/lost-ark/raids" target="_blank">Guide Raid</a></li>
-                <li><a href="https://www.lostark.nexus" target="_blank">Build Personnages</a></li>
-                <li><a href="membre_guilde.html">Membres de la Guilde</a></li>
-                <li class="nav-annonce" style="display:none;"><a href="annonce.html">Annonce</a></li>
-                <!-- Lien Administration textuel remplacé par l'icône engrenage -->
-                <li><a href="https://www.playlostark.com/fr-fr/news" target="_blank">News Lost Ark</a></li>
-                <li><a href="https://www.playlostark.com/fr-fr/support/server-status" target="_blank">Server Status</a></li>
+                <li><a href="index.html" aria-label="Accueil" title="Accueil" style="width:46px;height:46px;font-size:24px;line-height:1;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:#221d23;color:#eee;text-decoration:none;transition:background .25s ease, transform .25s ease;">🏠</a></li>
+                <li class="nav-raid" style="position:relative;">
+                    <button id="nav-raid-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Raid" style="display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:#221d23;color:#eee;font-size:.95rem;cursor:pointer;transition:background .25s ease, transform .25s ease;">
+                        <span style="font-size:18px;">🗡️</span> <span>Raid</span>
+                        <span style="font-size:12px;opacity:.7;transform:translateY(1px);">▼</span>
+                    </button>
+                    <div id="nav-raid-menu" style="display:none;position:absolute;top:52px;left:50%;transform:translateX(-50%);background:#1d191f;border:1px solid rgba(255,255,255,0.12);border-radius:10px;min-width:220px;box-shadow:0 8px 24px rgba(0,0,0,0.6);padding:6px 0;z-index:3000;backdrop-filter:blur(4px);">
+                        <a href="planning.html" style="display:flex;align-items:center;gap:10px;padding:10px 16px;color:#eee;font-size:.95rem;text-decoration:none;">
+                            <span style="display:inline-flex;width:22px;justify-content:center;">📅</span> <span>Planning de Raid</span>
+                        </a>
+                        <a href="excel_raid.html" style="display:flex;align-items:center;gap:10px;padding:10px 16px;color:#eee;font-size:.95rem;text-decoration:none;">
+                            <span style="display:inline-flex;width:22px;justify-content:center;">📊</span> <span>Excel Raid</span>
+                        </a>
+                    </div>
+                </li>
+                <li class="nav-gestion" style="position:relative;">
+                    <button id="nav-gestion-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Gestion" style="display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:#221d23;color:#eee;font-size:.95rem;cursor:pointer;transition:background .25s ease, transform .25s ease;">
+                        <span style="font-size:18px;">🧩</span> <span>Gestion</span>
+                        <span style="font-size:12px;opacity:.7;transform:translateY(1px);">▼</span>
+                    </button>
+                    <div id="nav-gestion-menu" style="display:none;position:absolute;top:52px;left:50%;transform:translateX(-50%);background:#1d191f;border:1px solid rgba(255,255,255,0.12);border-radius:10px;min-width:220px;box-shadow:0 8px 24px rgba(0,0,0,0.6);padding:6px 0;z-index:3000;backdrop-filter:blur(4px);">
+                        <a href="membre_guilde.html" style="display:flex;align-items:center;gap:10px;padding:10px 16px;color:#eee;font-size:.95rem;text-decoration:none;">
+                            <span style="display:inline-flex;width:22px;justify-content:center;">👥</span> <span>Membres de la Guilde</span>
+                        </a>
+                    </div>
+                </li>
+                <li class="nav-annonce" style="position:relative;">
+                    <button id="nav-gear-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Annonce / Administration" title="Annonce / Administration" style="display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:#221d23;cursor:pointer;transition:background .25s ease, transform .25s ease;position:relative;font-size:24px;">
+                        📢
+                    </button>
+                    <div id="nav-gear-menu" style="display:none;position:absolute;top:52px;left:50%;transform:translateX(-50%);background:#1d191f;border:1px solid rgba(255,255,255,0.12);border-radius:10px;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,0.6);padding:6px 0;z-index:3000;backdrop-filter:blur(4px);">
+                        <a href="annonce.html" data-role="mod" style="display:flex;align-items:center;gap:8px;padding:10px 14px;color:#eee;font-size:.95rem;text-decoration:none;transition:background .25s ease;">
+                            <span style="display:inline-flex;width:20px;justify-content:center;">📝</span> <span>Annonce</span>
+                        </a>
+                        <a href="admin.html" data-role="admin" style="display:flex;align-items:center;gap:8px;padding:10px 14px;color:#eee;font-size:.95rem;text-decoration:none;transition:background .25s ease;">
+                            <span style="display:inline-flex;width:20px;justify-content:center;">⚙️</span> <span>Administration</span>
+                        </a>
+                    </div>
+                </li>
+                <li class="nav-ressources" style="position:relative;">
+                    <button id="nav-ressources-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Ressources" style="display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:#221d23;color:#eee;font-size:.95rem;cursor:pointer;transition:background .25s ease, transform .25s ease;">
+                        <span style="font-size:18px;">📚</span> <span>Ressources</span>
+                        <span style="font-size:12px;opacity:.7;transform:translateY(1px);">▼</span>
+                    </button>
+                    <div id="nav-ressources-menu" style="display:none;position:absolute;top:52px;left:50%;transform:translateX(-50%);background:#1d191f;border:1px solid rgba(255,255,255,0.12);border-radius:10px;min-width:220px;box-shadow:0 8px 24px rgba(0,0,0,0.6);padding:6px 0;z-index:3000;backdrop-filter:blur(4px);">
+                        <a href="https://www.playlostark.com/fr-fr/news" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 16px;color:#eee;font-size:.95rem;text-decoration:none;">
+                            <span style="display:inline-flex;width:22px;justify-content:center;">📰</span> <span>News Lost Ark</span>
+                        </a>
+                        <a href="https://www.playlostark.com/fr-fr/support/server-status" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 16px;color:#eee;font-size:.95rem;text-decoration:none;">
+                            <span style="display:inline-flex;width:22px;justify-content:center;">🖥️</span> <span>Server Status</span>
+                        </a>
+                        <a href="https://www.lostark.nexus" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 16px;color:#eee;font-size:.95rem;text-decoration:none;">
+                            <span style="display:inline-flex;width:22px;justify-content:center;">🛠️</span> <span>Build Personnages</span>
+                        </a>
+                    </div>
+                </li>
             </ul>
         </nav>
-    <!-- Suppression du double <header> ouvert précédemment -->
-        <img src="Logo guilde.jpg" alt="Logo Guilde" class="logo gauche" style="height:80px;width:80px;object-fit:contain;background:#fff;border-radius:50%;box-shadow:0 2px 12px #0005;margin:0 18px;margin-top:32px;">
-    <!-- Titre supprimé pour éviter le doublon -->
-        <img src="Logo guilde.jpg" alt="Logo Guilde" class="logo droite" style="height:80px;width:80px;object-fit:contain;background:#fff;border-radius:50%;box-shadow:0 2px 12px #0005;margin:0 18px;margin-top:32px;">
     <button id="logout-btn" style="background:#d32f2f;color:#fff;border:none;padding:18px 32px;font-size:1.3rem;font-weight:bold;border-radius:12px;position:fixed;bottom:24px;right:32px;z-index:9999;box-shadow:0 4px 16px #0004;cursor:pointer;transition:transform 0.2s;">Déconnexion</button>
 
     <main>
@@ -109,6 +160,57 @@
             </div>
         </div>
     </main>
+        <script>
+        // Menus dropdown (gear + ressources)
+        document.addEventListener('DOMContentLoaded', function(){
+            const role = (localStorage.getItem('userRole')||'').trim();
+            const navLi = document.querySelector('li.nav-annonce');
+            if (navLi) {
+                if (role === 'Administrateur' || role === 'Modérateur') {
+                    navLi.style.display = 'list-item';
+                    const adminLink = document.querySelector('#nav-gear-menu a[data-role="admin"]');
+                    if (adminLink) adminLink.style.display = (role === 'Administrateur') ? 'flex' : 'none';
+                } else { navLi.style.display = 'none'; }
+            }
+            const navGearSvg = document.getElementById('nav-gear-svg');
+            const navGearFallback = document.getElementById('nav-gear-fallback');
+            if (navGearSvg && navGearFallback) {
+                try { const box = navGearSvg.getBBox(); if(!box || box.width===0){ navGearSvg.style.display='none'; navGearFallback.style.display='flex'; } }
+                catch(e){ navGearSvg.style.display='none'; navGearFallback.style.display='flex'; }
+            }
+            const gearToggle = document.getElementById('nav-gear-toggle');
+            const gearMenu = document.getElementById('nav-gear-menu');
+            if (gearToggle && gearMenu) {
+                const closeMenu=()=>{ gearMenu.style.display='none'; gearToggle.setAttribute('aria-expanded','false'); };
+                const openMenu=()=>{ gearMenu.style.display='block'; gearToggle.setAttribute('aria-expanded','true'); };
+                gearToggle.addEventListener('click',e=>{ e.preventDefault(); if(gearMenu.style.display==='block'){closeMenu();} else {openMenu();} });
+                document.addEventListener('click',e=>{ if(!gearMenu.contains(e.target)&& e.target!==gearToggle && !gearToggle.contains(e.target)) closeMenu(); });
+                document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMenu(); });
+                gearMenu.querySelectorAll('a').forEach(a=>{ a.addEventListener('mouseenter',()=>a.style.background='#272229'); a.addEventListener('mouseleave',()=>a.style.background='transparent'); });
+            }
+            const resToggle = document.getElementById('nav-ressources-toggle');
+            const resMenu = document.getElementById('nav-ressources-menu');
+            if (resToggle && resMenu) {
+                const closeRes=()=>{ resMenu.style.display='none'; resToggle.setAttribute('aria-expanded','false'); };
+                const openRes=()=>{ resMenu.style.display='block'; resToggle.setAttribute('aria-expanded','true'); };
+                resToggle.addEventListener('click',e=>{ e.preventDefault(); if(resMenu.style.display==='block'){closeRes();} else {openRes();} });
+                document.addEventListener('click',e=>{ if(!resMenu.contains(e.target)&& e.target!==resToggle && !resToggle.contains(e.target)) closeRes(); });
+                document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeRes(); });
+                resMenu.querySelectorAll('a').forEach(a=>{ a.addEventListener('mouseenter',()=>a.style.background='#272229'); a.addEventListener('mouseleave',()=>a.style.background='transparent'); });
+            }
+            // Raid dropdown
+            const raidToggle = document.getElementById('nav-raid-toggle');
+            const raidMenu = document.getElementById('nav-raid-menu');
+            if (raidToggle && raidMenu) {
+                const closeRaid=()=>{ raidMenu.style.display='none'; raidToggle.setAttribute('aria-expanded','false'); };
+                const openRaid=()=>{ raidMenu.style.display='block'; raidToggle.setAttribute('aria-expanded','true'); };
+                raidToggle.addEventListener('click',e=>{ e.preventDefault(); if(raidMenu.style.display==='block'){closeRaid();} else {openRaid();} });
+                document.addEventListener('click',e=>{ if(!raidMenu.contains(e.target)&& e.target!==raidToggle && !raidToggle.contains(e.target)) closeRaid(); });
+                document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeRaid(); });
+                raidMenu.querySelectorAll('a').forEach(a=>{ a.addEventListener('mouseenter',()=>a.style.background='#272229'); a.addEventListener('mouseleave',()=>a.style.background='transparent'); });
+            }
+        });
+        </script>
 
     <script type="module">
     // Les instances 'auth' et 'db' sont déjà initialisées dans le <head> et accessibles ici
