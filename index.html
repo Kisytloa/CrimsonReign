@@ -30,11 +30,35 @@
                 if (!snapshot.empty) {
                     const membre = snapshot.docs[0].data();
                     displayName = membre.nom || displayName || "Invité";
+                    // Stocker le rôle de l'utilisateur
+                    const userRole = membre.role || 'Membre de Guilde';
+                    localStorage.setItem('userRole', userRole);
+                } else {
+                    // Si l'utilisateur n'est pas dans la collection joueurs, rôle par défaut
+                    localStorage.setItem('userRole', 'Membre de Guilde');
                 }
             } catch (e) {
-                // Si erreur Firestore, garder displayName ou "Invité"
+                // En cas d'erreur, rôle par défaut
+                localStorage.setItem('userRole', 'Membre de Guilde');
             }
             userInfoSpan.textContent = displayName || "Invité";
+
+            // Gérer la visibilité du lien d'annonce en fonction du rôle (éviter le flash)
+            const annonceLinkLi = document.querySelector('li.nav-annonce');
+            const userRole = localStorage.getItem('userRole');
+            if (annonceLinkLi) {
+                if (userRole === 'Administrateur' || userRole === 'Modérateur') {
+                    annonceLinkLi.style.display = 'list-item';
+                } else {
+                    annonceLinkLi.style.display = 'none';
+                }
+            }
+
+            // Lien Administration: visible uniquement pour Administrateur
+            const adminLinkLi = document.querySelector('li.nav-admin');
+            if (adminLinkLi) {
+                adminLinkLi.style.display = (userRole === 'Administrateur') ? 'list-item' : 'none';
+            }
 
             // Afficher la date actuelle
             const dateAjd = document.getElementById('date-ajd');
@@ -107,45 +131,47 @@
 
     <!-- Fichier CSS -->
     <link rel="stylesheet" href="style.css">
-
-    <!-- Firebase v8 -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-</head>
-<body>
+    
+    </head>
+    <body>
+    <a href="admin.html" class="admin-gear" id="admin-gear" aria-label="Administration" title="Administration">
+        <!-- Icône engrenage SVG -->
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Zm8.94-2.89c.04-.43.06-.86.06-1.31 0-.45-.02-.88-.07-1.31l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a8.3 8.3 0 0 0-2.27-1.31l-.38-2.65A.5.5 0 0 0 12.94.5h-3.88a.5.5 0 0 0-.5.42l-.38 2.65a8.3 8.3 0 0 0-2.27 1.31l-2.5-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L3.06 9.7a9 9 0 0 0 0 2.62l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.14.24.43.34.69.22l2.49-1c.68.54 1.44.98 2.27 1.31l.38 2.65c.04.24.25.42.5.42h3.88c.25 0 .46-.18.5-.42l.38-2.65a8.3 8.3 0 0 0 2.27-1.31l2.49 1c.26.12.55.02.69-.22l2-3.46a.5.5 0 0 0-.12-.64L20.94 12.31Zm-5.3 4.38-.57.33-.08.64-.32 2.26h-3.34l-.32-2.26-.08-.64-.57-.33a6.9 6.9 0 0 1-1.95-1.12l-.5-.45-2.14.85-1.67-2.9 1.82-1.42.5-.38-.08-.63a7.5 7.5 0 0 1 0-2.24l.08-.63-.5-.38-1.82-1.42 1.67-2.9 2.14.85.5-.45c.6-.5 1.25-.88 1.95-1.12l.57-.33.08-.64.32-2.26h3.34l.32 2.26.08.64.57.33c.7.24 1.35.62 1.95 1.12l.5.45 2.14-.85 1.67 2.9-1.82 1.42-.5.38.08.63c.05.74.05 1.5 0 2.24l-.08.63.5.38 1.82 1.42-1.67 2.9-2.14-.85-.5.45c-.6.5-1.25.88-1.95 1.12Z"/>
+        </svg>
+    </a>
     <div id="user-info" style="position:fixed;top:0;left:0;width:100%;background:#222;color:#fff;padding:8px 0;text-align:center;z-index:1000;font-weight:bold;">Vous êtes connecté en tant que : <span id="user-name">Invité</span></div>
     <header>
-        <h1>Accueil</h1>
+        <h1>Accueil — Guilde Crimson Reign</h1>
         <nav>
             <ul>
-                <li><a href="Objectifs.html">Objectifs de Guilde</a></li>
                 <li><a href="planning.html">Planning de Raid</a></li>
                 <li><a href="excel_raid.html">Excel Raid</a></li>
-                <li><a href="https://maxroll.gg/lost-ark/raids" target="_blank">Guide Raid</a></li>
+                <li><a href="membre_guilde.html">Membres de la Guilde</a></li>
                 <li><a href="https://www.lostark.nexus" target="_blank">Build Personnages</a></li>
-                <li><a href="membre_guilde.html">Membre de la Guilde</a></li>
+                <li class="nav-annonce" style="display:none;"><a href="annonce.html">Annonce</a></li>
+                <!-- Lien Administration textuel remplacé par l'icône engrenage -->
                 <li><a href="https://www.playlostark.com/fr-fr/news" target="_blank">News Lost Ark</a></li>
                 <li><a href="https://www.playlostark.com/fr-fr/support/server-status" target="_blank">Server Status</a></li>
             </ul>
         </nav>
-    <header>
-        <img src="Logo guilde.jpg" alt="Logo Guilde" class="logo gauche" style="height:80px;width:80px;object-fit:contain;background:#fff;border-radius:50%;box-shadow:0 2px 12px #0005;margin:0 18px;margin-top:32px;">
-    <!-- Titre supprimé pour éviter le doublon -->
-        <img src="Logo guilde.jpg" alt="Logo Guilde" class="logo droite" style="height:80px;width:80px;object-fit:contain;background:#fff;border-radius:50%;box-shadow:0 2px 12px #0005;margin:0 18px;margin-top:32px;">
+    </header>
     <main>
+        <section id="annonces">
+            <h2>Annonce de la Guilde</h2>
+            <div id="annonce-container"></div>
+        </section>
         <section id="introduction">
             <h2>Bienvenue à la Guilde Crimson Reign</h2>
             <p>Bienvenue sur le site officiel de la Guilde Crimson Reign ! Nous sommes une guilde de joueurs passionnés par Lost Ark, et nous organisons régulièrement des raids et des événements. Sur ce site, vous pouvez consulter le planning des raids, obtenir des guides pour optimiser vos personnages, et suivre les dernières nouvelles du jeu.</p>
         </section>
 
         <section id="raids-aujourdhui">
-            <h2>Raids d'Aujourd'hui</h2>
+            <h2 id="raids-titre">Raids du ...</h2>
             <p>Voici les raids prévus pour aujourd'hui. Inscrivez-vous pour ne pas les manquer !</p>
             <ul id="raids-list">
                 <!-- Les raids seront affichés ici -->
             </ul>
-            <p id="date-ajd"></p> <!-- Ici sera affichée la date actuelle -->
         </section>
 
         <section id="news-lostark">
@@ -160,5 +186,44 @@
     </footer>
 
     <button id="logout-btn" style="background:#d32f2f;color:#fff;border:none;padding:18px 32px;font-size:1.3rem;font-weight:bold;border-radius:12px;position:fixed;bottom:24px;right:32px;z-index:9999;box-shadow:0 4px 16px #0004;cursor:pointer;transition:transform 0.2s;">Déconnexion</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const annonceContent = localStorage.getItem('nouvelle-annonce');
+            const annonceContainer = document.getElementById('annonce-container');
+            const annoncesSection = document.getElementById('annonces');
+            if (annonceContent && annonceContainer) {
+                const converter = new showdown.Converter({tables: true, strikethrough: true, tasklists: true});
+                const html = converter.makeHtml(annonceContent);
+                annonceContainer.innerHTML = html;
+                annoncesSection.style.display = 'block';
+            } else if(annoncesSection) {
+                 annoncesSection.style.display = 'none';
+            }
+
+            // Titre dynamique "Raids du <date>"
+            const raidsTitre = document.getElementById('raids-titre');
+            const now = new Date();
+            const dateLongue = now.toLocaleDateString('fr-FR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+            if (raidsTitre) {
+                // Capitaliser la première lettre (toLocaleDateString renvoie déjà en minuscule pour le jour)
+                const cap = dateLongue.charAt(0).toUpperCase() + dateLongue.slice(1);
+                raidsTitre.textContent = `Raids du ${cap}`;
+            }
+
+            // Afficher l'icône admin si rôle Administrateur
+            const role = (localStorage.getItem('userRole')||'').trim();
+            const gear = document.getElementById('admin-gear');
+            if (gear) {
+                if (role === 'Administrateur') {
+                    gear.style.display = 'flex';
+                } else {
+                    gear.style.display = 'none';
+                }
+            }
+
+            // Suppression du raccourci calendrier et animations : retour à la version précédente simple
+        });
+    </script>
 </body>
 </html>

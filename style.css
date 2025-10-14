@@ -1,153 +1,3 @@
-.raid-guide-card {
-    background:#232026;
-    border-radius:16px;
-    box-shadow:0 2px 12px #0005;
-    padding:24px;
-    width:370px;
-    max-width:100%;
-}
-.raid-guide-card {
-    background: none;
-    border-radius: 0;
-    box-shadow: none;
-    padding: 0;
-    width:370px;
-    max-width:100%;
-}
-.raid-type-selector {
-    display: flex;
-    gap: 18px;
-    justify-content: center;
-    margin: 32px 0 24px 0;
-}
-.raid-type-selector button {
-    background: #232026;
-    color: #ffd700;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 28px;
-    font-size: 1.1em;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 2px 8px #0003;
-    transition: background 0.2s, color 0.2s;
-}
-.raid-type-selector button:hover {
-    background: #ffd700;
-    color: #232026;
-}
-.argos-simple-flex {
-    display: flex;
-    flex-direction: row;
-    gap: 40px;
-    align-items: flex-start;
-    width: 100%;
-    flex-wrap: wrap;
-}
-.argos-main-video {
-    flex: 2 1 480px;
-    min-width: 320px;
-    max-width: 700px;
-}
-.argos-main-info {
-    flex: 1 1 320px;
-    min-width: 260px;
-    max-width: 400px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 18px;
-}
-.argos-main-info img {
-    width: 100%;
-    max-width: 320px;
-    margin-bottom: 8px;
-}
-.argos-other-videos {
-    width: 100%;
-    gap: 32px;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-@media (max-width: 900px) {
-    .argos-simple-flex {
-        flex-direction: column;
-        gap: 24px;
-    }
-    .argos-main-info {
-        max-width: 100%;
-        align-items: center;
-        text-align: center;
-    }
-    .argos-other-videos {
-        flex-direction: column;
-        gap: 24px;
-        align-items: center;
-    }
-}
-.argos-flex {
-    display: flex;
-    flex-direction: row;
-    gap: 40px;
-    align-items: flex-start;
-    width: 100%;
-    flex-wrap: wrap;
-}
-.argos-videos {
-    flex: 2 1 480px;
-    min-width: 320px;
-    max-width: 700px;
-}
-.argos-info {
-    flex: 1 1 320px;
-    min-width: 260px;
-    max-width: 400px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 18px;
-}
-.argos-info img {
-    width: 100%;
-    max-width: 320px;
-    margin-bottom: 8px;
-}
-@media (max-width: 900px) {
-    .argos-flex {
-        flex-direction: column;
-        gap: 24px;
-    }
-    .argos-info {
-        max-width: 100%;
-        align-items: center;
-        text-align: center;
-    }
-}
-.argos-full {
-    width: 100% !important;
-    max-width: 1200px;
-    margin: 0 auto;
-    box-sizing: border-box;
-}
-/* Vidéos YouTube responsives */
-.video-responsive {
-    position: relative;
-    width: 100%;
-    padding-bottom: 56.25%; /* Ratio 16:9 */
-    height: 0;
-    overflow: hidden;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px #0003;
-}
-.video-responsive iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
-}
 /* Boutons + et - du planning */
 #show-add-raid-popup {
     border: 3px solid #FFD600 !important;
@@ -213,6 +63,45 @@ body::before {
     z-index: -1;
 }
 
+/* ------ Icône engrenage Administration ------ */
+.admin-gear {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2b272c, #1a151a);
+    border: 2px solid var(--primary-color);
+    display: none; /* Masquée par défaut jusqu'à vérification du rôle */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2000; /* Au-dessus de la bannière user-info */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 10px var(--shadow-strong);
+    transition: background .25s ease, transform .25s ease, box-shadow .25s ease;
+}
+
+.admin-gear:hover {
+    background: linear-gradient(135deg, var(--primary-color), #7a0010);
+    transform: scale(1.08) rotate(8deg);
+    box-shadow: 0 0 12px var(--primary-color), 0 0 22px rgba(179,0,27,0.55);
+}
+
+.admin-gear svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--secondary-color);
+    filter: drop-shadow(0 0 4px rgba(255,215,0,0.6));
+    transition: transform .6s linear;
+}
+
+.admin-gear:hover svg {
+    transform: rotate(140deg);
+    fill: #fff4b3;
+}
+
+
 /* ------ Header ------ */
 header {
     padding: 2rem 1rem;
@@ -277,6 +166,7 @@ nav ul li a::after {
 nav ul li a:hover::after {
     width: 100%;
 }
+
 
 /* ------ Main ------ */
 main {
@@ -547,6 +437,130 @@ footer {
     width: 80px;
     position: absolute;
     top: 20px;
+}
+
+/* ==========================
+   Pages Annonce & Admin
+   ========================== */
+
+/* Annonce page */
+.annonce-container {
+    max-width: 900px;
+    margin: 60px auto;
+}
+
+#annonce-form {
+    background: var(--card-background);
+    border: 2px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 25px var(--shadow-strong);
+}
+
+#annonce-content {
+    min-height: 220px;
+    resize: vertical;
+    font-family: Consolas, "Fira Code", ui-monospace, monospace;
+    line-height: 1.5;
+}
+
+#annonce-form .buttons,
+.annonce-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+#delete-button,
+.btn-danger {
+    background: linear-gradient(90deg, #dc3545, #b22222);
+    border: 1px solid #dc3545;
+}
+
+#delete-button:hover,
+.btn-danger:hover {
+    background: linear-gradient(90deg, #b22222, #8b0000);
+    box-shadow: 0 6px 16px rgba(220,53,69,.45);
+}
+
+/* Optionnel si vous ajoutez un aperçu Markdown */
+.annonce-preview {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #161218;
+    border: 1px dashed var(--border-color);
+    border-radius: 10px;
+}
+
+.annonce-help {
+    color: #cfcfcf;
+    font-size: .95rem;
+    margin-bottom: .5rem;
+}
+
+/* Administration page */
+.admin-container {
+    max-width: 1100px;
+    margin: 80px auto 40px;
+    padding: 0 16px;
+}
+
+.toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.admin-card {
+    background: var(--card-background);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 8px 25px var(--shadow-strong);
+    transition: transform .15s ease, box-shadow .2s ease;
+}
+
+.admin-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,.35); }
+
+.admin-card .row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.admin-card .row > * {
+    flex: 1 1 auto;
+}
+
+.admin-card .role {
+    font-weight: 700;
+}
+
+.badge { display:inline-block; padding:4px 8px; border-radius:8px; font-size:0.9rem; }
+.badge.admin { background:#2E7D32; color:#fff; }
+.badge.mod { background:#0277BD; color:#fff; }
+.badge.member { background:#616161; color:#fff; }
+
+.role-select { max-width: 260px; }
+.btn-save { white-space: nowrap; }
+
+/* Chips + search */
+.chip { background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius: 999px; padding: 6px 10px; display:inline-flex; align-items:center; gap:8px; cursor:pointer; }
+.chip input { accent-color: var(--primary-color); }
+.btn-link { color: var(--text-color); text-decoration: none; border:1px solid rgba(255,255,255,0.12); padding:8px 10px; border-radius:8px; transition: background .2s ease; }
+.btn-link:hover { background: rgba(255,255,255,0.06); }
+
+.users-grid { display: grid; grid-template-columns: repeat(1, minmax(0,1fr)); gap: 12px; }
+@media (min-width: 680px) { .users-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (min-width: 980px) { .users-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+
+@media (max-width: 720px) {
+    .admin-card .row { flex-direction: column; align-items: stretch; }
+    .toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+    .role-select { max-width: 100%; }
 }
 
 .logo.gauche {

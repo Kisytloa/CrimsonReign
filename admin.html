@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administration</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Styles spécifiques minimes, la plupart sont dans style.css */
+    .row { display:flex; gap:12px; align-items:center; }
+    .row > * { flex: 1 1 auto; }
+    .hidden { display:none !important; }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBfJubhqQFQNo8fxVLKh1DKlfisJhZYwGI",
+      authDomain: "bloodshadowsite-d35ce.firebaseapp.com",
+      projectId: "bloodshadowsite-d35ce",
+      storageBucket: "bloodshadowsite-d35ce.firebasestorage.app",
+      messagingSenderId: "368188025874",
+      appId: "1:368188025874:web:cfdd31f87651f1a3737ccb",
+      measurementId: "G-1PJ7HXSP6J"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+  const listEl = document.getElementById('users-list');
+  const onlyAdminsEl = document.getElementById('filter-admins');
+  const onlyModsEl = document.getElementById('filter-mods');
+  const onlyMembersEl = document.getElementById('filter-members');
+  const searchInput = document.getElementById('search-user');
+
+    function roleBadge(role) {
+      const r = (role || 'Membre de Guilde').trim();
+      if (r === 'Administrateur') return '<span class="badge admin">Administrateur</span>';
+      if (r === 'Modérateur') return '<span class="badge mod">Modérateur</span>';
+      return '<span class="badge member">Membre de Guilde</span>';
+    }
+
+    function applyFilters(items) {
+      if (onlyAdminsEl.checked) items = items.filter(i => (i.role||'') === 'Administrateur');
+      if (onlyModsEl.checked) items = items.filter(i => (i.role||'') === 'Modérateur');
+      if (onlyMembersEl.checked) items = items.filter(i => (i.role||'') === 'Membre de Guilde');
+      const q = (searchInput.value || '').trim().toLowerCase();
+      if (q) {
+        items = items.filter(i => (i.nom||'').toLowerCase().includes(q) || (i.uid||'').toLowerCase().includes(q));
+      }
+      return items;
+    }
+
+    function render(list) {
+      listEl.innerHTML = '';
+      if (!list.length) {
+        listEl.innerHTML = '<p style="color:#999;">Aucun utilisateur.</p>';
+        return;
+      }
+      for (const u of list) {
+        const card = document.createElement('div');
+        card.className = 'admin-card';
+        card.innerHTML = `
+          <div class="row">
+            <div>
+              <div><strong>${u.nom || '(sans nom)'} </strong></div>
+              <div style="color:#aaa; font-size:0.9rem;">UID: ${u.uid || 'n/a'}</div>
+            </div>
+            <div class="role">${roleBadge(u.role)}</div>
+            <div>
+              <select class="role-select">
+                <option value="Membre de Guilde" ${u.role === 'Membre de Guilde' ? 'selected' : ''}>Membre de Guilde</option>
+                <option value="Modérateur" ${u.role === 'Modérateur' ? 'selected' : ''}>Modérateur</option>
+                <option value="Administrateur" ${u.role === 'Administrateur' ? 'selected' : ''}>Administrateur</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn-save" style="padding:8px 12px;">Enregistrer</button>
+            </div>
+          </div>
+        `;
+        const select = card.querySelector('.role-select');
+        const save = card.querySelector('.btn-save');
+        save.addEventListener('click', async () => {
+          const newRole = select.value;
+          try {
+            if (!u._docId) throw new Error('Doc id manquant');
+            await updateDoc(doc(db, 'joueurs', u._docId), { role: newRole });
+            card.querySelector('.role').innerHTML = roleBadge(newRole);
+            alert('Rôle mis à jour.');
+          } catch (e) {
+            console.error(e);
+            alert('Erreur lors de la mise à jour du rôle.');
+          }
+        });
+        listEl.appendChild(card);
+      }
+    }
+
+    async function loadUsers() {
+      const snap = await getDocs(collection(db, 'joueurs'));
+      const users = snap.docs.map(d => ({ _docId: d.id, ...d.data() }));
+      return users;
+    }
+
+    function enforceAdminOrRedirect(role) {
+      const isAdmin = (role||'').trim() === 'Administrateur';
+      if (!isAdmin) {
+        window.location.href = 'index.html';
+      }
+      return isAdmin;
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'connexion.html';
+        return;
+      }
+      const all = await loadUsers();
+      const current = all.find(u => u.uid === user.uid);
+      const role = current ? current.role : 'Membre de Guilde';
+      if (!enforceAdminOrRedirect(role)) return;
+
+      // Toggle nav links in case header is visible
+      const annonceLinkLi = document.querySelector('li.nav-annonce');
+      if (annonceLinkLi) {
+        annonceLinkLi.style.display = (role === 'Administrateur' || role === 'Modérateur') ? 'list-item' : 'none';
+      }
+      const adminLinkLi = document.querySelector('li.nav-admin');
+      if (adminLinkLi) {
+        adminLinkLi.style.display = (role === 'Administrateur') ? 'list-item' : 'none';
+      }
+
+      let working = all.slice();
+      function rerender() {
+        render(applyFilters(working));
+      }
+      rerender();
+
+  onlyAdminsEl.addEventListener('change', rerender);
+  onlyModsEl.addEventListener('change', rerender);
+  onlyMembersEl.addEventListener('change', rerender);
+  searchInput.addEventListener('input', rerender);
+    });
+  </script>
+</head>
+<body>
+  <a href="admin.html" class="admin-gear" id="admin-gear" aria-label="Administration" title="Administration" style="display:flex;">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Zm8.94-2.89c.04-.43.06-.86.06-1.31 0-.45-.02-.88-.07-1.31l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a8.3 8.3 0 0 0-2.27-1.31l-.38-2.65A.5.5 0 0 0 12.94.5h-3.88a.5.5 0 0 0-.5.42l-.38 2.65a8.3 8.3 0 0 0-2.27 1.31l-2.5-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L3.06 9.7a9 9 0 0 0 0 2.62l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.14.24.43.34.69.22l2.49-1c.68.54 1.44.98 2.27 1.31l.38 2.65c.04.24.25.42.5.42h3.88c.25 0 .46-.18.5-.42l.38-2.65a8.3 8.3 0 0 0 2.27-1.31l2.49 1c.26.12.55.02.69-.22l2-3.46a.5.5 0 0 0-.12-.64L20.94 12.31Zm-5.3 4.38-.57.33-.08.64-.32 2.26h-3.34l-.32-2.26-.08-.64-.57-.33a6.9 6.9 0 0 1-1.95-1.12l-.5-.45-2.14.85-1.67-2.9 1.82-1.42.5-.38-.08-.63a7.5 7.5 0 0 1 0-2.24l.08-.63-.5-.38-1.82-1.42 1.67-2.9 2.14.85.5-.45c.6-.5 1.25-.88 1.95-1.12l.57-.33.08-.64.32-2.26h3.34l.32 2.26.08.64.57.33c.7.24 1.35.62 1.95 1.12l.5.45 2.14-.85 1.67 2.9-1.82 1.42-.5.38.08.63c.05.74.05 1.5 0 2.24l-.08.63.5.38 1.82 1.42-1.67 2.9-2.14-.85-.5.45c-.6.5-1.25.88-1.95 1.12Z"/></svg>
+  </a>
+  <div class="admin-container">
+    <h1>Administration</h1>
+    <p>Gestion des rôles des membres.</p>
+    <div class="toolbar">
+      <div class="filters" style="display:flex; gap:8px; flex-wrap:wrap;">
+        <label class="chip"><input type="checkbox" id="filter-admins"><span>Administrateurs</span></label>
+        <label class="chip"><input type="checkbox" id="filter-mods"><span>Modérateurs</span></label>
+        <label class="chip"><input type="checkbox" id="filter-members"><span>Membres</span></label>
+      </div>
+      <div class="search" style="display:flex; gap:8px; align-items:center; margin-left:auto;">
+        <input id="search-user" type="text" placeholder="Rechercher par nom ou UID..." />
+        <a class="btn-link" href="index.html">← Retour</a>
+      </div>
+    </div>
+    <div id="users-list" class="users-grid"></div>
+  </div>
+</body>
+</html>

@@ -16,6 +16,18 @@
     });
     </script>
     <style>
+        /* Masquer les contrôles d'administration par défaut (évite le flash) */
+        #admin-raid-controls {
+            display: none;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        /* Visible uniquement pour les administrateurs */
+        #admin-raid-controls.admin-visible {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+        }
         .raid-badge {
             display: inline-block;
             font-size: 0.95em;
@@ -57,16 +69,20 @@
 </head>
 
 <body>
+    <a href="admin.html" class="admin-gear" id="admin-gear" aria-label="Administration" title="Administration">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Zm8.94-2.89c.04-.43.06-.86.06-1.31 0-.45-.02-.88-.07-1.31l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a8.3 8.3 0 0 0-2.27-1.31l-.38-2.65A.5.5 0 0 0 12.94.5h-3.88a.5.5 0 0 0-.5.42l-.38 2.65a8.3 8.3 0 0 0-2.27 1.31l-2.5-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L3.06 9.7a9 9 0 0 0 0 2.62l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.14.24.43.34.69.22l2.49-1c.68.54 1.44.98 2.27 1.31l.38 2.65c.04.24.25.42.5.42h3.88c.25 0 .46-.18.5-.42l.38-2.65a8.3 8.3 0 0 0 2.27-1.31l2.49 1c.26.12.55.02.69-.22l2-3.46a.5.5 0 0 0-.12-.64L20.94 12.31Zm-5.3 4.38-.57.33-.08.64-.32 2.26h-3.34l-.32-2.26-.08-.64-.57-.33a6.9 6.9 0 0 1-1.95-1.12l-.5-.45-2.14.85-1.67-2.9 1.82-1.42.5-.38-.08-.63a7.5 7.5 0 0 1 0-2.24l.08-.63-.5-.38-1.82-1.42 1.67-2.9 2.14.85.5-.45c.6-.5 1.25-.88 1.95-1.12l.57-.33.08-.64.32-2.26h3.34l.32 2.26.08.64.57.33c.7.24 1.35.62 1.95 1.12l.5.45 2.14-.85 1.67 2.9-1.82 1.42-.5.38.08.63c.05.74.05 1.5 0 2.24l-.08.63.5.38 1.82 1.42-1.67 2.9-2.14-.85-.5.45c-.6.5-1.25.88-1.95 1.12Z"/></svg>
+    </a>
     <header>
     <h1 style="margin-top:0;margin-bottom:18px;">Planning de Raid CS</h1>
         <nav>
             <ul>
                 <li><a href="index.html">Accueil</a></li>
-                <li><a href="Objectifs.html">Objectifs de Guilde</a></li>
                 <li><a href="excel_raid.html">Excel Raid</a></li>
-                    <li><a href="guide_raid.html">Guide Raid</a></li>
+                <li><a href="https://maxroll.gg/lost-ark/raids" target="_blank">Guide Raid</a></li>
                 <li><a href="https://www.lostark.nexus" target="_blank">Build Personnages</a></li>
                 <li><a href="membre_guilde.html">Membres de la Guilde</a></li>
+                <li class="nav-annonce" style="display:none;"><a href="annonce.html">Annonce</a></li>
+                <!-- Lien Administration textuel remplacé par l'icône engrenage -->
                 <li><a href="https://www.playlostark.com/fr-fr/news" target="_blank">News Lost Ark</a></li>
                 <li><a href="https://www.playlostark.com/fr-fr/support/server-status" target="_blank">Server Status</a></li>
             </ul>
@@ -80,7 +96,7 @@
         <section id="planning">
             <img src="Logo guilde.jpg" alt="Logo Guilde" style="display:block;margin:0 auto 18px auto;height:90px;width:90px;object-fit:contain;background:#fff;border-radius:50%;box-shadow:0 2px 12px #0005;">
             <h2>Planning de Raid</h2>
-            <div style="width:100%;display:flex;flex-direction:column;align-items:center;margin-bottom:10px;">
+            <div id="admin-raid-controls">
                 <div style="display:flex;justify-content:center;align-items:center;gap:16px;">
                     <button id="show-add-raid-popup" style="font-size:2rem; background:#FFD600; color:#222; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; box-shadow:0 2px 8px #0002;" title="Ajouter un raid">+</button>
                     <button id="show-remove-raid-popup" style="font-size:2rem; background:#FF5252; color:#fff; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; box-shadow:0 2px 8px #0002;" title="Retirer un raid">-</button>
@@ -109,6 +125,7 @@
                         <option value="Brelshaza HM">Brelshaza HM - iLvl 1690</option>
                         <option value="Mordum NM">Mordum NM - iLvl 1680</option>
                         <option value="Mordum HM">Mordum HM - iLvl 1700</option>
+                        <option value="Mordum HM G3">Mordum HM G3 - iLvl 1700</option>
                         <option value="Strike Raid NM">Strike Raid NM - iLvl 1680</option>
                         <option value="Strike Raid HM">Strike Raid HM - iLvl 1720</option>
                         <option value="Kazéros NM ">Kazéros NM - iLvl 1700</option>
@@ -184,6 +201,22 @@ onAuthStateChanged(auth, async (user) => {
         if (!snapshot.empty) {
             const membre = snapshot.docs[0].data();
             document.getElementById('user-name').textContent = membre.nom;
+            // Vérifier le rôle de l'utilisateur pour afficher les contrôles d'administration
+            const userRole = (membre.role || '').trim();
+            window._userRole = userRole; // stock global pour autres vérifs
+            const adminControls = document.getElementById('admin-raid-controls');
+            if (adminControls) {
+                adminControls.classList.toggle('admin-visible', userRole === 'Administrateur');
+            }
+            // Affichage conditionnel Annonce/Admin
+            const annonceLi = document.querySelector('li.nav-annonce');
+            if (annonceLi) {
+                annonceLi.style.display = (userRole === 'Administrateur' || userRole === 'Modérateur') ? 'list-item' : 'none';
+            }
+            const adminLi = document.querySelector('li.nav-admin');
+            if (adminLi) {
+                adminLi.style.display = (userRole === 'Administrateur') ? 'list-item' : 'none';
+            }
         }
     } else {
         document.getElementById('user-name').textContent = 'Invité';
@@ -228,6 +261,7 @@ logoutBtn.addEventListener('click', async function() {
             const addRaidPopup = document.getElementById('add-raid-popup');
             if (addRaidBtn && addRaidPopup) {
                 addRaidBtn.addEventListener('click', async () => {
+                    if (window._userRole !== 'Administrateur') { return; }
                     await ajouterRaid();
                     addRaidPopup.style.display = 'none';
                     afficherMessage('Le raid a bien été ajouté !');
@@ -239,6 +273,7 @@ logoutBtn.addEventListener('click', async function() {
             const removeRaidPopup = document.getElementById('remove-raid-popup');
             if (removeRaidBtn && removeRaidPopup) {
                 removeRaidBtn.addEventListener('click', async () => {
+                    if (window._userRole !== 'Administrateur') { return; }
                     await retirerRaid();
                     removeRaidPopup.style.display = 'none';
                     afficherMessage('Le raid a bien été supprimé !');
@@ -250,6 +285,7 @@ logoutBtn.addEventListener('click', async function() {
             const closeAddRaidPopup = document.getElementById('close-add-raid-popup');
             if (showAddRaidBtn && addRaidPopup && closeAddRaidPopup) {
                 showAddRaidBtn.addEventListener('click', () => {
+                    if (window._userRole !== 'Administrateur') { return; }
                     addRaidPopup.style.display = 'block';
                 });
                 closeAddRaidPopup.addEventListener('click', () => {
@@ -266,6 +302,7 @@ logoutBtn.addEventListener('click', async function() {
             const closeRemoveRaidPopup = document.getElementById('close-remove-raid-popup');
             if (showRemoveRaidBtn && removeRaidPopup && closeRemoveRaidPopup) {
                 showRemoveRaidBtn.addEventListener('click', () => {
+                    if (window._userRole !== 'Administrateur') { return; }
                     removeRaidPopup.style.display = 'block';
                 });
                 closeRemoveRaidPopup.addEventListener('click', () => {
@@ -769,6 +806,10 @@ logoutBtn.addEventListener('click', async function() {
 
         // Ajouter un raid
         async function ajouterRaid() {
+                    if (window._userRole !== 'Administrateur') {
+                        alert('Seul un administrateur peut ajouter un raid.');
+                        return;
+                    }
             const nom = document.getElementById('raid-select').value;
             const date = document.getElementById('raid-date').value;
             let time = document.getElementById('raid-time').value;
@@ -805,6 +846,10 @@ logoutBtn.addEventListener('click', async function() {
 
         // Retirer un raid
         async function retirerRaid() {
+                    if (window._userRole !== 'Administrateur') {
+                        alert('Seul un administrateur peut retirer un raid.');
+                        return;
+                    }
             const raidId = document.getElementById('raid-remove-select').value;
             if (!raidId) return alert("Sélectionnez un raid à retirer.");
         
@@ -976,9 +1021,17 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const role = (localStorage.getItem('userRole')||'').trim();
+    const gear = document.getElementById('admin-gear');
+    if (gear) gear.style.display = (role === 'Administrateur') ? 'flex' : 'none';
+});
+</script>
 </body>
 
 </html>
+
 
 
 

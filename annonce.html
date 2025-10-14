@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gérer l'annonce - Bloodshadow</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Spécifique page annonce - minimal car styles globaux dans style.css */
+        .container.annonce-container h1 { text-align:center; }
+    </style>
+</head>
+<body>
+    <a href="admin.html" class="admin-gear" id="admin-gear" aria-label="Administration" title="Administration" style="display:none;">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Zm8.94-2.89c.04-.43.06-.86.06-1.31 0-.45-.02-.88-.07-1.31l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a8.3 8.3 0 0 0-2.27-1.31l-.38-2.65A.5.5 0 0 0 12.94.5h-3.88a.5.5 0 0 0-.5.42l-.38 2.65a8.3 8.3 0 0 0-2.27 1.31l-2.5-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L3.06 9.7a9 9 0 0 0 0 2.62l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.14.24.43.34.69.22l2.49-1c.68.54 1.44.98 2.27 1.31l.38 2.65c.04.24.25.42.5.42h3.88c.25 0 .46-.18.5-.42l.38-2.65a8.3 8.3 0 0 0 2.27-1.31l2.49 1c.26.12.55.02.69-.22l2-3.46a.5.5 0 0 0-.12-.64L20.94 12.31Zm-5.3 4.38-.57.33-.08.64-.32 2.26h-3.34l-.32-2.26-.08-.64-.57-.33a6.9 6.9 0 0 1-1.95-1.12l-.5-.45-2.14.85-1.67-2.9 1.82-1.42.5-.38-.08-.63a7.5 7.5 0 0 1 0-2.24l.08-.63-.5-.38-1.82-1.42 1.67-2.9 2.14.85.5-.45c.6-.5 1.25-.88 1.95-1.12l.57-.33.08-.64.32-2.26h3.34l.32 2.26.08.64.57.33c.7.24 1.35.62 1.95 1.12l.5.45 2.14-.85 1.67 2.9-1.82 1.42-.5.38.08.63c.05.74.05 1.5 0 2.24l-.08.63.5.38 1.82 1.42-1.67 2.9-2.14-.85-.5.45c-.6.5-1.25.88-1.95 1.12Z"/></svg>
+    </a>
+    <header>
+        <div class="container">
+            <nav>
+                <ul>
+                    <li><a href="index.html">Accueil</a></li>
+                    <li><a href="membre_guilde.html">Membres de la Guilde</a></li>
+                    <li><a href="excel_raid.html">Excel Raid</a></li>
+                    <li><a href="planning.html">Planning de Raid</a></li>
+                    <li><a href="https://www.lostark.nexus" target="_blank">Build Personnages</a></li>
+                    <!-- Lien Administration textuel remplacé par l'icône engrenage -->
+                    <li><a href="https://www.playlostark.com/fr-fr/news" target="_blank">News Lost Ark</a></li>
+                    <li><a href="https://www.playlostark.com/fr-fr/support/server-status" target="_blank">Server Status</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container annonce-container">
+        <h1>Gérer l'annonce</h1>
+        <div class="annonce-help">Astuce: vous pouvez utiliser le Markdown (titres, listes, liens, gras, etc.).</div>
+        <form id="annonce-form">
+            <textarea id="annonce-content" rows="12" placeholder="Écrivez votre annonce ici (supporte le Markdown)"></textarea>
+            <div class="buttons annonce-actions">
+                <button type="submit">Publier / Modifier l'annonce</button>
+                <button type="button" id="delete-button" class="btn-danger">Supprimer l'annonce</button>
+            </div>
+            <div class="annonce-preview" id="annonce-preview" style="display:none;"></div>
+        </form>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 CrimsonReign. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
+    <script>
+        // Aperçu Markdown en direct (optionnel)
+        const textarea = document.getElementById('annonce-content');
+        const preview = document.getElementById('annonce-preview');
+        const converter = new showdown.Converter({tables:true, strikethrough:true, tasklists:true});
+        function updatePreview() {
+            const val = textarea.value.trim();
+            if (!val) { preview.style.display='none'; preview.innerHTML=''; return; }
+            preview.style.display = 'block';
+            preview.innerHTML = converter.makeHtml(val);
+        }
+        textarea.addEventListener('input', updatePreview);
+        document.addEventListener('DOMContentLoaded', updatePreview);
+        // Affichage conditionnel du lien "Annonce" sur cette page
+        document.addEventListener('DOMContentLoaded', function() {
+            const role = (localStorage.getItem('userRole') || '').trim();
+            const li = document.querySelector('li.nav-annonce');
+            if (li) li.style.display = (role === 'Administrateur' || role === 'Modérateur') ? 'list-item' : 'none';
+            const gear = document.getElementById('admin-gear');
+            if (gear) gear.style.display = (role === 'Administrateur') ? 'flex' : 'none';
+        });
+    </script>
+    <script src="annonce.js"></script>
+</body>
+</html>
