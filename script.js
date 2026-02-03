@@ -17,7 +17,8 @@ const archtypeClasses = {
     "Assassin": ["Sanguelame", "Démoniste", "Faucheuse", "Dévoreuse d'âme"],
     "Gunner": ["Gunner", "Sagittaire", "Artilleur", "Machiniste"],
     "Gunneuse": ["Fusilière"],
-    "Spécialiste": ["Artiste", "Helètempète", "Ame sauvage",]
+    "Spécialiste": ["Artiste", "Helètempète", "Ame sauvage",],
+    "Guardian Knight":["Dragon Knight"]
 };
 
 // Initialisation Firebase
@@ -609,4 +610,5 @@ document.getElementById('popup-close-btn').addEventListener('click', closePopup)
                 });
         });
     }
+
 
