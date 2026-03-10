@@ -1,389 +1,292 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-app.js";
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Site officiel de la guilde Bloodshadow — Lost Ark" />
+  <title>Bloodshadow — Guilde Lost Ark</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+  <!-- CSS principal -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp }    from "https://www.gstatic.com/firebasejs/9.17.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, collection, query, where, getDocs, onSnapshot, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-firestore.js";
+    import { getFirestore, doc, collection, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-firestore.js";
+
     const firebaseConfig = {
-        apiKey: "AIzaSyBfJubhqQFQNo8fxVLKh1DKlfisJhZYwGI",
-        authDomain: "bloodshadowsite-d35ce.firebaseapp.com",
-        projectId: "bloodshadowsite-d35ce",
-        storageBucket: "bloodshadowsite-d35ce.firebasestorage.app",
-        messagingSenderId: "368188025874",
-        appId: "1:368188025874:web:cfdd31f87651f1a3737ccb",
-        measurementId: "G-1PJ7HXSP6J"
+      apiKey: "AIzaSyBfJubhqQFQNo8fxVLKh1DKlfisJhZYwGI",
+      authDomain: "bloodshadowsite-d35ce.firebaseapp.com",
+      projectId: "bloodshadowsite-d35ce",
+      storageBucket: "bloodshadowsite-d35ce.firebasestorage.app",
+      messagingSenderId: "368188025874",
+      appId: "1:368188025874:web:cfdd31f87651f1a3737ccb",
+      measurementId: "G-1PJ7HXSP6J"
     };
-    const app = initializeApp(firebaseConfig);
+
+    const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
+    const db   = getFirestore(app);
+
     onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            window.location.href = 'connexion.html';
+      if (!user) { window.location.href = 'connexion.html'; return; }
+
+      const userInfoSpan = document.getElementById('user-name');
+      let displayName = user.displayName || "";
+
+      try {
+        const q = query(collection(db, 'joueurs'), where('uid', '==', user.uid));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          const membre = snapshot.docs[0].data();
+          displayName = membre.nom || displayName || "Invité";
+          const userRole = membre.role || 'Membre de Guilde';
+          localStorage.setItem('userRole', userRole);
         } else {
-            // Récupérer le nom du membre depuis la collection 'joueurs'
-            const userInfoSpan = document.getElementById('user-name');
-            let displayName = user.displayName || "";
-            try {
-                const q = query(collection(db, 'joueurs'), where('uid', '==', user.uid));
-                const snapshot = await getDocs(q);
-                if (!snapshot.empty) {
-                    const membre = snapshot.docs[0].data();
-                    displayName = membre.nom || displayName || "Invité";
-                    // Stocker le rôle de l'utilisateur
-                    const userRole = membre.role || 'Membre de Guilde';
-                    localStorage.setItem('userRole', userRole);
-                } else {
-                    // Si l'utilisateur n'est pas dans la collection joueurs, rôle par défaut
-                    localStorage.setItem('userRole', 'Membre de Guilde');
-                }
-            } catch (e) {
-                // En cas d'erreur, rôle par défaut
-                localStorage.setItem('userRole', 'Membre de Guilde');
-            }
-            userInfoSpan.textContent = displayName || "Invité";
-
-            // Gérer la visibilité du lien d'annonce en fonction du rôle (éviter le flash)
-            const annonceLinkLi = document.querySelector('li.nav-annonce');
-            const userRole = localStorage.getItem('userRole');
-            if (annonceLinkLi) {
-                if (userRole === 'Administrateur' || userRole === 'Modérateur') {
-                    annonceLinkLi.style.display = 'list-item';
-                } else {
-                    annonceLinkLi.style.display = 'none';
-                }
-            }
-
-            // Lien Administration: visible uniquement pour Administrateur
-            const adminLinkLi = document.querySelector('li.nav-admin');
-            if (adminLinkLi) {
-                adminLinkLi.style.display = (userRole === 'Administrateur') ? 'list-item' : 'none';
-            }
-
-            // Afficher la date actuelle
-            const dateAjd = document.getElementById('date-ajd');
-            if (dateAjd) {
-                const today = new Date();
-                dateAjd.textContent = today.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            }
-
-            // Afficher les raids d'aujourd'hui
-            const raidsList = document.getElementById('raids-list');
-            if (raidsList) {
-                raidsList.innerHTML = '<li style="color:#888;text-align:center;">Chargement...</li>';
-                const raidsSnapshot = await getDocs(collection(db, 'raids'));
-                const today = new Date();
-                const todayStr = today.toISOString().slice(0, 10); // format YYYY-MM-DD
-                const raidsToday = [];
-                raidsSnapshot.forEach(doc => {
-                    const raid = doc.data();
-                    if (raid.date === todayStr) {
-                        raidsToday.push(raid);
-                    }
-                });
-                raidsList.innerHTML = '';
-                if (raidsToday.length === 0) {
-                    raidsList.innerHTML = '<li style="color:#888;text-align:center;">Aucun raid prévu aujourd\'hui.</li>';
-                } else {
-                    raidsToday.sort((a, b) => {
-                        // Trier par heure si possible
-                        return (a.time || '').localeCompare(b.time || '');
-                    });
-                    raidsToday.forEach(raid => {
-                        const li = document.createElement('li');
-                        li.style.padding = '8px 0';
-                        li.style.display = 'flex';
-                        li.style.alignItems = 'center';
-                        li.style.justifyContent = 'center';
-                        const raidId = raid.id || raid._id || '';
-                        const raidName = raid.nom || raid.title;
-                        const raidTime = raid.time || '';
-                        const inscritsLink = document.createElement('a');
-                        inscritsLink.href = `planning.html?raidId=${encodeURIComponent(raidId)}`;
-                        inscritsLink.textContent = `${raid.inscriptions ? raid.inscriptions.length : 0} inscrit(s)`;
-                        inscritsLink.style.fontSize = '0.95em';
-                        inscritsLink.style.color = '#fff';
-                        inscritsLink.style.marginLeft = '12px';
-                        inscritsLink.style.borderBottom = '2px solid #444';
-                        inscritsLink.style.paddingBottom = '2px';
-                        inscritsLink.style.cursor = 'pointer';
-                        inscritsLink.title = 'Voir le raid dans le planning';
-                        li.innerHTML = `<span><b>${raidName}</b> à ${raidTime}</span>`;
-                        li.appendChild(inscritsLink);
-                        raidsList.appendChild(li);
-                    });
-                }
-            }
-
-            // Annonce partagée (Firestore)
-            const annoncesSection = document.getElementById('annonces');
-            const annonceContainer = document.getElementById('annonce-container');
-            if (annoncesSection && annonceContainer) {
-                // Masquer par défaut le temps de charger
-                annoncesSection.style.display = 'none';
-                const annonceRef = doc(db, 'site', 'annonce');
-                onSnapshot(annonceRef, (snap) => {
-                    const data = snap.data();
-                    if (data && data.content && data.content.trim() !== '') {
-                        const converter = new showdown.Converter({tables:true,strikethrough:true,tasklists:true});
-                        annonceContainer.innerHTML = converter.makeHtml(data.content);
-                        annoncesSection.style.display = 'block';
-                        const metaDiv = document.getElementById('annonce-meta');
-                        if (metaDiv) {
-                            let dateTxt = '';
-                            if (data.updatedAt && data.updatedAt.toDate) {
-                                const d = data.updatedAt.toDate();
-                                const opts = { weekday:'short', year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' };
-                                dateTxt = d.toLocaleDateString('fr-FR', opts).replace(',', '');
-                            }
-                            const author = data.authorName || 'Inconnu';
-                            metaDiv.textContent = `Dernière mise à jour par ${author}${dateTxt ? ' le ' + dateTxt : ''}`;
-                            metaDiv.style.display = 'block';
-                        }
-                    } else {
-                        annoncesSection.style.display = 'none';
-                        annonceContainer.innerHTML = '';
-                        const metaDiv = document.getElementById('annonce-meta');
-                        if (metaDiv) metaDiv.style.display = 'none';
-                    }
-                }, (err) => {
-                    console.error('Erreur récupération annonce:', err);
-                    annoncesSection.style.display = 'none';
-                });
-            }
+          localStorage.setItem('userRole', 'Membre de Guilde');
         }
+      } catch (e) {
+        localStorage.setItem('userRole', 'Membre de Guilde');
+      }
+
+      userInfoSpan.textContent = displayName || "Invité";
+
+      // Visibilité nav admin/mod
+      const annonceLinkLi = document.querySelector('li.nav-annonce');
+      const userRole = localStorage.getItem('userRole');
+      if (annonceLinkLi) {
+        annonceLinkLi.style.display = (userRole === 'Administrateur' || userRole === 'Modérateur') ? 'list-item' : 'none';
+      }
+
+      // Date
+      const dateAjd = document.getElementById('date-ajd');
+      if (dateAjd) {
+        dateAjd.textContent = new Date().toLocaleDateString('fr-FR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+      }
+
+      // Raids du jour
+      const raidsList = document.getElementById('raids-list');
+      if (raidsList) {
+        raidsList.innerHTML = '<li style="color:var(--text-muted);text-align:center;border:none;background:none;">Chargement...</li>';
+        const raidsSnapshot = await getDocs(collection(db, 'raids'));
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const raidsToday = [];
+        raidsSnapshot.forEach(d => { const r = d.data(); if (r.date === todayStr) raidsToday.push(r); });
+        raidsList.innerHTML = '';
+        if (raidsToday.length === 0) {
+          raidsList.innerHTML = '<li style="color:var(--text-muted);text-align:center;border:none;background:none;padding:1rem;">Aucun raid prévu aujourd\'hui.</li>';
+        } else {
+          raidsToday.sort((a,b) => (a.time||'').localeCompare(b.time||''));
+          raidsToday.forEach(raid => {
+            const li = document.createElement('li');
+            const raidId   = raid.id || raid._id || '';
+            const raidName = raid.nom || raid.title;
+            const raidTime = raid.time || '';
+            const link = document.createElement('a');
+            link.href = `planning.html?raidId=${encodeURIComponent(raidId)}`;
+            link.textContent = `${raid.inscriptions ? raid.inscriptions.length : 0} inscrit(s)`;
+            link.title = 'Voir dans le planning';
+            li.innerHTML = `<span><strong>${raidName}</strong> à ${raidTime}</span>`;
+            li.appendChild(link);
+            raidsList.appendChild(li);
+          });
+        }
+      }
+
+      // Annonce partagée
+      const annoncesSection  = document.getElementById('annonces');
+      const annonceContainer = document.getElementById('annonce-container');
+      if (annoncesSection && annonceContainer) {
+        annoncesSection.style.display = 'none';
+        const annonceRef = doc(db, 'site', 'annonce');
+        onSnapshot(annonceRef, (snap) => {
+          const data = snap.data();
+          if (data && data.content && data.content.trim() !== '') {
+            const converter = new showdown.Converter({ tables:true, strikethrough:true, tasklists:true });
+            annonceContainer.innerHTML = converter.makeHtml(data.content);
+            annoncesSection.style.display = 'block';
+            const metaDiv = document.getElementById('annonce-meta');
+            if (metaDiv) {
+              let dateTxt = '';
+              if (data.updatedAt && data.updatedAt.toDate) {
+                const d = data.updatedAt.toDate();
+                dateTxt = d.toLocaleDateString('fr-FR', { weekday:'short', year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }).replace(',','');
+              }
+              const author = data.authorName || 'Inconnu';
+              metaDiv.textContent = `Dernière mise à jour par ${author}${dateTxt ? ' le ' + dateTxt : ''}`;
+              metaDiv.style.display = 'block';
+            }
+          } else {
+            annoncesSection.style.display = 'none';
+          }
+        });
+      }
     });
-    // Ajout du listener pour le bouton déconnexion
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', async function() {
-            await signOut(auth);
-            window.location.href = 'connexion.html';
+
+    // Déconnexion
+    document.addEventListener('DOMContentLoaded', () => {
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+          await signOut(auth);
+          window.location.href = 'connexion.html';
         });
+      }
+    });
+  </script>
+</head>
+<body>
+
+  <!-- Barre utilisateur -->
+  <div id="user-info" role="status" aria-live="polite">
+    Connecté en tant que : <span id="user-name">…</span>
+  </div>
+
+  <!-- Header -->
+  <header role="banner">
+    <img src="Logo guilde.jpg" alt="Logo Bloodshadow" class="logo gauche" />
+    <h1>Bloodshadow</h1>
+    <p style="font-family:'Cinzel',serif;font-size:0.82rem;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase;margin-top:4px;">Guilde · Lost Ark</p>
+    <img src="Logo guilde.jpg" alt="Logo Bloodshadow" class="logo droite" />
+
+    <nav role="navigation" aria-label="Navigation principale">
+      <ul>
+        <!-- Accueil -->
+        <li>
+          <a href="index.html" aria-label="Accueil" title="Accueil">🏠</a>
+        </li>
+
+        <!-- Raid -->
+        <li class="nav-raid" style="position:relative;">
+          <button id="nav-raid-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Raid">
+            <span aria-hidden="true">🗡️</span> Raid <span aria-hidden="true" style="font-size:10px;opacity:.6;">▼</span>
+          </button>
+          <div id="nav-raid-menu" role="menu" aria-label="Sous-menu Raid">
+            <a href="planning.html" role="menuitem"><span aria-hidden="true">📅</span> Planning de Raid</a>
+            <a href="excel_raid.html" role="menuitem"><span aria-hidden="true">📊</span> Excel Raid</a>
+          </div>
+        </li>
+
+        <!-- Gestion -->
+        <li class="nav-gestion" style="position:relative;">
+          <button id="nav-gestion-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Gestion">
+            <span aria-hidden="true">🧩</span> Gestion <span aria-hidden="true" style="font-size:10px;opacity:.6;">▼</span>
+          </button>
+          <div id="nav-gestion-menu" role="menu" aria-label="Sous-menu Gestion">
+            <a href="membre_guilde.html" role="menuitem"><span aria-hidden="true">👥</span> Membres de la Guilde</a>
+          </div>
+        </li>
+
+        <!-- Objectifs -->
+        <li><a href="Objectifs.html">🎯 Objectifs</a></li>
+
+        <!-- Cagnotte -->
+        <li><a href="Cagnotte.html">💰 Cagnotte</a></li>
+
+        <!-- Annonce / Admin (masqué par défaut, JS gère) -->
+        <li class="nav-annonce" style="display:none;position:relative;">
+          <button id="nav-gear-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Annonce et Administration" title="Annonce / Administration">
+            <span aria-hidden="true">📢</span>
+          </button>
+          <div id="nav-gear-menu" role="menu" aria-label="Sous-menu Administration">
+            <a href="annonce.html" data-role="mod" role="menuitem"><span aria-hidden="true">📝</span> Annonce</a>
+            <a href="admin.html"   data-role="admin" role="menuitem"><span aria-hidden="true">⚙️</span> Administration</a>
+          </div>
+        </li>
+
+        <!-- Ressources -->
+        <li class="nav-ressources" style="position:relative;">
+          <button id="nav-ressources-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Ressources">
+            <span aria-hidden="true">📚</span> Ressources <span aria-hidden="true" style="font-size:10px;opacity:.6;">▼</span>
+          </button>
+          <div id="nav-ressources-menu" role="menu" aria-label="Sous-menu Ressources">
+            <a href="https://www.playlostark.com/fr-fr/news" target="_blank" rel="noopener noreferrer" role="menuitem"><span aria-hidden="true">📰</span> News Lost Ark</a>
+            <a href="https://www.playlostark.com/fr-fr/support/server-status" target="_blank" rel="noopener noreferrer" role="menuitem"><span aria-hidden="true">🖥️</span> Server Status</a>
+            <a href="https://www.lostark.nexus" target="_blank" rel="noopener noreferrer" role="menuitem"><span aria-hidden="true">🛠️</span> Build Personnages</a>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Contenu principal -->
+  <main id="main-content" role="main">
+
+    <!-- Annonce -->
+    <section id="annonces" aria-labelledby="annonces-titre" style="display:none;">
+      <h2 id="annonces-titre">Annonce de la Guilde</h2>
+      <div id="annonce-container" aria-live="polite"></div>
+      <div id="annonce-meta" style="display:none;" aria-label="Métadonnées de l'annonce"></div>
+    </section>
+
+    <!-- Raids du jour -->
+    <section id="raids-aujourdhui" aria-labelledby="raids-titre">
+      <h2 id="raids-titre">Raids du <span id="date-ajd">…</span></h2>
+      <p>Voici les raids prévus pour aujourd'hui. Inscrivez-vous pour ne pas les manquer&nbsp;!</p>
+      <ul id="raids-list" aria-label="Liste des raids du jour" aria-live="polite">
+        <!-- injecté par JS -->
+      </ul>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer role="contentinfo">
+    <p>&copy; 2025 Guilde Bloodshadow — Tous droits réservés.</p>
+  </footer>
+
+  <!-- Bouton déconnexion flottant -->
+  <button id="logout-btn" aria-label="Se déconnecter">🚪 Déconnexion</button>
+
+  <!-- Showdown (Markdown) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
+
+  <!-- Gestion dropdowns nav -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // Rôle
+    const role = (localStorage.getItem('userRole') || '').trim();
+    const navLi = document.querySelector('li.nav-annonce');
+    if (navLi) {
+      if (role === 'Administrateur' || role === 'Modérateur') {
+        navLi.style.display = 'list-item';
+        const adminLink = document.querySelector('#nav-gear-menu a[data-role="admin"]');
+        if (adminLink) adminLink.style.display = (role === 'Administrateur') ? 'flex' : 'none';
+      }
     }
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accueil</title>
 
-    <!-- Fichier CSS -->
-    <link rel="stylesheet" href="style.css">
-    
-    </head>
-    <body>
-    <div id="user-info" style="position:fixed;top:0;left:0;width:100%;background:#222;color:#fff;padding:8px 0;text-align:center;z-index:1000;font-weight:bold;">Vous êtes connecté en tant que : <span id="user-name">Invité</span></div>
-    <header>
-        <h1>Bienvenue à la Guilde Crimson Reign</h1>
-        <nav>
-            <ul>
-                <li class="nav-raid" style="position:relative;">
-                    <button id="nav-raid-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Raid" style="display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:#221d23;color:#eee;font-size:.95rem;cursor:pointer;transition:background .25s ease, transform .25s ease;">
-                        <span style="font-size:18px;">🗡️</span> <span>Raid</span>
-                        <span style="font-size:12px;opacity:.7;transform:translateY(1px);">▼</span>
-                    </button>
-                    <div id="nav-raid-menu" style="display:none;position:absolute;top:52px;left:50%;transform:translateX(-50%);background:#1d191f;border:1px solid rgba(255,255,255,0.12);border-radius:10px;min-width:220px;box-shadow:0 8px 24px rgba(0,0,0,0.6);padding:6px 0;z-index:3000;backdrop-filter:blur(4px);">
-                        <a href="planning.html" style="display:flex;align-items:center;gap:10px;padding:10px 16px;color:#eee;font-size:.95rem;text-decoration:none;">
-                            <span style="display:inline-flex;width:22px;justify-content:center;">📅</span> <span>Planning de Raid</span>
-                        </a>
-                        <a href="excel_raid.html" style="display:flex;align-items:center;gap:10px;padding:10px 16px;color:#eee;font-size:.95rem;text-decoration:none;">
-                            <span style="display:inline-flex;width:22px;justify-content:center;">📊</span> <span>Excel Raid</span>
-                        </a>
-                    </div>
-                </li>
-                <li class="nav-gestion" style="position:relative;">
-                    <button id="nav-gestion-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Gestion" style="display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:#221d23;color:#eee;font-size:.95rem;cursor:pointer;transition:background .25s ease, transform .25s ease;">
-                        <span style="font-size:18px;">🧩</span> <span>Gestion</span>
-                        <span style="font-size:12px;opacity:.7;transform:translateY(1px);">▼</span>
-                    </button>
-                    <div id="nav-gestion-menu" style="display:none;position:absolute;top:52px;left:50%;transform:translateX(-50%);background:#1d191f;border:1px solid rgba(255,255,255,0.12);border-radius:10px;min-width:220px;box-shadow:0 8px 24px rgba(0,0,0,0.6);padding:6px 0;z-index:3000;backdrop-filter:blur(4px);">
-                        <a href="membre_guilde.html" style="display:flex;align-items:center;gap:10px;padding:10px 16px;color:#eee;font-size:.95rem;text-decoration:none;">
-                            <span style="display:inline-flex;width:22px;justify-content:center;">👥</span> <span>Membres de la Guilde</span>
-                        </a>
-                    </div>
-                </li>
-                <li class="nav-annonce" style="position:relative;">
-                    <button id="nav-gear-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Annonce / Administration" title="Annonce / Administration" style="display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:#221d23;cursor:pointer;transition:background .25s ease, transform .25s ease;position:relative;font-size:24px;">📢</button>
-                    <div id="nav-gear-menu" style="display:none;position:absolute;top:52px;left:50%;transform:translateX(-50%);background:#1d191f;border:1px solid rgba(255,255,255,0.12);border-radius:10px;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,0.6);padding:6px 0;z-index:3000;backdrop-filter:blur(4px);">
-                        <a href="annonce.html" data-role="mod" style="display:flex;align-items:center;gap:8px;padding:10px 14px;color:#eee;font-size:.95rem;text-decoration:none;transition:background .25s ease;">
-                            <span style="display:inline-flex;width:20px;justify-content:center;">📝</span> <span>Annonce</span>
-                        </a>
-                        <a href="admin.html" data-role="admin" style="display:flex;align-items:center;gap:8px;padding:10px 14px;color:#eee;font-size:.95rem;text-decoration:none;transition:background .25s ease;">
-                            <span style="display:inline-flex;width:20px;justify-content:center;">⚙️</span> <span>Administration</span>
-                        </a>
-                    </div>
-                </li>
-                <!-- Menu Ressources regroupé -->
-                <li class="nav-ressources" style="position:relative;">
-                    <button id="nav-ressources-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Ressources" style="display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:#221d23;color:#eee;font-size:.95rem;cursor:pointer;transition:background .25s ease, transform .25s ease;">
-                        <span style="font-size:18px;">📚</span> <span>Ressources</span>
-                        <span style="font-size:12px;opacity:.7;transform:translateY(1px);">▼</span>
-                    </button>
-                        <div id="nav-ressources-menu" style="display:none;position:absolute;top:52px;left:50%;transform:translateX(-50%);background:#1d191f;border:1px solid rgba(255,255,255,0.12);border-radius:10px;min-width:220px;box-shadow:0 8px 24px rgba(0,0,0,0.6);padding:6px 0;z-index:3000;backdrop-filter:blur(4px);">
-                        <a href="https://www.playlostark.com/fr-fr/news" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 16px;color:#eee;font-size:.95rem;text-decoration:none;">
-                            <span style="display:inline-flex;width:22px;justify-content:center;">📰</span> <span>News Lost Ark</span>
-                        </a>
-                            <a href="https://www.playlostark.com/fr-fr/support/server-status" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 16px;color:#eee;font-size:.95rem;text-decoration:none;">
-                                <span style="display:inline-flex;width:22px;justify-content:center;">🖥️</span> <span>Server Status</span>
-                            </a>
-                            <a href="https://www.lostark.nexus" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 16px;color:#eee;font-size:.95rem;text-decoration:none;">
-                                <span style="display:inline-flex;width:22px;justify-content:center;">🛠️</span> <span>Build Personnages</span>
-                            </a>
-                    </div>
-                </li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <section id="annonces" style="display:none;">
-            <h2>Annonce de la Guilde</h2>
-            <div id="annonce-container"></div>
-            <div id="annonce-meta" style="margin-top:8px;font-size:0.85rem;color:#bbb;display:none;"></div>
-        </section>
+    // Titre raids
+    const raidsTitre = document.getElementById('raids-titre');
+    if (raidsTitre) {
+      const dateLongue = new Date().toLocaleDateString('fr-FR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+      raidsTitre.textContent = `Raids du ${dateLongue.charAt(0).toUpperCase() + dateLongue.slice(1)}`;
+    }
 
-        <section id="raids-aujourdhui">
-            <h2 id="raids-titre">Raids du ...</h2>
-            <p>Voici les raids prévus pour aujourd'hui. Inscrivez-vous pour ne pas les manquer !</p>
-            <ul id="raids-list">
-                <!-- Les raids seront affichés ici -->
-            </ul>
-        </section>
+    // Helper dropdown
+    function makeDropdown(toggleId, menuId) {
+      const toggle = document.getElementById(toggleId);
+      const menu   = document.getElementById(menuId);
+      if (!toggle || !menu) return;
+      const close = () => { menu.style.display = 'none'; toggle.setAttribute('aria-expanded', 'false'); };
+      const open  = () => { menu.style.display = 'block'; toggle.setAttribute('aria-expanded', 'true'); };
+      toggle.addEventListener('click', e => { e.preventDefault(); menu.style.display === 'block' ? close() : open(); });
+      document.addEventListener('click', e => { if (!menu.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) close(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    }
 
-        <!-- Section news retirée pour agrandir la zone raids -->
-    </main>
+    makeDropdown('nav-raid-toggle',       'nav-raid-menu');
+    makeDropdown('nav-gestion-toggle',    'nav-gestion-menu');
+    makeDropdown('nav-gear-toggle',       'nav-gear-menu');
+    makeDropdown('nav-ressources-toggle', 'nav-ressources-menu');
+  });
+  </script>
 
-    <footer>
-        <p>&copy; 2025 Guilde Crimson Reign - Tous droits réservés.</p>
-    </footer>
-
-    <button id="logout-btn" style="background:#d32f2f;color:#fff;border:none;padding:18px 32px;font-size:1.3rem;font-weight:bold;border-radius:12px;position:fixed;bottom:24px;right:32px;z-index:9999;box-shadow:0 4px 16px #0004;cursor:pointer;transition:transform 0.2s;">Déconnexion</button>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Titre dynamique "Raids du <date>"
-            const raidsTitre = document.getElementById('raids-titre');
-            const now = new Date();
-            const dateLongue = now.toLocaleDateString('fr-FR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-            if (raidsTitre) {
-                const cap = dateLongue.charAt(0).toUpperCase() + dateLongue.slice(1);
-                raidsTitre.textContent = `Raids du ${cap}`;
-            }
-            // Afficher l'icône admin si rôle Administrateur (après stockage rôle par le module auth)
-            const gear = document.getElementById('admin-gear');
-            const applyGearVisibility = () => {
-                const role = (localStorage.getItem('userRole')||'').trim();
-                if (gear) gear.style.display = (role === 'Administrateur') ? 'flex' : 'none';
-                // Menu nav engrenage (Annonce / Administration)
-                const navLi = document.querySelector('li.nav-annonce');
-                if (navLi) {
-                    // Visible pour Modérateurs et Admin (Annonce toujours, Admin option seulement si Administrateur)
-                    if (role === 'Administrateur' || role === 'Modérateur') {
-                        navLi.style.display = 'list-item';
-                        const menu = document.getElementById('nav-gear-menu');
-                        if (menu) {
-                            const adminLink = menu.querySelector('a[data-role="admin"]');
-                            if (adminLink) adminLink.style.display = (role === 'Administrateur') ? 'flex' : 'none';
-                        }
-                    } else {
-                        navLi.style.display = 'none';
-                    }
-                }
-            };
-            applyGearVisibility();
-            // Event listener au cas où le rôle est défini légèrement après
-            setTimeout(applyGearVisibility, 800);
-
-            // Toggle menu events
-            const toggleBtn = document.getElementById('nav-gear-toggle');
-            const menu = document.getElementById('nav-gear-menu');
-            const navGearSvg = document.getElementById('nav-gear-svg');
-            const navGearFallback = document.getElementById('nav-gear-fallback');
-            // Si pour une raison l'SVG n'a pas de bbox (rare), afficher fallback emoji
-            if (navGearSvg && navGearFallback) {
-                try {
-                    const box = navGearSvg.getBBox();
-                    if (!box || box.width === 0) {
-                        navGearSvg.style.display = 'none';
-                        navGearFallback.style.display = 'flex';
-                    }
-                } catch(e) {
-                    navGearSvg.style.display = 'none';
-                    navGearFallback.style.display = 'flex';
-                }
-            }
-            if (toggleBtn && menu) {
-                const closeMenu = () => {
-                    menu.style.display = 'none';
-                    toggleBtn.setAttribute('aria-expanded','false');
-                };
-                const openMenu = () => {
-                    menu.style.display = 'block';
-                    toggleBtn.setAttribute('aria-expanded','true');
-                };
-                toggleBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (menu.style.display === 'block') { closeMenu(); } else { openMenu(); }
-                });
-                document.addEventListener('click', (e) => {
-                    if (!menu.contains(e.target) && e.target !== toggleBtn && !toggleBtn.contains(e.target)) {
-                        closeMenu();
-                    }
-                });
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape') closeMenu();
-                });
-                // Hover highlight for links
-                menu.querySelectorAll('a').forEach(a => {
-                    a.addEventListener('mouseenter', () => { a.style.background = '#272229'; });
-                    a.addEventListener('mouseleave', () => { a.style.background = 'transparent'; });
-                });
-            }
-
-            // Ressources dropdown
-            const resToggle = document.getElementById('nav-ressources-toggle');
-            const resMenu = document.getElementById('nav-ressources-menu');
-            if (resToggle && resMenu) {
-                const closeRes = () => { resMenu.style.display='none'; resToggle.setAttribute('aria-expanded','false'); };
-                const openRes = () => { resMenu.style.display='block'; resToggle.setAttribute('aria-expanded','true'); };
-                resToggle.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (resMenu.style.display === 'block') { closeRes(); } else { openRes(); }
-                });
-                document.addEventListener('click', (e) => {
-                    if (!resMenu.contains(e.target) && e.target !== resToggle && !resToggle.contains(e.target)) {
-                        closeRes();
-                    }
-                });
-                document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeRes(); });
-                resMenu.querySelectorAll('a').forEach(a => {
-                    a.addEventListener('mouseenter', () => { a.style.background = '#272229'; });
-                    a.addEventListener('mouseleave', () => { a.style.background = 'transparent'; });
-                });
-            }
-
-            // Raid dropdown
-            const raidToggle = document.getElementById('nav-raid-toggle');
-            const raidMenu = document.getElementById('nav-raid-menu');
-            if (raidToggle && raidMenu) {
-                const closeRaid=()=>{ raidMenu.style.display='none'; raidToggle.setAttribute('aria-expanded','false'); };
-                const openRaid=()=>{ raidMenu.style.display='block'; raidToggle.setAttribute('aria-expanded','true'); };
-                raidToggle.addEventListener('click',e=>{ e.preventDefault(); if(raidMenu.style.display==='block'){closeRaid();} else {openRaid();} });
-                document.addEventListener('click',e=>{ if(!raidMenu.contains(e.target)&& e.target!==raidToggle && !raidToggle.contains(e.target)) closeRaid(); });
-                document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeRaid(); });
-                raidMenu.querySelectorAll('a').forEach(a=>{ a.addEventListener('mouseenter',()=>a.style.background='#272229'); a.addEventListener('mouseleave',()=>a.style.background='transparent'); });
-            }
-
-            // Gestion dropdown
-            const gestionToggle = document.getElementById('nav-gestion-toggle');
-            const gestionMenu = document.getElementById('nav-gestion-menu');
-            if (gestionToggle && gestionMenu) {
-                const closeGestion=()=>{ gestionMenu.style.display='none'; gestionToggle.setAttribute('aria-expanded','false'); };
-                const openGestion=()=>{ gestionMenu.style.display='block'; gestionToggle.setAttribute('aria-expanded','true'); };
-                gestionToggle.addEventListener('click',e=>{ e.preventDefault(); if(gestionMenu.style.display==='block'){closeGestion();} else {openGestion();} });
-                document.addEventListener('click',e=>{ if(!gestionMenu.contains(e.target)&& e.target!==gestionToggle && !gestionToggle.contains(e.target)) closeGestion(); });
-                document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeGestion(); });
-                gestionMenu.querySelectorAll('a').forEach(a=>{ a.addEventListener('mouseenter',()=>a.style.background='#272229'); a.addEventListener('mouseleave',()=>a.style.background='transparent'); });
-            }
-        });
-    </script>
 </body>
 </html>
