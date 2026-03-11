@@ -3,11 +3,12 @@ const BASE_URL = 'https://developer-lostark.game.onstove.com';
 
 async function safeJson(r) {
   try {
-    const text = await r.text();
-    console.log(`Raw response (first 200 chars): ${text.substring(0, 200)}`);
+    const buf = await r.arrayBuffer();
+    const text = new TextDecoder('utf-8').decode(buf);
+    console.log(`Raw (50): ${text.substring(0, 50)}`);
     return JSON.parse(text);
-  } catch (e) {
-    console.error(`JSON parse error: ${e.message}`);
+  } catch(e) {
+    console.error(`Parse error: ${e.message}`);
     return null;
   }
 }
@@ -18,7 +19,7 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const { character } = req.query;
-  if (!character) return res.status(400).json({ error: 'Paramètre character manquant' });
+  if (!character) return res.status(400).json({ error: 'character manquant' });
   if (!LOSTARK_API_KEY) return res.status(500).json({ error: 'Clé API manquante' });
 
   const headers = {
@@ -28,12 +29,8 @@ export default async function handler(req, res) {
 
   try {
     const profileRes = await fetch(`${BASE_URL}/armories/characters/${encodeURIComponent(character)}/profiles`, { headers });
-    console.log(`Profile status: ${profileRes.status}, content-type: ${profileRes.headers.get('content-type')}`);
-
-    if (!profileRes.ok) {
-      const txt = await profileRes.text();
-      return res.status(profileRes.status).json({ error: `API error ${profileRes.status}: ${txt.substring(0, 200)}` });
-    }
+    console.log(`Profile: ${profileRes.status}`);
+    if (!profileRes.ok) return res.status(profileRes.status).json({ error: `API ${profileRes.status}` });
 
     const profile = await safeJson(profileRes);
 
@@ -43,16 +40,15 @@ export default async function handler(req, res) {
       fetch(`${BASE_URL}/armories/characters/${encodeURIComponent(character)}/gems`, { headers }),
     ]);
 
-    const equipment = equipRes.ok ? await safeJson(equipRes) : null;
-    const engravings = engRes.ok ? await safeJson(engRes) : null;
-    const gems = gemsRes.ok ? await safeJson(gemsRes) : null;
+    const equipment  = equipRes.ok  ? await safeJson(equipRes)  : null;
+    const engravings = engRes.ok    ? await safeJson(engRes)     : null;
+    const gems       = gemsRes.ok   ? await safeJson(gemsRes)    : null;
 
-    console.log(`profile keys: ${profile ? Object.keys(profile).join(',') : 'null'}`);
-
+    console.log(`profile ok: ${!!profile}, keys: ${profile ? Object.keys(profile).slice(0,3).join(',') : 'none'}`);
     return res.status(200).json({ profile, equipment, engravings, gems });
 
-  } catch (e) {
-    console.error(`Fatal error: ${e.message}`);
+  } catch(e) {
+    console.error(`Fatal: ${e.message}`);
     return res.status(500).json({ error: e.message });
   }
 }
