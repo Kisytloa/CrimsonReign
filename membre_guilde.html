@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,8 +19,8 @@
     }
 
     .stat-chip {
-      background: linear-gradient(135deg, rgba(25,10,32,0.95), rgba(20,8,28,0.95));
-      border: 1px solid rgba(179,0,27,0.35);
+      background: linear-gradient(135deg, rgba(25, 10, 32, 0.95), rgba(20, 8, 28, 0.95));
+      border: 1px solid rgba(179, 0, 27, 0.35);
       border-radius: 12px;
       padding: 14px 22px;
       text-align: center;
@@ -32,13 +33,15 @@
     .stat-chip::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0;
+      top: 0;
+      left: 0;
+      right: 0;
       height: 2px;
       background: linear-gradient(90deg, transparent, var(--gold), transparent);
     }
 
     .stat-chip:hover {
-      border-color: rgba(201,146,42,0.5);
+      border-color: rgba(201, 146, 42, 0.5);
       transform: translateY(-3px);
     }
 
@@ -74,8 +77,8 @@
       flex: 1;
       min-width: 200px;
       margin-bottom: 0;
-      background: rgba(14,5,20,0.8);
-      border: 1px solid rgba(179,0,27,0.3);
+      background: rgba(14, 5, 20, 0.8);
+      border: 1px solid rgba(179, 0, 27, 0.3);
       padding: 10px 16px 10px 40px;
       border-radius: 30px;
       font-size: 0.9rem;
@@ -89,7 +92,7 @@
 
     .members-toolbar input[type="text"]:focus {
       border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(201,146,42,0.12);
+      box-shadow: 0 0 0 3px rgba(201, 146, 42, 0.12);
     }
 
     .sort-btn {
@@ -102,8 +105,8 @@
       letter-spacing: 1px;
       text-transform: uppercase;
       color: var(--text-muted);
-      background: rgba(20,8,28,0.8);
-      border: 1px solid rgba(179,0,27,0.28);
+      background: rgba(20, 8, 28, 0.8);
+      border: 1px solid rgba(179, 0, 27, 0.28);
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.22s;
@@ -113,8 +116,8 @@
     .sort-btn:hover,
     .sort-btn.active {
       color: var(--gold-light);
-      border-color: rgba(201,146,42,0.5);
-      background: rgba(30,12,38,0.9);
+      border-color: rgba(201, 146, 42, 0.5);
+      background: rgba(30, 12, 38, 0.9);
     }
 
     /* Grille membres */
@@ -126,19 +129,19 @@
 
     /* Carte membre améliorée */
     .membre-card-v2 {
-      background: linear-gradient(160deg, rgba(22,12,28,0.98), rgba(18,8,24,0.98));
-      border: 1px solid rgba(179,0,27,0.3);
+      background: linear-gradient(160deg, rgba(22, 12, 28, 0.98), rgba(18, 8, 24, 0.98));
+      border: 1px solid rgba(179, 0, 27, 0.3);
       border-radius: 14px;
       overflow: hidden;
       transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
-      box-shadow: 0 5px 24px rgba(0,0,0,0.5);
+      box-shadow: 0 5px 24px rgba(0, 0, 0, 0.5);
       position: relative;
     }
 
     .membre-card-v2:hover {
       transform: translateY(-6px);
-      border-color: rgba(201,146,42,0.45);
-      box-shadow: 0 14px 40px rgba(0,0,0,0.7), 0 0 20px rgba(201,146,42,0.08);
+      border-color: rgba(201, 146, 42, 0.45);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(201, 146, 42, 0.08);
     }
 
     /* Bandeau rôle en haut de la carte */
@@ -146,33 +149,45 @@
       height: 4px;
       width: 100%;
     }
-    .card-role-banner.admin { background: linear-gradient(90deg, #2d7a2d, #4caf50); }
-    .card-role-banner.mod   { background: linear-gradient(90deg, #0277bd, #29b6f6); }
-    .card-role-banner.member{ background: linear-gradient(90deg, var(--red), #e53935); }
+
+    .card-role-banner.admin {
+      background: linear-gradient(90deg, #2d7a2d, #4caf50);
+    }
+
+    .card-role-banner.mod {
+      background: linear-gradient(90deg, #0277bd, #29b6f6);
+    }
+
+    .card-role-banner.member {
+      background: linear-gradient(90deg, var(--red), #e53935);
+    }
 
     .card-header {
       display: flex;
       align-items: center;
       gap: 14px;
       padding: 16px 18px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .card-avatar {
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: linear-gradient(135deg, rgba(179,0,27,0.3), rgba(60,10,90,0.4));
-      border: 2px solid rgba(201,146,42,0.4);
+      background: linear-gradient(135deg, rgba(179, 0, 27, 0.3), rgba(60, 10, 90, 0.4));
+      border: 2px solid rgba(201, 146, 42, 0.4);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.5rem;
       flex-shrink: 0;
-      box-shadow: 0 0 12px rgba(179,0,27,0.2);
+      box-shadow: 0 0 12px rgba(179, 0, 27, 0.2);
     }
 
-    .card-member-info { flex: 1; min-width: 0; }
+    .card-member-info {
+      flex: 1;
+      min-width: 0;
+    }
 
     .card-member-name {
       font-family: var(--font-head);
@@ -192,9 +207,18 @@
       text-transform: uppercase;
       margin-top: 3px;
     }
-    .card-member-role.admin  { color: #81c784; }
-    .card-member-role.mod    { color: #4fc3f7; }
-    .card-member-role.member { color: var(--text-muted); }
+
+    .card-member-role.admin {
+      color: #81c784;
+    }
+
+    .card-member-role.mod {
+      color: #4fc3f7;
+    }
+
+    .card-member-role.member {
+      color: var(--text-muted);
+    }
 
     /* iLvl max badge */
     .card-ilvl-max {
@@ -205,6 +229,7 @@
       text-align: right;
       flex-shrink: 0;
     }
+
     .card-ilvl-max strong {
       display: block;
       font-size: 1.1rem;
@@ -225,29 +250,30 @@
       align-items: center;
       gap: 10px;
       padding: 8px 12px;
-      background: rgba(10,3,16,0.6);
+      background: rgba(10, 3, 16, 0.6);
       border-radius: 8px;
-      border-left: 2px solid rgba(179,0,27,0.4);
+      border-left: 2px solid rgba(179, 0, 27, 0.4);
       transition: background 0.2s, border-color 0.2s;
     }
 
     .perso-row:hover {
-      background: rgba(179,0,27,0.07);
-      border-color: rgba(201,146,42,0.4);
+      background: rgba(179, 0, 27, 0.07);
+      border-color: rgba(201, 146, 42, 0.4);
     }
 
     .perso-class-icon,
     .class-icon {
       filter: none !important;
     }
+
     .perso-class-icon {
       width: 30px;
       height: 30px;
       flex-shrink: 0;
       border-radius: 6px;
       object-fit: cover;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     /* Fallback emoji icon quand l'image échoue */
@@ -256,15 +282,18 @@
       height: 30px;
       flex-shrink: 0;
       border-radius: 6px;
-      background: rgba(179,0,27,0.2);
-      border: 1px solid rgba(179,0,27,0.3);
+      background: rgba(179, 0, 27, 0.2);
+      border: 1px solid rgba(179, 0, 27, 0.3);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1rem;
     }
 
-    .perso-info { flex: 1; min-width: 0; }
+    .perso-info {
+      flex: 1;
+      min-width: 0;
+    }
 
     .perso-name {
       font-family: var(--font-head);
@@ -292,11 +321,30 @@
     }
 
     /* Couleur iLvl selon le niveau */
-    .ilvl-mythic  { color: #ff9800; background: rgba(255,152,0,0.12); }
-    .ilvl-legend  { color: #e040fb; background: rgba(224,64,251,0.12); }
-    .ilvl-epic    { color: #5c6bc0; background: rgba(92,107,192,0.12); }
-    .ilvl-rare    { color: #26a69a; background: rgba(38,166,154,0.12); }
-    .ilvl-normal  { color: var(--text-muted); background: rgba(100,100,100,0.1); }
+    .ilvl-mythic {
+      color: #ff9800;
+      background: rgba(255, 152, 0, 0.12);
+    }
+
+    .ilvl-legend {
+      color: #e040fb;
+      background: rgba(224, 64, 251, 0.12);
+    }
+
+    .ilvl-epic {
+      color: #5c6bc0;
+      background: rgba(92, 107, 192, 0.12);
+    }
+
+    .ilvl-rare {
+      color: #26a69a;
+      background: rgba(38, 166, 154, 0.12);
+    }
+
+    .ilvl-normal {
+      color: var(--text-muted);
+      background: rgba(100, 100, 100, 0.1);
+    }
 
     /* Footer carte */
     .card-footer {
@@ -316,16 +364,17 @@
       letter-spacing: 1px;
       text-transform: uppercase;
       color: var(--text-muted);
-      background: rgba(20,8,28,0.8);
-      border: 1px solid rgba(179,0,27,0.28);
+      background: rgba(20, 8, 28, 0.8);
+      border: 1px solid rgba(179, 0, 27, 0.28);
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.22s;
     }
+
     .btn-edit-perso:hover {
       color: var(--gold-light);
-      border-color: rgba(201,146,42,0.5);
-      background: rgba(30,12,38,0.9);
+      border-color: rgba(201, 146, 42, 0.5);
+      background: rgba(30, 12, 38, 0.9);
     }
 
     /* Empty state */
@@ -345,12 +394,18 @@
       overflow-y: auto;
     }
 
-    #popup-ajout-personnage .popup-content::-webkit-scrollbar { width: 5px; }
-    #popup-ajout-personnage .popup-content::-webkit-scrollbar-thumb { background: var(--red); border-radius: 5px; }
+    #popup-ajout-personnage .popup-content::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    #popup-ajout-personnage .popup-content::-webkit-scrollbar-thumb {
+      background: var(--red);
+      border-radius: 5px;
+    }
 
     .popup-section {
-      background: rgba(10,3,16,0.5);
-      border: 1px solid rgba(179,0,27,0.2);
+      background: rgba(10, 3, 16, 0.5);
+      border: 1px solid rgba(179, 0, 27, 0.2);
       border-radius: 10px;
       padding: 16px 18px;
       margin-bottom: 14px;
@@ -364,7 +419,7 @@
       color: var(--gold);
       margin-bottom: 12px;
       padding-bottom: 8px;
-      border-bottom: 1px solid rgba(201,146,42,0.2);
+      border-bottom: 1px solid rgba(201, 146, 42, 0.2);
     }
 
     .form-row {
@@ -373,7 +428,9 @@
       gap: 12px;
     }
 
-    .form-row > * { margin-bottom: 0; }
+    .form-row>* {
+      margin-bottom: 0;
+    }
 
     .popup-btn-row {
       display: flex;
@@ -382,11 +439,14 @@
       margin-top: 4px;
     }
 
-    .popup-btn-row button { flex: 1; min-width: 120px; }
+    .popup-btn-row button {
+      flex: 1;
+      min-width: 120px;
+    }
 
     /* Skeleton loader */
     .skeleton {
-      background: linear-gradient(90deg, rgba(30,12,38,0.6) 25%, rgba(50,20,60,0.6) 50%, rgba(30,12,38,0.6) 75%);
+      background: linear-gradient(90deg, rgba(30, 12, 38, 0.6) 25%, rgba(50, 20, 60, 0.6) 50%, rgba(30, 12, 38, 0.6) 75%);
       background-size: 200% 100%;
       animation: skeletonPulse 1.5s infinite;
       border-radius: 8px;
@@ -395,13 +455,18 @@
     }
 
     @keyframes skeletonPulse {
-      0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
     }
 
     .skeleton-card {
-      background: linear-gradient(160deg, rgba(22,12,28,0.98), rgba(18,8,24,0.98));
-      border: 1px solid rgba(179,0,27,0.2);
+      background: linear-gradient(160deg, rgba(22, 12, 28, 0.98), rgba(18, 8, 24, 0.98));
+      border: 1px solid rgba(179, 0, 27, 0.2);
       border-radius: 14px;
       padding: 20px;
       height: 200px;
@@ -413,15 +478,15 @@
       bottom: 80px;
       left: 50%;
       transform: translateX(-50%) translateY(20px);
-      background: linear-gradient(135deg, rgba(22,12,28,0.98), rgba(18,8,24,0.98));
-      border: 1px solid rgba(201,146,42,0.5);
+      background: linear-gradient(135deg, rgba(22, 12, 28, 0.98), rgba(18, 8, 24, 0.98));
+      border: 1px solid rgba(201, 146, 42, 0.5);
       border-radius: 30px;
       padding: 12px 24px;
       font-family: var(--font-head);
       font-size: 0.8rem;
       letter-spacing: 1px;
       color: var(--gold-light);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
       z-index: 99999;
       opacity: 0;
       transition: opacity 0.3s, transform 0.3s;
@@ -451,17 +516,29 @@
       align-items: center;
       gap: 14px;
       padding: 10px 16px;
-      background: rgba(10,3,16,0.6);
+      background: rgba(10, 3, 16, 0.6);
       border-radius: 10px;
-      border: 1px solid rgba(179,0,27,0.2);
+      border: 1px solid rgba(179, 0, 27, 0.2);
       transition: all 0.2s;
     }
 
-    .top-ilvl-item:hover { border-color: rgba(201,146,42,0.35); background: rgba(179,0,27,0.05); }
+    .top-ilvl-item:hover {
+      border-color: rgba(201, 146, 42, 0.35);
+      background: rgba(179, 0, 27, 0.05);
+    }
 
-    .top-ilvl-item.rank-1 { border-color: rgba(255,215,0,0.5); background: rgba(255,215,0,0.04); }
-    .top-ilvl-item.rank-2 { border-color: rgba(192,192,192,0.4); }
-    .top-ilvl-item.rank-3 { border-color: rgba(205,127,50,0.4); }
+    .top-ilvl-item.rank-1 {
+      border-color: rgba(255, 215, 0, 0.5);
+      background: rgba(255, 215, 0, 0.04);
+    }
+
+    .top-ilvl-item.rank-2 {
+      border-color: rgba(192, 192, 192, 0.4);
+    }
+
+    .top-ilvl-item.rank-3 {
+      border-color: rgba(205, 127, 50, 0.4);
+    }
 
     .rank-badge {
       width: 28px;
@@ -475,16 +552,59 @@
       font-weight: 700;
       flex-shrink: 0;
     }
-    .rank-1 .rank-badge { background: rgba(255,215,0,0.2); color: #ffd700; border: 1px solid rgba(255,215,0,0.4); }
-    .rank-2 .rank-badge { background: rgba(192,192,192,0.2); color: #c0c0c0; border: 1px solid rgba(192,192,192,0.4); }
-    .rank-3 .rank-badge { background: rgba(205,127,50,0.2); color: #cd7f32; border: 1px solid rgba(205,127,50,0.4); }
-    .rank-other .rank-badge { background: rgba(100,100,100,0.15); color: var(--text-muted); border: 1px solid rgba(100,100,100,0.3); }
 
-    .rank-perso-info { flex: 1; min-width: 0; }
-    .rank-perso-name { font-family: var(--font-head); font-size: 0.85rem; color: var(--text); }
-    .rank-member-name { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
-    .rank-ilvl { font-family: var(--font-head); font-size: 1rem; font-weight: 700; color: var(--gold); }
-    .rank-class { font-size: 0.78rem; color: var(--text-muted); }
+    .rank-1 .rank-badge {
+      background: rgba(255, 215, 0, 0.2);
+      color: #ffd700;
+      border: 1px solid rgba(255, 215, 0, 0.4);
+    }
+
+    .rank-2 .rank-badge {
+      background: rgba(192, 192, 192, 0.2);
+      color: #c0c0c0;
+      border: 1px solid rgba(192, 192, 192, 0.4);
+    }
+
+    .rank-3 .rank-badge {
+      background: rgba(205, 127, 50, 0.2);
+      color: #cd7f32;
+      border: 1px solid rgba(205, 127, 50, 0.4);
+    }
+
+    .rank-other .rank-badge {
+      background: rgba(100, 100, 100, 0.15);
+      color: var(--text-muted);
+      border: 1px solid rgba(100, 100, 100, 0.3);
+    }
+
+    .rank-perso-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .rank-perso-name {
+      font-family: var(--font-head);
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+
+    .rank-member-name {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .rank-ilvl {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .rank-class {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
   </style>
 
 </head>
@@ -501,7 +621,9 @@
   <header>
     <img src="Logo guilde.jpg" alt="Logo Bloodshadow" class="logo gauche" />
     <h1>Membres</h1>
-    <p style="font-family:'Cinzel',serif;font-size:0.78rem;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase;margin-top:4px;">Guilde Bloodshadow</p>
+    <p
+      style="font-family:'Cinzel',serif;font-size:0.78rem;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase;margin-top:4px;">
+      Guilde Bloodshadow</p>
     <img src="Logo guilde.jpg" alt="Logo Bloodshadow" class="logo droite" />
 
     <nav>
@@ -515,6 +637,7 @@
           <div id="nav-raid-menu">
             <a href="planning.html"><span>📅</span> Planning de Raid</a>
             <a href="excel_raid.html"><span>📊</span> Excel Raid</a>
+            <a href="wiki.html"><span>📚</span> Wiki Raids</a>
           </div>
         </li>
 
@@ -531,7 +654,8 @@
         <li><a href="Cagnotte.html">💰 Cagnotte</a></li>
 
         <li class="nav-annonce" style="display:none;position:relative;">
-          <button id="nav-gear-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Annonce / Admin">📢</button>
+          <button id="nav-gear-toggle" aria-haspopup="true" aria-expanded="false"
+            aria-label="Annonce / Admin">📢</button>
           <div id="nav-gear-menu">
             <a href="annonce.html" data-role="mod"><span>📝</span> Annonce</a>
             <a href="admin.html" data-role="admin"><span>⚙️</span> Administration</a>
@@ -543,8 +667,10 @@
             <span>📚</span> Ressources <span style="font-size:10px;opacity:.6;">▼</span>
           </button>
           <div id="nav-ressources-menu">
-            <a href="https://www.playlostark.com/fr-fr/news" target="_blank" rel="noopener"><span>📰</span> News Lost Ark</a>
-            <a href="https://www.playlostark.com/fr-fr/support/server-status" target="_blank" rel="noopener"><span>🖥️</span> Server Status</a>
+            <a href="https://www.playlostark.com/fr-fr/news" target="_blank" rel="noopener"><span>📰</span> News Lost
+              Ark</a>
+            <a href="https://www.playlostark.com/fr-fr/support/server-status" target="_blank"
+              rel="noopener"><span>🖥️</span> Server Status</a>
             <a href="https://www.lostark.nexus" target="_blank" rel="noopener"><span>🛠️</span> Build Personnages</a>
           </div>
         </li>
@@ -598,9 +724,24 @@
 
       <div class="members-grid" id="liste-joueurs">
         <!-- Skeletons pendant le chargement -->
-        <div class="skeleton-card"><div class="skeleton" style="width:60%;height:22px;margin-bottom:12px;"></div><div class="skeleton"></div><div class="skeleton" style="width:80%;"></div><div class="skeleton" style="width:70%;"></div></div>
-        <div class="skeleton-card"><div class="skeleton" style="width:55%;height:22px;margin-bottom:12px;"></div><div class="skeleton"></div><div class="skeleton" style="width:85%;"></div><div class="skeleton" style="width:60%;"></div></div>
-        <div class="skeleton-card"><div class="skeleton" style="width:65%;height:22px;margin-bottom:12px;"></div><div class="skeleton"></div><div class="skeleton" style="width:75%;"></div><div class="skeleton" style="width:90%;"></div></div>
+        <div class="skeleton-card">
+          <div class="skeleton" style="width:60%;height:22px;margin-bottom:12px;"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton" style="width:80%;"></div>
+          <div class="skeleton" style="width:70%;"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton" style="width:55%;height:22px;margin-bottom:12px;"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton" style="width:85%;"></div>
+          <div class="skeleton" style="width:60%;"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton" style="width:65%;height:22px;margin-bottom:12px;"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton" style="width:75%;"></div>
+          <div class="skeleton" style="width:90%;"></div>
+        </div>
       </div>
     </section>
 
@@ -626,7 +767,7 @@
             <label for="classe-personnage">Classe</label>
             <select id="classe-personnage" disabled>
               <option value="">— Classe —</option>
-            </select> 
+            </select>
           </div>
         </div>
         <div class="form-row">
@@ -658,7 +799,8 @@
           </div>
         </div>
         <div class="popup-btn-row">
-          <button id="update-ilvl-btn" style="background:linear-gradient(135deg,#c9922a,#8a5a10);">💾 Mettre à jour iLvl</button>
+          <button id="update-ilvl-btn" style="background:linear-gradient(135deg,#c9922a,#8a5a10);">💾 Mettre à jour
+            iLvl</button>
           <button id="delete-character-btn" class="btn-danger">🗑 Supprimer</button>
         </div>
       </div>
@@ -668,7 +810,7 @@
   <button id="logout-btn">🚪 Déconnexion</button>
 
   <script type="module">
-    import { initializeApp }    from "https://www.gstatic.com/firebasejs/9.17.0/firebase-app.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-firestore.js";
 
@@ -682,9 +824,9 @@
       measurementId: "G-1PJ7HXSP6J"
     };
 
-    const app  = initializeApp(firebaseConfig);
+    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db   = getFirestore(app);
+    const db = getFirestore(app);
 
     onAuthStateChanged(auth, (user) => {
       if (!user) window.location.href = 'connexion.html';
@@ -692,16 +834,16 @@
 
     /* ── Archétypes & classes ──────────────────────────── */
     const archetypesClasses = {
-      "Guerrier":           ["Berserker", "Paladin", "Destructeur", "Gunlancer"],
-      "Guerrière":          ["Slayer", "Paladine", "Guardian Knight"],
-      "Mage":               ["Sorcière", "Arcaniste", "Barde", "Invocatrice"],
-      "Martialiste Femme":  ["Elementiste", "Spirite", "Lancière", "Pugiliste"],
-      "Martialiste Homme":  ["Striker", "Breaker"],
-      "Assassin":           ["Sanguelame", "Démoniste", "Faucheuse", "Dévoreuse d'âme"],
-      "Gunner":             ["Gunner", "Sagittaire", "Artilleur", "Machiniste"],
-      "Gunneuse":           ["Fusilière"],
-      "Spécialiste":        ["Artiste", "Helètempète", "Ame sauvage"],
-      "Guardian Knight":    ["Dragon Knight"]
+      "Guerrier": ["Berserker", "Paladin", "Destructeur", "Gunlancer"],
+      "Guerrière": ["Slayer", "Paladine", "Guardian Knight"],
+      "Mage": ["Sorcière", "Arcaniste", "Barde", "Invocatrice"],
+      "Martialiste Femme": ["Elementiste", "Spirite", "Lancière", "Pugiliste"],
+      "Martialiste Homme": ["Striker", "Breaker"],
+      "Assassin": ["Sanguelame", "Démoniste", "Faucheuse", "Dévoreuse d'âme"],
+      "Gunner": ["Gunner", "Sagittaire", "Artilleur", "Machiniste"],
+      "Gunneuse": ["Fusilière"],
+      "Spécialiste": ["Artiste", "Helètempète", "Ame sauvage"],
+      "Guardian Knight": ["Dragon Knight"]
     };
 
     /* =========================================================
@@ -734,89 +876,89 @@
 
     const classIcons = {
       /* Guerrier */
-      "Berserker":          proxyUrl("b/b8/ClassIcon-Warrior-Berserker.png/revision/latest?cb=20220211161248"),
-      "Paladin":            proxyUrl("6/66/ClassIcon-Warrior-Paladin.png/revision/latest?cb=20220211161249"),
-      "Destructeur":        proxyUrl("3/3b/ClassIcon-Warrior-Destroyer.png/revision/latest?cb=20230901222333"),
-      "Destroyer":          proxyUrl("3/3b/ClassIcon-Warrior-Destroyer.png/revision/latest?cb=20230901222333"),
-      "Gunlancer":          proxyUrl("e/eb/ClassIcon-Warrior-Gunlancer.png/revision/latest?cb=20220211161248"),
+      "Berserker": proxyUrl("b/b8/ClassIcon-Warrior-Berserker.png/revision/latest?cb=20220211161248"),
+      "Paladin": proxyUrl("6/66/ClassIcon-Warrior-Paladin.png/revision/latest?cb=20220211161249"),
+      "Destructeur": proxyUrl("3/3b/ClassIcon-Warrior-Destroyer.png/revision/latest?cb=20230901222333"),
+      "Destroyer": proxyUrl("3/3b/ClassIcon-Warrior-Destroyer.png/revision/latest?cb=20230901222333"),
+      "Gunlancer": proxyUrl("e/eb/ClassIcon-Warrior-Gunlancer.png/revision/latest?cb=20220211161248"),
       /* Guerrière */
-      "Slayer":             proxyUrl("1/15/ClassIcon-Warrior-Slayer.png/revision/latest?cb=20230901222441"),
-      "Paladine":           proxyUrl("6/66/ClassIcon-Warrior-Paladin.png/revision/latest?cb=20220211161249"),
-      "Guardian Knight":    proxyUrl("6/6f/ClassIcon-Warrior.png/revision/latest?cb=20220211161247"),
+      "Slayer": proxyUrl("1/15/ClassIcon-Warrior-Slayer.png/revision/latest?cb=20230901222441"),
+      "Paladine": proxyUrl("6/66/ClassIcon-Warrior-Paladin.png/revision/latest?cb=20220211161249"),
+      "Guardian Knight": proxyUrl("6/6f/ClassIcon-Warrior.png/revision/latest?cb=20220211161247"),
       /* Mage */
-      "Sorcière":           proxyUrl("6/63/ClassIcon-Mage-Sorceress.png/revision/latest?cb=20220211161242"),
-      "Sorceress":          proxyUrl("6/63/ClassIcon-Mage-Sorceress.png/revision/latest?cb=20220211161242"),
-      "Arcaniste":          proxyUrl("d/d4/ClassIcon-Mage-Arcanist.png/revision/latest?cb=20230901213545"),
-      "Arcanist":           proxyUrl("d/d4/ClassIcon-Mage-Arcanist.png/revision/latest?cb=20230901213545"),
-      "Barde":              proxyUrl("1/1b/ClassIcon-Mage-Bard.png/revision/latest?cb=20220211161241"),
-      "Bard":               proxyUrl("1/1b/ClassIcon-Mage-Bard.png/revision/latest?cb=20220211161241"),
-      "Invocatrice":        proxyUrl("e/e3/ClassIcon-Mage-Summoner.png/revision/latest?cb=20230901214149"),
-      "Summoner":           proxyUrl("e/e3/ClassIcon-Mage-Summoner.png/revision/latest?cb=20230901214149"),
+      "Sorcière": proxyUrl("6/63/ClassIcon-Mage-Sorceress.png/revision/latest?cb=20220211161242"),
+      "Sorceress": proxyUrl("6/63/ClassIcon-Mage-Sorceress.png/revision/latest?cb=20220211161242"),
+      "Arcaniste": proxyUrl("d/d4/ClassIcon-Mage-Arcanist.png/revision/latest?cb=20230901213545"),
+      "Arcanist": proxyUrl("d/d4/ClassIcon-Mage-Arcanist.png/revision/latest?cb=20230901213545"),
+      "Barde": proxyUrl("1/1b/ClassIcon-Mage-Bard.png/revision/latest?cb=20220211161241"),
+      "Bard": proxyUrl("1/1b/ClassIcon-Mage-Bard.png/revision/latest?cb=20220211161241"),
+      "Invocatrice": proxyUrl("e/e3/ClassIcon-Mage-Summoner.png/revision/latest?cb=20230901214149"),
+      "Summoner": proxyUrl("e/e3/ClassIcon-Mage-Summoner.png/revision/latest?cb=20230901214149"),
       /* Martialiste Femme */
-      "Elementiste":        proxyUrl("e/e8/ClassIcon-Martial_Artist-Wardancer.png/revision/latest?cb=20220211161246"),
-      "Wardancer":          proxyUrl("e/e8/ClassIcon-Martial_Artist-Wardancer.png/revision/latest?cb=20220211161246"),
-      "Spirite":            proxyUrl("1/19/ClassIcon-Martial_Artist-Soulfist.png/revision/latest?cb=20220211161245"),
-      "Soulfist":           proxyUrl("1/19/ClassIcon-Martial_Artist-Soulfist.png/revision/latest?cb=20220211161245"),
-      "Lancière":           proxyUrl("5/5c/ClassIcon-Martial_Artist-Glaivier.png/revision/latest?cb=20230901215814"),
-      "Glaivier":           proxyUrl("5/5c/ClassIcon-Martial_Artist-Glaivier.png/revision/latest?cb=20230901215814"),
-      "Pugiliste":          proxyUrl("6/64/ClassIcon-Martial_Artist-Scrapper.png/revision/latest?cb=20220211161244"),
-      "Scrapper":           proxyUrl("6/64/ClassIcon-Martial_Artist-Scrapper.png/revision/latest?cb=20220211161244"),
+      "Elementiste": proxyUrl("e/e8/ClassIcon-Martial_Artist-Wardancer.png/revision/latest?cb=20220211161246"),
+      "Wardancer": proxyUrl("e/e8/ClassIcon-Martial_Artist-Wardancer.png/revision/latest?cb=20220211161246"),
+      "Spirite": proxyUrl("1/19/ClassIcon-Martial_Artist-Soulfist.png/revision/latest?cb=20220211161245"),
+      "Soulfist": proxyUrl("1/19/ClassIcon-Martial_Artist-Soulfist.png/revision/latest?cb=20220211161245"),
+      "Lancière": proxyUrl("5/5c/ClassIcon-Martial_Artist-Glaivier.png/revision/latest?cb=20230901215814"),
+      "Glaivier": proxyUrl("5/5c/ClassIcon-Martial_Artist-Glaivier.png/revision/latest?cb=20230901215814"),
+      "Pugiliste": proxyUrl("6/64/ClassIcon-Martial_Artist-Scrapper.png/revision/latest?cb=20220211161244"),
+      "Scrapper": proxyUrl("6/64/ClassIcon-Martial_Artist-Scrapper.png/revision/latest?cb=20220211161244"),
       /* Martialiste Homme */
-      "Striker":            proxyUrl("b/b0/ClassIcon-Martial_Artist-Striker.png/revision/latest?cb=20220211161245"),
-      "Breaker":            proxyUrl("b/bd/ClassIcon-Martial_Artist-M.png/revision/latest?cb=20220212223255"),
+      "Striker": proxyUrl("b/b0/ClassIcon-Martial_Artist-Striker.png/revision/latest?cb=20220211161245"),
+      "Breaker": proxyUrl("b/bd/ClassIcon-Martial_Artist-M.png/revision/latest?cb=20220212223255"),
       /* Assassin */
-      "Sanguelame":         proxyUrl("0/0a/ClassIcon-Assassin-Deathblade.png/revision/latest?cb=20220211161236"),
-      "Deathblade":         proxyUrl("0/0a/ClassIcon-Assassin-Deathblade.png/revision/latest?cb=20220211161236"),
-      "Démoniste":          proxyUrl("7/74/ClassIcon-Assassin-Shadowhunter.png/revision/latest?cb=20220211161234"),
-      "Shadowhunter":       proxyUrl("7/74/ClassIcon-Assassin-Shadowhunter.png/revision/latest?cb=20220211161234"),
-      "Faucheuse":          proxyUrl("4/40/ClassIcon-Assassin-Reaper.png/revision/latest?cb=20230901211242"),
-      "Reaper":             proxyUrl("4/40/ClassIcon-Assassin-Reaper.png/revision/latest?cb=20230901211242"),
-      "Dévoreuse d'âme":    proxyUrl("c/c3/ClassIcon-Assassin-Souleater.png/revision/latest?cb=20231125011727"),
-      "Soul Eater":         proxyUrl("c/c3/ClassIcon-Assassin-Souleater.png/revision/latest?cb=20231125011727"),
-      "SoulEater":          proxyUrl("c/c3/ClassIcon-Assassin-Souleater.png/revision/latest?cb=20231125011727"),
-      "Souleater":          proxyUrl("c/c3/ClassIcon-Assassin-Souleater.png/revision/latest?cb=20231125011727"),
+      "Sanguelame": proxyUrl("0/0a/ClassIcon-Assassin-Deathblade.png/revision/latest?cb=20220211161236"),
+      "Deathblade": proxyUrl("0/0a/ClassIcon-Assassin-Deathblade.png/revision/latest?cb=20220211161236"),
+      "Démoniste": proxyUrl("7/74/ClassIcon-Assassin-Shadowhunter.png/revision/latest?cb=20220211161234"),
+      "Shadowhunter": proxyUrl("7/74/ClassIcon-Assassin-Shadowhunter.png/revision/latest?cb=20220211161234"),
+      "Faucheuse": proxyUrl("4/40/ClassIcon-Assassin-Reaper.png/revision/latest?cb=20230901211242"),
+      "Reaper": proxyUrl("4/40/ClassIcon-Assassin-Reaper.png/revision/latest?cb=20230901211242"),
+      "Dévoreuse d'âme": proxyUrl("c/c3/ClassIcon-Assassin-Souleater.png/revision/latest?cb=20231125011727"),
+      "Soul Eater": proxyUrl("c/c3/ClassIcon-Assassin-Souleater.png/revision/latest?cb=20231125011727"),
+      "SoulEater": proxyUrl("c/c3/ClassIcon-Assassin-Souleater.png/revision/latest?cb=20231125011727"),
+      "Souleater": proxyUrl("c/c3/ClassIcon-Assassin-Souleater.png/revision/latest?cb=20231125011727"),
       /* Gunner */
-      "Gunner":             proxyUrl("d/da/ClassIcon-Gunner-Deadeye.png/revision/latest?cb=20220211161238"),
-      "Deadeye":            proxyUrl("d/da/ClassIcon-Gunner-Deadeye.png/revision/latest?cb=20220211161238"),
-      "Sagittaire":         proxyUrl("f/fd/ClassIcon-Gunner-Sharpshooter.png/revision/latest?cb=20220211161240"),
-      "Sharpshooter":       proxyUrl("f/fd/ClassIcon-Gunner-Sharpshooter.png/revision/latest?cb=20220211161240"),
-      "Artilleur":          proxyUrl("a/a8/ClassIcon-Gunner-Artillerist.png/revision/latest?cb=20220211161238"),
-      "Artillerist":        proxyUrl("a/a8/ClassIcon-Gunner-Artillerist.png/revision/latest?cb=20220211161238"),
-      "Machiniste":         proxyUrl("a/ad/ClassIcon-Gunner.png/revision/latest?cb=20220211161237"),
-      "Scouter":            proxyUrl("a/ad/ClassIcon-Gunner.png/revision/latest?cb=20220211161237"),
+      "Gunner": proxyUrl("d/da/ClassIcon-Gunner-Deadeye.png/revision/latest?cb=20220211161238"),
+      "Deadeye": proxyUrl("d/da/ClassIcon-Gunner-Deadeye.png/revision/latest?cb=20220211161238"),
+      "Sagittaire": proxyUrl("f/fd/ClassIcon-Gunner-Sharpshooter.png/revision/latest?cb=20220211161240"),
+      "Sharpshooter": proxyUrl("f/fd/ClassIcon-Gunner-Sharpshooter.png/revision/latest?cb=20220211161240"),
+      "Artilleur": proxyUrl("a/a8/ClassIcon-Gunner-Artillerist.png/revision/latest?cb=20220211161238"),
+      "Artillerist": proxyUrl("a/a8/ClassIcon-Gunner-Artillerist.png/revision/latest?cb=20220211161238"),
+      "Machiniste": proxyUrl("a/ad/ClassIcon-Gunner.png/revision/latest?cb=20220211161237"),
+      "Scouter": proxyUrl("a/ad/ClassIcon-Gunner.png/revision/latest?cb=20220211161237"),
       /* Gunneuse */
-      "Fusilière":          proxyUrl("3/38/ClassIcon-Gunner-Gunslinger.png/revision/latest?cb=20220211161239"),
-      "Gunslinger":         proxyUrl("3/38/ClassIcon-Gunner-Gunslinger.png/revision/latest?cb=20220211161239"),
+      "Fusilière": proxyUrl("3/38/ClassIcon-Gunner-Gunslinger.png/revision/latest?cb=20220211161239"),
+      "Gunslinger": proxyUrl("3/38/ClassIcon-Gunner-Gunslinger.png/revision/latest?cb=20220211161239"),
       /* Spécialiste */
-      "Artiste":            proxyUrl("d/da/ClassIcon-Specialist-Artist.png/revision/latest?cb=20230901210029"),
-      "Artist":             proxyUrl("d/da/ClassIcon-Specialist-Artist.png/revision/latest?cb=20230901210029"),
+      "Artiste": proxyUrl("d/da/ClassIcon-Specialist-Artist.png/revision/latest?cb=20230901210029"),
+      "Artist": proxyUrl("d/da/ClassIcon-Specialist-Artist.png/revision/latest?cb=20230901210029"),
       /* Hélètempète / Aeromancer — FICHIER LOCAL (icône absente du wiki Fandom) */
-      "Helètempète":        "assets/class-icons/heletempete.png",
-      "Aeromancer":         "assets/class-icons/heletempete.png",
+      "Helètempète": "assets/class-icons/heletempete.png",
+      "Aeromancer": "assets/class-icons/heletempete.png",
       /* Ame sauvage / Wildsoul — FICHIER LOCAL */
-      "Ame sauvage":        "assets/class-icons/ame-sauvage.png",
-      "Wildsoul":           "assets/class-icons/ame-sauvage.png",
+      "Ame sauvage": "assets/class-icons/ame-sauvage.png",
+      "Wildsoul": "assets/class-icons/ame-sauvage.png",
       /* Paladine / Valkyrie — FICHIER LOCAL (icône absente du wiki Fandom) */
-      "Paladine":           "assets/class-icons/valkyrie.png",
-      "Valkyrie":           "assets/class-icons/valkyrie.png",
+      "Paladine": "assets/class-icons/valkyrie.png",
+      "Valkyrie": "assets/class-icons/valkyrie.png",
       /* Guardian Knight / Dragon Knight — FICHIER LOCAL (classe 2025, absente du wiki) */
-      "Dragon Knight":      "assets/class-icons/guardian-knight.png",
-      "Guardian Knight":    "assets/class-icons/guardian-knight.png",
-      "Guardianknight":     "assets/class-icons/guardian-knight.png",
+      "Dragon Knight": "assets/class-icons/guardian-knight.png",
+      "Guardian Knight": "assets/class-icons/guardian-knight.png",
+      "Guardianknight": "assets/class-icons/guardian-knight.png",
     };
 
     /* Emoji de fallback par classe (si l'image ne charge toujours pas) */
     const classEmoji = {
-      "Berserker":"⚔️","Paladin":"🛡️","Paladine":"🛡️","Destructeur":"💥","Gunlancer":"🔫",
-      "Slayer":"🗡️","Guardian Knight":"🛡️","Dragon Knight":"🐉",
-      "Sorcière":"🔥","Arcaniste":"🃏","Barde":"🎵","Invocatrice":"🌿",
-      "Elementiste":"💨","Spirite":"👊","Lancière":"⚡","Pugiliste":"🥊",
-      "Striker":"🥋","Breaker":"💢",
-      "Sanguelame":"🩸","Démoniste":"😈","Faucheuse":"💀","Dévoreuse d'âme":"🖤",
-      "Souleater":"🖤","Soul Eater":"🖤",
-      "Gunner":"🎯","Sagittaire":"🏹","Artilleur":"💣","Machiniste":"🤖",
-      "Fusilière":"🔫",
-      "Artiste":"🎨","Helètempète":"🌪️","Ame sauvage":"🐺",
+      "Berserker": "⚔️", "Paladin": "🛡️", "Paladine": "🛡️", "Destructeur": "💥", "Gunlancer": "🔫",
+      "Slayer": "🗡️", "Guardian Knight": "🛡️", "Dragon Knight": "🐉",
+      "Sorcière": "🔥", "Arcaniste": "🃏", "Barde": "🎵", "Invocatrice": "🌿",
+      "Elementiste": "💨", "Spirite": "👊", "Lancière": "⚡", "Pugiliste": "🥊",
+      "Striker": "🥋", "Breaker": "💢",
+      "Sanguelame": "🩸", "Démoniste": "😈", "Faucheuse": "💀", "Dévoreuse d'âme": "🖤",
+      "Souleater": "🖤", "Soul Eater": "🖤",
+      "Gunner": "🎯", "Sagittaire": "🏹", "Artilleur": "💣", "Machiniste": "🤖",
+      "Fusilière": "🔫",
+      "Artiste": "🎨", "Helètempète": "🌪️", "Ame sauvage": "🐺",
     };
 
     /* Résolution d'icône avec normalisation */
@@ -854,7 +996,7 @@
         loading="lazy"
         style="width:${size}px;height:${size}px;border-radius:${rounded};object-fit:cover;border:1px solid rgba(255,255,255,0.12);flex-shrink:0;${extraStyle}"
         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
-      /><span style="display:none;width:${size}px;height:${size}px;border-radius:${rounded};background:rgba(179,0,27,0.2);border:1px solid rgba(179,0,27,0.3);align-items:center;justify-content:center;font-size:${Math.round(size*0.55)}px;flex-shrink:0;">${emoji}</span>`;
+      /><span style="display:none;width:${size}px;height:${size}px;border-radius:${rounded};background:rgba(179,0,27,0.2);border:1px solid rgba(179,0,27,0.3);align-items:center;justify-content:center;font-size:${Math.round(size * 0.55)}px;flex-shrink:0;">${emoji}</span>`;
     }
 
     /* Couleur iLvl */
@@ -875,15 +1017,15 @@
 
     /* Rôle CSS class */
     function roleClass(role) {
-      if ((role||'').trim() === 'Administrateur') return 'admin';
-      if ((role||'').trim() === 'Modérateur')    return 'mod';
+      if ((role || '').trim() === 'Administrateur') return 'admin';
+      if ((role || '').trim() === 'Modérateur') return 'mod';
       return 'member';
     }
 
     /* Avatar emoji selon le rôle */
     function roleAvatar(role) {
-      if ((role||'').trim() === 'Administrateur') return '👑';
-      if ((role||'').trim() === 'Modérateur')    return '⚔️';
+      if ((role || '').trim() === 'Administrateur') return '👑';
+      if ((role || '').trim() === 'Modérateur') return '⚔️';
       return '🗡️';
     }
 
@@ -920,9 +1062,9 @@
         persos.forEach(p => { const v = parseFloat(p.ilvl); if (!isNaN(v) && v > 0) ilvlList.push(v); });
       });
       document.getElementById('stat-membres').textContent = allJoueurs.length;
-      document.getElementById('stat-persos').textContent  = totalPersos;
+      document.getElementById('stat-persos').textContent = totalPersos;
       document.getElementById('stat-ilvl-moy').textContent = ilvlList.length
-        ? (ilvlList.reduce((a,b) => a+b, 0) / ilvlList.length).toFixed(0)
+        ? (ilvlList.reduce((a, b) => a + b, 0) / ilvlList.length).toFixed(0)
         : '—';
       document.getElementById('stat-ilvl-max').textContent = ilvlList.length
         ? Math.max(...ilvlList).toFixed(0)
@@ -951,8 +1093,8 @@
 
       container.innerHTML = top.map((p, i) => {
         const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
-        const medals = ['🥇','🥈','🥉'];
-        const rankLabel = i < 3 ? medals[i] : `#${i+1}`;
+        const medals = ['🥇', '🥈', '🥉'];
+        const rankLabel = i < 3 ? medals[i] : `#${i + 1}`;
         return `
           <div class="top-ilvl-item ${rankClass}">
             <div class="rank-badge">${rankLabel}</div>
@@ -970,14 +1112,14 @@
     }
 
     /* ── Render membres ────────────────────────────────── */
-    window.sortMembers = function(mode) {
+    window.sortMembers = function (mode) {
       sortMode = mode;
       document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('sort-' + mode).classList.add('active');
       renderJoueurs();
     };
 
-    document.getElementById('search-members').addEventListener('input', function() {
+    document.getElementById('search-members').addEventListener('input', function () {
       searchQuery = this.value.toLowerCase().trim();
       renderJoueurs();
     });
@@ -998,9 +1140,9 @@
       }
 
       // Tri
-      if (sortMode === 'name') joueurs.sort((a, b) => (a.nom||'').localeCompare(b.nom||''));
+      if (sortMode === 'name') joueurs.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
       if (sortMode === 'ilvl') joueurs.sort((a, b) => getMaxIlvl(b) - getMaxIlvl(a));
-      if (sortMode === 'count') joueurs.sort((a, b) => ((b.personnages||[]).length) - ((a.personnages||[]).length));
+      if (sortMode === 'count') joueurs.sort((a, b) => ((b.personnages || []).length) - ((a.personnages || []).length));
 
       const container = document.getElementById('liste-joueurs');
 
@@ -1013,7 +1155,7 @@
         const persos = joueur.personnages || [];
         const maxIlvl = getMaxIlvl(joueur);
         const rc = roleClass(joueur.role);
-        const persosSorted = [...persos].sort((a,b) => (parseFloat(b.ilvl)||0) - (parseFloat(a.ilvl)||0));
+        const persosSorted = [...persos].sort((a, b) => (parseFloat(b.ilvl) || 0) - (parseFloat(a.ilvl) || 0));
         const topPerso = persosSorted[0];
 
         const avatarHTML = topPerso
@@ -1022,8 +1164,8 @@
 
         const persosHTML = persosSorted.length > 0
           ? persosSorted.map(p => {
-              const iclass = ilvlClass(p.ilvl);
-              return `
+            const iclass = ilvlClass(p.ilvl);
+            return `
                 <div class="perso-row">
                   <div style="display:flex;align-items:center;">${classIconHTML(p.classe, 30)}</div>
                   <div class="perso-info">
@@ -1033,7 +1175,7 @@
                   <span class="perso-ilvl ${iclass}">${parseFloat(p.ilvl).toLocaleString('fr-FR')}</span>
                 </div>
               `;
-            }).join('')
+          }).join('')
           : '<div class="perso-empty">Aucun personnage enregistré</div>';
 
         return `
@@ -1054,7 +1196,7 @@
             </div>
             <div class="card-persos">${persosHTML}</div>
             <div class="card-footer">
-              <button class="btn-edit-perso" onclick="ouvrirAjoutPerso('${joueur.id}', '${(joueur.nom||'').replace(/'/g,'\\\'')}')" >
+              <button class="btn-edit-perso" onclick="ouvrirAjoutPerso('${joueur.id}', '${(joueur.nom || '').replace(/'/g, '\\\'')}')" >
                 ✏️ Modifier
               </button>
               <a href="profil.html?uid=${joueur.uid || joueur.id}" class="btn-edit-perso" style="text-decoration:none;text-align:center;background:linear-gradient(135deg,rgba(88,101,242,.2),rgba(60,69,196,.2));border-color:rgba(88,101,242,.4);color:#a0aaff;">
@@ -1067,7 +1209,7 @@
     }
 
     /* ── Popup logique ─────────────────────────────────── */
-    window.ouvrirAjoutPerso = function(joueurId, joueurNom) {
+    window.ouvrirAjoutPerso = function (joueurId, joueurNom) {
       document.getElementById('joueur-selectionne').textContent = joueurNom || joueurId;
       document.getElementById('joueur-selectionne').dataset.id = joueurId;
 
@@ -1110,7 +1252,7 @@
     }
 
     /* Archétype → Classes */
-    document.getElementById('archetype-personnage').addEventListener('change', function() {
+    document.getElementById('archetype-personnage').addEventListener('change', function () {
       const classes = archetypesClasses[this.value] || [];
       const sel = document.getElementById('classe-personnage');
       sel.innerHTML = '<option value="">— Classe —</option>';
@@ -1123,12 +1265,12 @@
     });
 
     /* Ajouter personnage */
-    document.getElementById('valider-ajout-personnage').addEventListener('click', async function() {
-      const joueurId  = document.getElementById('joueur-selectionne').dataset.id;
+    document.getElementById('valider-ajout-personnage').addEventListener('click', async function () {
+      const joueurId = document.getElementById('joueur-selectionne').dataset.id;
       const archetype = document.getElementById('archetype-personnage').value;
-      const classe    = document.getElementById('classe-personnage').value;
-      const nom       = document.getElementById('nom-personnage').value.trim();
-      const ilvl      = document.getElementById('ilvl-personnage').value;
+      const classe = document.getElementById('classe-personnage').value;
+      const nom = document.getElementById('nom-personnage').value.trim();
+      const ilvl = document.getElementById('ilvl-personnage').value;
 
       if (!archetype || !classe || !nom || !ilvl) {
         toast('Remplis tous les champs !', true); return;
@@ -1136,8 +1278,8 @@
 
       const joueurRef = doc(db, 'joueurs', joueurId);
       const joueurDoc = await getDoc(joueurRef);
-      const joueur    = joueurDoc.data();
-      const persos    = joueur.personnages || [];
+      const joueur = joueurDoc.data();
+      const persos = joueur.personnages || [];
 
       if (persos.find(p => p.nom.toLowerCase() === nom.toLowerCase())) {
         toast('Un personnage avec ce nom existe déjà !', true); return;
@@ -1154,17 +1296,17 @@
     });
 
     /* Mettre à jour iLvl */
-    document.getElementById('update-ilvl-btn').addEventListener('click', async function() {
-      const joueurId  = document.getElementById('joueur-selectionne').dataset.id;
-      const persoNom  = document.getElementById('select-character').value;
-      const newIlvl   = document.getElementById('update-ilvl-personnage').value;
+    document.getElementById('update-ilvl-btn').addEventListener('click', async function () {
+      const joueurId = document.getElementById('joueur-selectionne').dataset.id;
+      const persoNom = document.getElementById('select-character').value;
+      const newIlvl = document.getElementById('update-ilvl-personnage').value;
 
       if (!persoNom || !newIlvl) { toast('Sélectionne un perso et saisis un iLvl !', true); return; }
 
       const joueurRef = doc(db, 'joueurs', joueurId);
       const joueurDoc = await getDoc(joueurRef);
-      const joueur    = joueurDoc.data();
-      const perso     = joueur.personnages.find(p => p.nom === persoNom);
+      const joueur = joueurDoc.data();
+      const perso = joueur.personnages.find(p => p.nom === persoNom);
 
       if (perso) {
         perso.ilvl = parseFloat(newIlvl);
@@ -1178,7 +1320,7 @@
     });
 
     /* Supprimer personnage */
-    document.getElementById('delete-character-btn').addEventListener('click', async function() {
+    document.getElementById('delete-character-btn').addEventListener('click', async function () {
       const joueurId = document.getElementById('joueur-selectionne').dataset.id;
       const persoNom = document.getElementById('select-character').value;
 
@@ -1187,7 +1329,7 @@
 
       const joueurRef = doc(db, 'joueurs', joueurId);
       const joueurDoc = await getDoc(joueurRef);
-      const joueur    = joueurDoc.data();
+      const joueur = joueurDoc.data();
       joueur.personnages = joueur.personnages.filter(p => p.nom !== persoNom);
       await updateDoc(joueurRef, { personnages: joueur.personnages });
 
@@ -1200,14 +1342,14 @@
     document.getElementById('close-popup-personnage').addEventListener('click', () => {
       document.getElementById('popup-ajout-personnage').style.display = 'none';
     });
-    document.getElementById('popup-ajout-personnage').addEventListener('click', function(e) {
+    document.getElementById('popup-ajout-personnage').addEventListener('click', function (e) {
       if (e.target === this) this.style.display = 'none';
     });
 
     /* Auth state */
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = 'connexion.html'; return; }
-      const q    = query(collection(db, 'joueurs'), where('uid', '==', user.uid));
+      const q = query(collection(db, 'joueurs'), where('uid', '==', user.uid));
       const snap = await getDocs(q);
       if (!snap.empty) {
         const m = snap.docs[0].data();
@@ -1233,23 +1375,24 @@
 
   <!-- Dropdowns nav -->
   <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    function makeDropdown(toggleId, menuId) {
-      const toggle = document.getElementById(toggleId);
-      const menu   = document.getElementById(menuId);
-      if (!toggle || !menu) return;
-      const close = () => { menu.style.display='none'; toggle.setAttribute('aria-expanded','false'); };
-      const open  = () => { menu.style.display='block'; toggle.setAttribute('aria-expanded','true'); };
-      toggle.addEventListener('click', e => { e.preventDefault(); menu.style.display==='block' ? close() : open(); });
-      document.addEventListener('click', e => { if (!menu.contains(e.target) && e.target!==toggle && !toggle.contains(e.target)) close(); });
-      document.addEventListener('keydown', e => { if (e.key==='Escape') close(); });
-    }
-    makeDropdown('nav-raid-toggle',       'nav-raid-menu');
-    makeDropdown('nav-gestion-toggle',    'nav-gestion-menu');
-    makeDropdown('nav-gear-toggle',       'nav-gear-menu');
-    makeDropdown('nav-ressources-toggle', 'nav-ressources-menu');
-  });
+    document.addEventListener('DOMContentLoaded', function () {
+      function makeDropdown(toggleId, menuId) {
+        const toggle = document.getElementById(toggleId);
+        const menu = document.getElementById(menuId);
+        if (!toggle || !menu) return;
+        const close = () => { menu.style.display = 'none'; toggle.setAttribute('aria-expanded', 'false'); };
+        const open = () => { menu.style.display = 'block'; toggle.setAttribute('aria-expanded', 'true'); };
+        toggle.addEventListener('click', e => { e.preventDefault(); menu.style.display === 'block' ? close() : open(); });
+        document.addEventListener('click', e => { if (!menu.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) close(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+      }
+      makeDropdown('nav-raid-toggle', 'nav-raid-menu');
+      makeDropdown('nav-gestion-toggle', 'nav-gestion-menu');
+      makeDropdown('nav-gear-toggle', 'nav-gear-menu');
+      makeDropdown('nav-ressources-toggle', 'nav-ressources-menu');
+    });
   </script>
 
 </body>
+
 </html>

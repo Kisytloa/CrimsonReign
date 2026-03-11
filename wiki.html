@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wiki Raids — Crimson Reign</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root {
+      --wiki-nm: #2d8a3e;
+      --wiki-hm: #b3001b;
+      --wiki-nm-bg: rgba(45, 138, 62, 0.12);
+      --wiki-hm-bg: rgba(179, 0, 27, 0.12);
+      --wiki-border: rgba(179, 0, 27, 0.22);
+    }
+
+    .wiki-wrap {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 0;
+      min-height: calc(100vh - 160px);
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 clamp(12px, 3%, 36px);
+    }
+
+    /* ── Sidebar ── */
+    .wiki-sidebar {
+      padding: 20px 0;
+      border-right: 1px solid var(--wiki-border);
+      position: sticky;
+      top: 80px;
+      height: fit-content;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--red) transparent;
+    }
+
+    .wiki-sidebar::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .wiki-sidebar::-webkit-scrollbar-thumb {
+      background: var(--red);
+      border-radius: 3px;
+    }
+
+    .sidebar-title {
+      font-family: var(--font-head);
+      font-size: .6rem;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 0 16px 10px;
+      border-bottom: 1px solid var(--wiki-border);
+      margin-bottom: 6px;
+    }
+
+    .sidebar-group-label {
+      font-family: var(--font-head);
+      font-size: .57rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 10px 16px 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-group-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, .05);
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all .2s;
+      border-left: 2px solid transparent;
+      font-family: var(--font-head);
+      font-size: .68rem;
+      letter-spacing: .7px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .sidebar-item:hover {
+      background: rgba(179, 0, 27, .08);
+      color: var(--text);
+      border-left-color: rgba(179, 0, 27, .4);
+    }
+
+    .sidebar-item.active {
+      background: rgba(179, 0, 27, .12);
+      color: var(--gold-light);
+      border-left-color: var(--red);
+    }
+
+    .diff-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    .diff-nm {
+      background: var(--wiki-nm);
+      box-shadow: 0 0 5px rgba(45, 138, 62, .5);
+    }
+
+    .diff-hm {
+      background: var(--wiki-hm);
+      box-shadow: 0 0 5px rgba(179, 0, 27, .5);
+    }
+
+    /* ── Content ── */
+    .wiki-content {
+      padding: 24px 28px;
+      min-height: 600px;
+    }
+
+    .wiki-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--wiki-border);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .wiki-breadcrumb {
+      font-family: var(--font-head);
+      font-size: .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+
+    .wiki-breadcrumb span {
+      color: var(--text-muted);
+    }
+
+    .wiki-page-title {
+      font-family: var(--font-head);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .wiki-page-meta {
+      font-size: .7rem;
+      color: var(--text-dim);
+      font-family: var(--font-head);
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    .wiki-page-meta strong {
+      color: var(--text-muted);
+    }
+
+    .wiki-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .btn-wiki-edit,
+    .btn-wiki-new {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 14px;
+      font-family: var(--font-head);
+      font-size: .65rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all .2s;
+      border: 1px solid;
+    }
+
+    .btn-wiki-edit {
+      background: rgba(201, 146, 42, .1);
+      border-color: rgba(201, 146, 42, .35);
+      color: var(--gold-light);
+    }
+
+    .btn-wiki-edit:hover {
+      background: rgba(201, 146, 42, .18);
+      transform: translateY(-1px);
+    }
+
+    .btn-wiki-new {
+      background: linear-gradient(135deg, var(--red), #7a0010);
+      border-color: rgba(179, 0, 27, .5);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(179, 0, 27, .25);
+    }
+
+    .btn-wiki-new:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 18px rgba(179, 0, 27, .4);
+    }
+
+    /* ── Boss banner ── */
+    .boss-banner {
+      background: linear-gradient(135deg, rgba(20, 8, 28, .95), rgba(10, 3, 14, .98));
+      border: 1px solid var(--wiki-border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .boss-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 40%;
+      background: linear-gradient(90deg, transparent, rgba(179, 0, 27, .06));
+      pointer-events: none;
+    }
+
+    .boss-icon {
+      width: 66px;
+      height: 66px;
+      border-radius: 12px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, rgba(179, 0, 27, .2), rgba(100, 0, 15, .3));
+      border: 1px solid rgba(179, 0, 27, .4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 0 20px rgba(179, 0, 27, .2);
+    }
+
+    .boss-info {
+      flex: 1;
+    }
+
+    .boss-name {
+      font-family: var(--font-head);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .boss-tags {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .boss-tag {
+      font-family: var(--font-head);
+      font-size: .58rem;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 20px;
+      border: 1px solid;
+    }
+
+    .boss-tag.hm {
+      background: var(--wiki-hm-bg);
+      border-color: rgba(179, 0, 27, .5);
+      color: #ff8080;
+    }
+
+    .boss-tag.nm {
+      background: var(--wiki-nm-bg);
+      border-color: rgba(45, 138, 62, .5);
+      color: #80ff95;
+    }
+
+    .boss-tag.ilvl {
+      background: rgba(201, 146, 42, .1);
+      border-color: rgba(201, 146, 42, .4);
+      color: var(--gold-light);
+    }
+
+    .boss-tag.size {
+      background: rgba(80, 10, 110, .2);
+      border-color: rgba(120, 20, 160, .4);
+      color: #c080ff;
+    }
+
+    .boss-tag.weak {
+      background: rgba(200, 100, 0, .12);
+      border-color: rgba(200, 100, 0, .4);
+      color: #ffaa60;
+    }
+
+    .boss-desc {
+      font-size: .85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── Sections grid ── */
+    .wiki-sections {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .wiki-section {
+      background: linear-gradient(145deg, rgba(18, 7, 25, .95), rgba(12, 4, 18, .97));
+      border: 1px solid var(--wiki-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .wiki-section-header {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 15px;
+      background: rgba(10, 3, 16, .5);
+      border-bottom: 1px solid var(--wiki-border);
+      font-family: var(--font-head);
+      font-size: .65rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .wiki-section-body {
+      padding: 14px;
+    }
+
+    /* ── Phases ── */
+    .phase-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .phase-item {
+      display: flex;
+      gap: 11px;
+      padding: 11px 13px;
+      background: rgba(14, 5, 20, .7);
+      border-radius: 8px;
+      border-left: 2px solid rgba(179, 0, 27, .4);
+      transition: border-color .2s;
+    }
+
+    .phase-item:hover {
+      border-left-color: var(--gold);
+    }
+
+    .phase-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      background: rgba(179, 0, 27, .2);
+      border: 1px solid rgba(179, 0, 27, .4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-head);
+      font-size: .68rem;
+      font-weight: 700;
+      color: #ff8080;
+    }
+
+    .phase-content {
+      flex: 1;
+    }
+
+    .phase-title {
+      font-family: var(--font-head);
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: .8px;
+      margin-bottom: 4px;
+    }
+
+    .phase-desc {
+      font-size: .81rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .phase-tag {
+      display: inline-block;
+      font-family: var(--font-head);
+      font-size: .53rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-top: 5px;
+    }
+
+    .phase-tag.danger {
+      background: rgba(179, 0, 27, .2);
+      color: #ff8080;
+      border: 1px solid rgba(179, 0, 27, .3);
+    }
+
+    .phase-tag.info {
+      background: rgba(201, 146, 42, .15);
+      color: var(--gold-light);
+      border: 1px solid rgba(201, 146, 42, .3);
+    }
+
+    .phase-tag.safe {
+      background: rgba(45, 138, 62, .15);
+      color: #80ff95;
+      border: 1px solid rgba(45, 138, 62, .3);
+    }
+
+    .phase-tag.hm-only {
+      background: rgba(100, 0, 120, .2);
+      color: #cc88ff;
+      border: 1px solid rgba(120, 0, 160, .35);
+    }
+
+    /* ── Tips ── */
+    .tips-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .tip-item {
+      display: flex;
+      gap: 9px;
+      padding: 9px 11px;
+      background: rgba(14, 5, 20, .6);
+      border-radius: 8px;
+      border: 1px solid rgba(201, 146, 42, .12);
+      font-size: .82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      transition: border-color .2s;
+    }
+
+    .tip-item:hover {
+      border-color: rgba(201, 146, 42, .28);
+    }
+
+    /* ── Sidereals ── */
+    .sidereals-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sidereal-item {
+      display: flex;
+      gap: 10px;
+      padding: 10px 12px;
+      background: rgba(14, 5, 20, .7);
+      border-radius: 8px;
+      border: 1px solid rgba(100, 20, 140, .3);
+    }
+
+    .sidereal-name {
+      font-family: var(--font-head);
+      font-size: .68rem;
+      font-weight: 700;
+      color: #c080ff;
+      letter-spacing: .8px;
+      margin-bottom: 3px;
+    }
+
+    .sidereal-desc {
+      font-size: .8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ── Roles ── */
+    .roles-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .role-card {
+      padding: 10px 12px;
+      background: rgba(14, 5, 20, .7);
+      border-radius: 8px;
+      border: 1px solid rgba(179, 0, 27, .2);
+    }
+
+    .role-label {
+      font-family: var(--font-head);
+      font-size: .58rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 5px;
+    }
+
+    .role-content {
+      font-size: .81rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ── Diff bars ── */
+    .diff-bar-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .diff-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .diff-label {
+      font-family: var(--font-head);
+      font-size: .6rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      min-width: 85px;
+    }
+
+    .diff-bar {
+      flex: 1;
+      height: 6px;
+      background: rgba(255, 255, 255, .07);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .diff-fill {
+      height: 100%;
+      border-radius: 6px;
+    }
+
+    .diff-fill.low {
+      background: linear-gradient(90deg, #2d8a3e, #4aaa55);
+    }
+
+    .diff-fill.mid {
+      background: linear-gradient(90deg, #c9922a, #f0c040);
+    }
+
+    .diff-fill.high {
+      background: linear-gradient(90deg, #b3001b, #d4001f);
+    }
+
+    .diff-fill.lethal {
+      background: linear-gradient(90deg, #6b0080, #b3001b);
+    }
+
+    .diff-val {
+      font-family: var(--font-head);
+      font-size: .63rem;
+      color: var(--text-muted);
+      min-width: 28px;
+      text-align: right;
+    }
+
+    /* ── Checklist ── */
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 7px 11px;
+      background: rgba(14, 5, 20, .6);
+      border-radius: 7px;
+      font-size: .81rem;
+      color: var(--text-muted);
+    }
+
+    .check-item input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--red);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ── Accueil wiki ── */
+    .wiki-home {
+      animation: fadeUp .35s ease both;
+    }
+
+    .wiki-home-title {
+      font-family: var(--font-head);
+      font-size: 1.3rem;
+      color: var(--gold-light);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .wiki-home-sub {
+      font-size: .86rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .raid-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 12px;
+    }
+
+    .raid-card-thumb {
+      background: linear-gradient(145deg, rgba(20, 8, 28, .97), rgba(12, 4, 18, .98));
+      border: 1px solid var(--wiki-border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      cursor: pointer;
+      transition: all .25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .raid-card-thumb::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--red), transparent);
+      opacity: 0;
+      transition: opacity .25s;
+    }
+
+    .raid-card-thumb:hover {
+      border-color: rgba(201, 146, 42, .4);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, .55);
+    }
+
+    .raid-card-thumb:hover::after {
+      opacity: 1;
+    }
+
+    .rct-icon {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    .rct-name {
+      font-family: var(--font-head);
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .rct-tags {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: 7px;
+    }
+
+    .rct-desc {
+      font-size: .76rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .rct-arrow {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      color: var(--text-dim);
+      font-size: .8rem;
+      transition: all .2s;
+    }
+
+    .raid-card-thumb:hover .rct-arrow {
+      color: var(--gold-light);
+      transform: translateX(3px);
+    }
+
+    /* ── Popup éditeur ── */
+    #popup-wiki-edit .popup-content {
+      max-width: 740px;
+      width: 95%;
+      text-align: left;
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+
+    #popup-wiki-edit .popup-content::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    #popup-wiki-edit .popup-content::-webkit-scrollbar-thumb {
+      background: var(--red);
+      border-radius: 4px;
+    }
+
+    .edit-section {
+      background: rgba(10, 3, 16, .5);
+      border: 1px solid rgba(179, 0, 27, .2);
+      border-radius: 10px;
+      padding: 15px 17px;
+      margin-bottom: 13px;
+    }
+
+    .edit-section-title {
+      font-family: var(--font-head);
+      font-size: .68rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 11px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(201, 146, 42, .2);
+    }
+
+    .edit-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px;
+    }
+
+    .edit-row.three {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .edit-textarea {
+      width: 100%;
+      background: rgba(14, 5, 20, .8);
+      border: 1px solid rgba(179, 0, 27, .3);
+      border-radius: 8px;
+      padding: 10px;
+      color: var(--text);
+      font-size: .83rem;
+      resize: vertical;
+      outline: none;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    .phase-editor-item {
+      background: rgba(14, 5, 20, .7);
+      border: 1px solid rgba(179, 0, 27, .2);
+      border-radius: 8px;
+      padding: 12px 13px;
+      margin-bottom: 9px;
+      position: relative;
+    }
+
+    .phase-editor-num {
+      font-family: var(--font-head);
+      font-size: .63rem;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .btn-remove-phase {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      background: rgba(179, 0, 27, .2) !important;
+      border: 1px solid rgba(179, 0, 27, .3) !important;
+      color: #ff8080 !important;
+      font-size: .7rem !important;
+      padding: 0 !important;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: none !important;
+    }
+
+    .btn-add-phase {
+      width: 100%;
+      background: rgba(14, 5, 20, .7) !important;
+      border: 1px dashed rgba(179, 0, 27, .3) !important;
+      color: var(--text-muted) !important;
+      font-size: .7rem !important;
+      padding: 9px !important;
+      border-radius: 8px !important;
+      box-shadow: none !important;
+      margin-top: 3px;
+    }
+
+    .tag-select {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .tag-opt {
+      padding: 4px 9px;
+      border-radius: 6px;
+      font-family: var(--font-head);
+      font-size: .58rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, .1);
+      background: rgba(14, 5, 20, .7);
+      color: var(--text-muted);
+      transition: all .15s;
+    }
+
+    .tag-opt.selected-danger {
+      background: rgba(179, 0, 27, .2);
+      border-color: rgba(179, 0, 27, .5);
+      color: #ff8080;
+    }
+
+    .tag-opt.selected-info {
+      background: rgba(201, 146, 42, .15);
+      border-color: rgba(201, 146, 42, .4);
+      color: var(--gold-light);
+    }
+
+    .tag-opt.selected-safe {
+      background: rgba(45, 138, 62, .15);
+      border-color: rgba(45, 138, 62, .4);
+      color: #80ff95;
+    }
+
+    .tag-opt.selected-hm-only {
+      background: rgba(100, 0, 120, .2);
+      border-color: rgba(120, 0, 160, .4);
+      color: #cc88ff;
+    }
+
+    /* Toast */
+    #wiki-toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: linear-gradient(135deg, rgba(22, 12, 28, .98), rgba(18, 8, 24, .98));
+      border: 1px solid rgba(201, 146, 42, .5);
+      border-radius: 30px;
+      padding: 11px 22px;
+      font-family: var(--font-head);
+      font-size: .78rem;
+      letter-spacing: 1px;
+      color: var(--gold-light);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .6);
+      z-index: 99999;
+      opacity: 0;
+      transition: opacity .3s, transform .3s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    #wiki-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Raid fiche animation */
+    .raid-fiche {
+      animation: fadeUp .35s ease both;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    /* Responsive */
+    @media(max-width:900px) {
+      .wiki-wrap {
+        grid-template-columns: 1fr
+      }
+
+      .wiki-sidebar {
+        display: none
+      }
+
+      .wiki-content {
+        padding: 18px 14px
+      }
+
+      .wiki-sections {
+        grid-template-columns: 1fr
+      }
+
+      .roles-grid {
+        grid-template-columns: 1fr
+      }
+
+      .edit-row {
+        grid-template-columns: 1fr
+      }
+
+      .edit-row.three {
+        grid-template-columns: 1fr 1fr
+      }
+    }
+
+    @media(max-width:600px) {
+      .boss-banner {
+        flex-direction: column;
+        align-items: flex-start
+      }
+
+      .raid-cards-grid {
+        grid-template-columns: 1fr
+      }
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-auth.js";
+    import { getFirestore, collection, doc, getDocs, setDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-firestore.js";
+
+    const app = initializeApp({ apiKey: "AIzaSyBfJubhqQFQNo8fxVLKh1DKlfisJhZYwGI", authDomain: "bloodshadowsite-d35ce.firebaseapp.com", projectId: "bloodshadowsite-d35ce", storageBucket: "bloodshadowsite-d35ce.firebasestorage.app", messagingSenderId: "368188025874", appId: "1:368188025874:web:cfdd31f87651f1a3737ccb" });
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let isAdmin = false, isMod = false, currentUser = null;
+    let allRaids = {}, currentRaidId = null;
+
+    /* ════════════════════════════════════════════
+       DONNÉES RAIDS (basées sur guides Maxroll)
+    ════════════════════════════════════════════ */
+    const DEFAULT_RAIDS = {
+
+      /* ─── MORDUM ─────────────────────────────── */
+      'mordum-g1': {
+        id: 'mordum-g1', name: 'Mordum — Gate 1', difficulty: 'NM/HM', ilvl: 1680,
+        size: 8, icon: '💀', group: 'Mordum',
+        weakness: 'Aucune', tauntable: 'Oui',
+        description: "Thaemine ouvre le bal dans cette gate. Sept mécaniques à seuils HP précis. La clé : maîtriser l'ordre d'explosion de la mécanique Memory et les transitions Dragon/Thaemine.",
+        phases: [
+          { title: 'x300 HP — Retaliation', desc: "Frapper Thaemine pour déclencher sa riposte. Il poignarde devant lui (knockdown) puis demande un Just Guard. Ne pas déclencher = AoE au sol multiples — toujours le provoquer.", tag: 'info' },
+          { title: 'x270 HP — Memory & Stagger', desc: "Marquages rouges apparaissent dans l'ordre 1→2→3→4 mais explosent en ordre inverse 4→3→2→1. Rester sur la ligne 1 là où ça ne se chevauche pas. Stagger le boss, esquiver les cônes rouges. HM : si touché par un cône rouge, Just Guard/Counter pour sortir de la dimension clone.", tag: 'danger' },
+          { title: 'Post x270 — Transition Dragon', desc: "Prendre le portail d'évasion. Rester au centre de l'arène et esquiver. Le dragon arrive en vol puis demande un Just Guard. Ne pas rester dans les flaques bleues laissées.", tag: 'info' },
+          { title: 'x210 HP — Hidden Kharmine', desc: "Joueurs avec flaques bleues → sortir. Joueurs sans flaques → Co-op counter. Utiliser Sidereal Kharmine quand sa boîte de texte apparaît au centre de l'écran.", tag: 'danger' },
+          { title: 'Post x210 — Transition Thaemine', desc: "NM : esquiver les attaques → safe spot Pizza. HM : s'écarter sur les bords, ne pas chevaucher les AoE bleues (x3, x3+1). Just Guard au telegraph. Stagger le boss, sinon counter. Aller à 12h, attendre que le brouillard disparaisse, puis foncer dans le safe spot.", tag: 'danger' },
+          { title: 'x75 HP — Guard & Counter', desc: "Thaemine devient blanc et disparaît dans une direction (revient de cette même direction). Grouper et attendre le telegraph Just Guard. Si raté, esquiver et counter le boss.", tag: 'danger' },
+          { title: 'x50 HP — Dodge & Guard', desc: "Esquiver les attaques aériennes du dragon → counter. Rester entre le brouillard noir, esquiver les attaques aériennes → Just Guard. Utiliser Sidereal Azakiel après le Just Guard.", tag: 'danger' },
+        ],
+        tips: [
+          "🎯 Memory x270 : l'ordre d'explosion est INVERSE (4→3→2→1), toujours rester sur la ligne 1.",
+          "🐉 Transition Dragon : portail d'évasion puis centre de l'arène — ne jamais rester dans les flaques bleues.",
+          "🔮 Hidden Kharmine x210 : Sidereal quand la boîte de texte de Kharmine apparaît à l'écran.",
+          "⚡ x50 HP : garder Azakiel pour APRÈS le Just Guard — c'est le meilleur moment.",
+          "💨 HM Memory : si touché par un cône rouge, Just Guard/Counter immédiatement pour sortir de la dimension.",
+        ],
+        sidereals: [
+          { name: 'Thirain', usage: 'Dégâts libres jusqu\'à x700 HP. Compense si manque de DPS en fin de raid.' },
+          { name: 'Azakiel', usage: 'Après la mécanique x50 HP. 3 barres = immunité push/shield/darknes 25 sec. Excellent pour progression.' },
+          { name: 'Kharmine', usage: 'Hidden Sidereal à x210 HP. Activer quand la boîte de texte de Kharmine apparaît. Boost ATK SPD/MVT/puissance.' },
+        ],
+        roles: {
+          tank: "Positionner le boss face au raid. Utiliser le back-step après les combos. Phase x75 : grouper le raid pour le Just Guard.",
+          support: "Garder les CDs de shield pour les transitions (x270 Dragon, x210 Thaemine). Hyperarmor sur les knockbacks critiques.",
+          dps: "Memory : mémoriser impérativement l'ordre inverse. Burst sur les fenêtres post-transition. Sauvegarder 1 potion pour x50.",
+        },
+        diffStats: { mecanique: 75, dps: 45, positionnement: 70, survie: 65 },
+        checklist: ["Potion HP (x4 min)", "Dark Grenade", "Atropine Potion ou Stimulant", "Connaître l'ordre inverse Memory (4→3→2→1)", "Savoir utiliser le portail Dragon à x270"],
+      },
+
+      'mordum-g2': {
+        id: 'mordum-g2', name: 'Mordum — Gate 2', difficulty: 'NM/HM', ilvl: 1680,
+        size: 8, icon: '🕷️', group: 'Mordum',
+        weakness: 'Insecte — Aucune', tauntable: 'Oui',
+        description: "Naitreya met à l'épreuve la reconnaissance de patterns d'équipe. Boss hybride 3 phases (Alberhastic → Yoho → Velganos) avec un système passif d'Infection qui punit les erreurs.",
+        phases: [
+          { title: 'PASSIF — Infection', desc: "Chaque attaque d'infection donne des stacks au joueur (visibles au-dessus de la barre de mana). Si le boss atteint x15 stacks d'Infection : paralysie des joueurs infectés + tentatives de grab (max 3). Les non-infectés doivent Just Guard pour bloquer les grabs. Si attrapé : gros dégâts + debuff Poison (2 min). Re-grab sous Poison = mort instantanée.", tag: 'danger' },
+          { title: 'x300–235 HP — Phase Alberhastic', desc: "Éviter d'accumuler les stacks d'Infection. Gérer le Team Meter. Timed Mechanic à 12:55 : si Team Meter >50% = Relay Race (3 paires de couleurs, tether à 6h). Si <50% = Waves+Laser (P1 gauche, P2 droite, joueurs avec flaques stackent avant expiration).", tag: 'info' },
+          { title: 'x235 HP — Alberhastic Memory', desc: "NM : tous les joueurs ont le même shield de couleur. Pattern In/Out : Orange → orbes bleues. HM : 4 jaunes/4 blancs. Split arène + Stagger → Just Guard → Orange → orbes bleues. Raid leader utilise Sidereal Nineveh quand le cadran temporel disparaît, recast après la cinématique.", tag: 'danger' },
+          { title: 'x235–105 HP — Phase Yoho', desc: "2 minutes après l'absorption de Yoho : Timed Attack. Utiliser Sidereal Mystic quand le boss atterrit (il doit avoir ses indicateurs avant/arrière visibles).", tag: 'info' },
+          { title: 'x105 HP — Find Clones', desc: "Pinger les flaques dorées dès leur apparition. Le point d'overlap est la vraie cible. NM : counter x2 → stagger. HM : guard/counter x2 → stagger.", tag: 'danger' },
+          { title: 'x105–0 HP — Phase Velganos', desc: "Mécanique Velganos toutes les 1min30. Surveiller la direction du brouillard tourbillonnant, se déplacer dans le même sens pendant 3 slices.", tag: 'danger' },
+        ],
+        tips: [
+          "⚠️ INFECTION : éviter absolument d'être attrapé sous le debuff Poison — re-grab = mort instantanée.",
+          "🎭 Relay Race : 3 paires de couleurs, alterner constamment qui tire le tether vers 6h. Blocs rouges = ignorer, violets = bloquer (non-marqués).",
+          "🔮 Hidden Mystic : attendre que Naitreya atterrisse ET que les indicateurs avant/arrière soient visibles avant d'activer.",
+          "👁️ Find Clones x105 : pinger IMMÉDIATEMENT les flaques dorées, le vrai boss est à l'intersection.",
+          "📢 Team Meter : gérer activement — un meter >50% à 12:55 déclenche la Relay Race.",
+        ],
+        sidereals: [
+          { name: 'Nineveh', usage: 'Après x235 HP Memory (quand le cadran disparaît). Recast après la cinématique pour pousser vers x220.' },
+          { name: 'Mystic', usage: 'Hidden Sidereal 2 minutes après absorption de Yoho. Réduit le Team Meter (3 barres) ou cleanse tous les debuffs (1 barre).' },
+          { name: 'Mariu', usage: 'Stagger en phase tardive. 3 barres = gros dégâts de stagger. 1 barre = ATK power + buff stagger.' },
+        ],
+        roles: {
+          tank: "Maintenir Naitreya stable. Lors des grabs d'Infection (x15 stacks), repositionner rapidement pour les Just Guards.",
+          support: "Surveiller les stacks d'Infection du groupe. Cleanse prioritaire sur les joueurs sous Poison. CD de shield pour la Memory.",
+          dps: "Éviter les attaques d'Infection en priorité. Burst maximal pendant la fenêtre post-Memory Nineveh.",
+        },
+        diffStats: { mecanique: 80, dps: 55, positionnement: 75, survie: 70 },
+        checklist: ["Potion HP", "Dark Grenade", "Atropine Potion", "Comprendre le système d'Infection (x15 stacks = grab)", "Connaître le pattern In/Out de la Memory", "Savoir reconnaître Relay Race vs Waves+Laser"],
+      },
+
+      'mordum-g3': {
+        id: 'mordum-g3', name: 'Mordum — Gate 3', difficulty: 'NM/HM', ilvl: 1680,
+        size: 8, icon: '⚡', group: 'Mordum',
+        weakness: 'Ancien — Terre (+5%)', tauntable: 'Non',
+        description: "Gate d'endurance et de concentration maximale. Mordum possède un système de charges Rouge/Bleu passif et enchaîne les mécaniques à de nombreux seuils HP. La moindre erreur de coordination est fatale.",
+        phases: [
+          { title: 'PASSIF — Charges Rouge/Bleu', desc: "4 joueurs rouges, 4 bleus au départ. Si déséquilibre, le groupe majoritaire prend des dégâts par tick. Tick damage stoppe après le premier stagger naturel. 2 façons de changer : atteindre >50% Electric Gauge, ou rester dans le Polarity Field blanc à son expiration.", tag: 'info' },
+          { title: 'x475 HP — Twister #1', desc: "Main droite frappe → 3 cônes bleus explosent. Main gauche frappe → les twisters surgissent. À l'intérieur des twisters, tourner dans le sens horaire.", tag: 'info' },
+          { title: 'x425 HP — Laser', desc: "Grouper dans la zone safe qui rétrécit. Attendre que le telegraph se soit pleinement étendu. Traverser vers l'autre côté de la zone safe. Fuir le laser. Attraper les orbes rouges/bleues, esquiver → attaques donut.", tag: 'danger' },
+          { title: 'x450/400 HP — Twisters #2 & #3', desc: "Twister #2 : sens antihoraire, arène divisée Rouge/Bleu/Jaune. Twister #3 : balles au lieu de twisters, sens horaire, même division de couleur.", tag: 'info' },
+          { title: 'x375/250/120 HP — Break & Duel', desc: "Appâter le boss pour briser l'orbe → Just Guard x2 (duel #1) ou x3 (duels #2, #3, #4). Sidereal Balthor après avoir volontairement raté le 3ème Just Guard du duel #4.", tag: 'danger' },
+          { title: 'x320 HP — Dome Smash', desc: "Esquiver la foudre qui émerge du dôme, puis spacebar pour y entrer. Collecter les orbes rouges/bleues autour de l'arène.", tag: 'info' },
+          { title: 'x300/<x120 HP — Supernova', desc: "Attendre les 3 animations d'attaque complètes → counter. Ne pas paniquer, le boss marque clairement chaque phase.", tag: 'danger' },
+          { title: 'x180/125 HP — Charged Field', desc: "Aller du côté du marteau correspondant à sa couleur. Correspondre sa couleur au slice du sol. Se déplacer à travers l'arène un par un (rouge = couloir intérieur, bleu = couloir extérieur).", tag: 'danger' },
+          { title: 'x0 HP — Last Stand (HM)', desc: "HM uniquement. Correspondre sa couleur à la sphère. Empêcher les orbes rouges/bleues d'atteindre le centre. Utiliser Sidereal Bastian et recast.", tag: 'hm-only' },
+        ],
+        tips: [
+          "🔴🔵 Charges : surveiller en permanence l'équilibre 4R/4B — le déséquilibre fait des dégâts par tick.",
+          "⚡ Polarity Field : quand les mains de Mordum brillent et qu'il frappe dans ses mains → vague paralysante. Spacebar ou compétence immunité.",
+          "⚡ Electric Gauge >50% : flip automatique de couleur + AoE sur les alliés de couleur opposée.",
+          "🎯 Counters couleur : seuls les joueurs de la même couleur doivent counter (bleu→bleu, rouge→rouge). Counter de la mauvaise couleur = riposte du boss.",
+          "💥 Break & Duel #4 : rater volontairement le 3ème Just Guard pour déclencher le Hidden Sidereal Balthor.",
+          "🔨 Charged Field : ne jamais traverser dans le mauvais couloir — rouge intérieur, bleu extérieur.",
+        ],
+        sidereals: [
+          { name: 'Balthor', usage: 'Début du combat pour casser la gauge de destruction. Hidden Balthor au 4ème duel (rater le 3ème Just Guard volontairement, activer quand Mordum lève ses marteaux).' },
+          { name: 'Bastian', usage: 'x160 Hammer Split (HM). Last Stand (HM). Réduit la gauge électrique.' },
+          { name: 'Shandi', usage: 'Dégâts libres selon disponibilité.' },
+        ],
+        roles: {
+          tank: "Maintenir l'aggro stable pendant les duels. Gérer sa gauge électrique pour éviter les flips involontaires.",
+          support: "Surveiller les charges de l'équipe. Placer les shields avant les phases Charged Field. Corrosive Bomb sur le boss.",
+          dps: "Sacred Charms + Time Stop Potion obligatoires. Connaître parfaitement tous les seuils HP et leurs mécaniques.",
+        },
+        diffStats: { mecanique: 90, dps: 65, positionnement: 85, survie: 80 },
+        checklist: ["Potion HP", "Dark Grenade", "Sacred Charms (OBLIGATOIRE)", "Time Stop Potion", "1 support = Corrosive Bomb", "Connaître l'ensemble des 17+ mécaniques", "Savoir gérer sa charge R/B en permanence"],
+      },
+
+      /* ─── ARMOCHE ─────────────────────────────── */
+      'armoche-g1': {
+        id: 'armoche-g1', name: 'Armoche — Gate 1', difficulty: 'NM/HM', ilvl: 1700,
+        size: 8, icon: '🐍', group: 'Armoche',
+        weakness: 'Démon — Aucune', tauntable: 'Non',
+        description: "Echidna revient pour un dernier duel. La conscience spatiale et la reconnaissance visuelle rapide sont primordiales. Quatre mécaniques à HP précis dont une Spotlight qui peut wipe instantanément si mal gérée.",
+        phases: [
+          { title: 'x285 HP — Spotlight', desc: "Le boss spawn 4 safe spots (cardinaux ou intercardinaux). Se déplacer vers les clones et rester dans leur AoE jusqu'à l'explosion map-wide. Chaque joueur reçoit un rôle : Spotlight (appâter le clone vers le bord et esquiver quand il se rue) ou Target (orbe rouge qui suit — appâter vers le bord, l'activer en courant dedans). JAMAIS empiler plusieurs clones Spotlight ensemble = wipe.", tag: 'danger' },
+          { title: 'x240 HP — Shadow Clones', desc: "NM : Stagger → Clones marchent = aller à l'opposé de l'ombre. Clones sautent = suivre l'ombre. Faire correspondre l'ombre centrale à 1 des 4 clones (Chakram ou Fan) → Guard → Co-op counter → répéter. HM : 2 clones = suivre l'ombre. 4 clones = aller à l'opposé.", tag: 'danger' },
+          { title: 'x150 HP — Jump Rope', desc: "Marcher sur les fleurs au sol. Spacebar pour passer par-dessus les cordes à sauter. HM : les joueurs ciblés éloignent les serpents. Sidereal Nineveh + recast quand les stacks sont épuisés pour détruire le grand shield.", tag: 'info' },
+          { title: 'x30 HP — DPS & Stagger', desc: "Réduire Brelshaza à x400 HP. Stagger le boss. Garder les clones latéraux. Sidereal Wei pour le stagger supplémentaire.", tag: 'danger' },
+        ],
+        tips: [
+          "🔦 Spotlight : les deux joueurs (Spotlight + Target) doivent gérer leurs objectifs en MÊME TEMPS aux bords opposés — ne jamais se croiser.",
+          "👥 Safe spots vides → un clone spawn et tire des projectiles sur les joueurs. Toujours occuper les 4 spots.",
+          "🪞 Shadow Clones : la couleur active du boss peut être vue via le ping ou les debuffs actifs.",
+          "🎵 Jump Rope : spacebar précis sur chaque corde. Ne pas sprinter ou les fleurs ne s'activeront pas.",
+          "⚡ HM Spotlight : être touché par l'explosion déclenche un test de frappe rapide au clavier.",
+        ],
+        sidereals: [
+          { name: 'Nineveh', usage: 'Fin de la mécanique Jump Rope x150 pour détruire le grand shield. Recast immédiatement.' },
+          { name: 'Wei', usage: 'Stagger final lors du DPS Brelshaza x400. 3 barres = dégâts + stagger.' },
+          { name: 'Thirain', usage: 'Dégâts de compensation en fin de raid si le DPS manque.' },
+        ],
+        roles: {
+          tank: "Maintenir le boss stable. Spotlight : toujours clarifier son rôle (Spotlight ou Target) avant la mécanique.",
+          support: "Jump Rope : shield avant l'entrée dans la phase. Soutenir le stagger final x30.",
+          dps: "Shadow Clones : mémoriser la règle ombre/opposé pour NM et HM. Jump Rope : spacebar précis.",
+        },
+        diffStats: { mecanique: 75, dps: 50, positionnement: 80, survie: 60 },
+        checklist: ["Potion HP", "Dark Grenade", "Sacred Charms", "Atropine Potion", "Connaître les 2 rôles Spotlight (bait clone ou bait orbe)", "Savoir lire les ombres des clones (NM vs HM inversé)"],
+      },
+
+      'armoche-g2': {
+        id: 'armoche-g2', name: 'Armoche — Gate 2', difficulty: 'NM/HM', ilvl: 1700,
+        size: 8, icon: '🪨', group: 'Armoche',
+        weakness: 'Ancien — Feu (+10%)', tauntable: 'Non',
+        description: "Combat viscéral en arène réduite avec risque de chute. Stacks de Saignement passifs, hallways étroits et mécaniques de Guard/Counter intenses. Le boss peut one-shot à tout moment.",
+        phases: [
+          { title: 'PASSIF — Stacks de Saignement', desc: "Les attaques de lances infligent des Bleed Stacks (illimités, 30 sec, dégâts par tick). SEULE purge possible : marcher sur les orbes bleues au sol pendant la mécanique x420. Les saignements du reste du combat disparaissent naturellement — les gérer sans paniquer.", tag: 'info' },
+          { title: 'x420 HP — Shield Throw', desc: "Armoche spawn avec 2 stacks de shield (1 en NM) et lance un grand shield blanc qui se divise en 6. L'un devient doré à l'impact — le garder pour qu'il tombe. Ramasser avec G, lancer avec Q en visant le boss (le prévoir comme un DVD bouncing). Chaque lancer touché retire 1 stack. Pendant cette phase : marcher sur les orbes bleues pour purger les Saignements.", tag: 'info' },
+          { title: 'x360 HP — Stagger Check', desc: "Cleanse les coéquipiers stun. Stagger le boss → esquiver 3 attaques. Se déplacer vers le bas → esquiver 3 attaques. Détruire le mur de rocher. Sidereal Balthor + recast après la destruction du mur.", tag: 'danger' },
+          { title: 'x290 HP — Statue Safespot', desc: "P1 gauche, P2 droite. Ordre des safespots : 4→3→2→1. Se regrouper au safe spot → dash loin du boss → lancer le shield → Co-op counter. Détruire le jaune, ignorer le rouge.", tag: 'danger' },
+          { title: 'x240 HP — Guard Destruction', desc: "Se regrouper en bas. Les supports lancent la Corrosive Bomb. Garder le boss, infliger destruction. Sidereal Thirain + recast pour destruction supplémentaire.", tag: 'info' },
+          { title: 'x160 HP — Armadillo', desc: "Éviter absolument le cercle rouge (one-shot instantané). Viser les lances jaunes sur le volcan. Quand les lignes rouges apparaissent : utiliser Balthor.", tag: 'danger' },
+          { title: 'x120 HP — Crater', desc: "Boss rouge → Spacebar Jump Rope → suivre le safe spot. Appuyer sur A quand propulsé en l'air. Détruire le mur du cratère. Utiliser Azena + recast.", tag: 'danger' },
+          { title: 'x60 HP — 3x Volcano', desc: "2 piliers spawn. Placer les 3 flaques de Volcan LOIN des piliers. Se cacher derrière un pilier pour survivre. En cas d'échec : Hyper Awakening ou Time Stop Potion.", tag: 'danger' },
+        ],
+        tips: [
+          "🩸 Saignement : profiter de la mécanique x420 pour marcher sur les orbes bleues — c'est la SEULE occasion de purge.",
+          "🛡️ Shield Throw : imaginer Armoche comme un DVD bouncing pour prédire ses déplacements et ajuster la trajectoire.",
+          "🔴 Armadillo x160 : le cercle rouge = one-shot. Priorité absolue à l'esquive même si ça casse le DPS.",
+          "🌋 Volcano x60 : placer les flaques AVANT que les piliers disparaissent — se mettre derrière immédiatement.",
+          "⚙️ Guard Destruction x240 : les supports doivent avoir leur Corrosive Bomb disponible pour ce moment.",
+        ],
+        sidereals: [
+          { name: 'Balthor', usage: 'x360 Stagger Check (après destruction du mur) ET x160 Armadillo (quand les lignes rouges apparaissent).' },
+          { name: 'Thirain', usage: 'x240 Guard Destruction pour dégâts de destruction supplémentaires. Recast immédiat.' },
+          { name: 'Azena', usage: 'x120 Crater mechanic. Recast immédiat.' },
+        ],
+        roles: {
+          tank: "Maintenir l'aggro constamment — le boss one-shot facilement les non-tanks. Gérer les Guards étroits.",
+          support: "Corrosive Bomb disponible pour x240. Gérer les purges de stun à x360. Shield avant chaque mécanique critique.",
+          dps: "DPS : Destruction Bomb + Sacred Charms. Éviter à tout prix le one-shot d'Armoche lui-même (pire que les mécaniques).",
+        },
+        diffStats: { mecanique: 80, dps: 65, positionnement: 85, survie: 90 },
+        checklist: ["Potion HP", "Dark Grenade ou Whirlwind Grenade", "Destruction Bomb ou Sacred Charms", "Atropine ou Time Stop Potion", "Support : Corrosive Bomb OBLIGATOIRE", "Connaître l'ordre safespot Statue (4→3→2→1)", "Savoir lancer le Shield (G=ramasser, Q=lancer)"],
+      },
+
+      /* ─── FINAL DAY ───────────────────────────── */
+      'finalday-g1': {
+        id: 'finalday-g1', name: 'Final Day — Gate 1', difficulty: 'NM/HM', ilvl: 1710,
+        size: 8, icon: '👹', group: 'Final Day',
+        weakness: 'Archdémon — Aucune', tauntable: 'Non',
+        description: "Kazeros teste la synchronisation d'équipe et la reconnaissance de patterns. Un Team Meter passif déclenche des attaques spéciales. Six mécaniques à seuils HP dont un Clash crucial à x660.",
+        phases: [
+          { title: 'PASSIF — Team Meter', desc: "Gauge divisée en 4 parties, visible en haut à gauche. Se remplit automatiquement et quand on est touché. À chaque partie remplie : Kazeros fait 1 des 3 attaques spéciales (Cross, Balls, Co-op Oneshot). Gauge pleine = les 3 attaques consécutives. Présent en Phase 1 et 3.", tag: 'info' },
+          { title: 'x900 HP — Orb Grab', desc: "8 orbes spawn et fondent sur chaque joueur. Fuir. Si attrapé : flotter en l'air → Kazeros rush et tue. Les autres doivent suivre et counter une fois atteint le joueur attrapé. Les captures donnent des Grab Stacks au boss.", tag: 'danger' },
+          { title: 'x700 HP — Team Stagger', desc: "Stagger le boss en 1v1. Counter pour augmenter les dégâts de stagger. Patterns étoiles/donuts périodiques. La ligne la plus courte = ton safespot pour x500. Typer son safespot dans le chat à la fin.", tag: 'info' },
+          { title: 'x660 HP — Clash', desc: "Trouver le bon clone ! Les indicateurs avant/arrière révèlent le vrai boss. Clash à l'emplacement le plus proche du boss. NM = Q. HM = QWER.", tag: 'danger' },
+          { title: 'x500 HP — Shield Safespots', desc: "Utiliser Sidereal Nineveh + recast quand le boss spawn avec un shield. Lancer Dark Grenade et full DPS. Utiliser Hyper Awakening quand le guard apparaît. Les joueurs avec flèches appellent leurs safespots si la mécanique n'est pas complétée.", tag: 'danger' },
+          { title: 'x380 HP — Clash / Wei', desc: "Kazeros fait un guard et se téléporte à 12h. Utiliser Hidden Wei quand Kazeros réapparaît. Sans Sidereal disponible : Clash au centre.", tag: 'danger' },
+          { title: 'x100 HP — Orb Guard', desc: "3 attaques Waffle → zone safe apparaît. Mêlée + Supports collectent les orbes jaunes. Se placer dans la zone safe et garder. Les autres restent derrière eux.", tag: 'danger' },
+        ],
+        tips: [
+          "📊 Team Meter : surveiller constamment — être knocké proche d'une partie pleine = mort par Cross ou Co-op Oneshot.",
+          "🔵 Orb Grab x900 : dès qu'un allié est attrapé, tout le monde court pour counter Kazeros.",
+          "🎭 Clash x660 : les indicateurs avant/arrière (petites flèches) indiquent le vrai clone — toujours vérifier avant de rusher.",
+          "🛡️ Shield x500 : Nineveh + recast au moment du spawn shield, puis Hyper Awakening dès le guard.",
+          "✨ Hidden Wei x380 : activer précisément quand Kazeros réapparaît à 12h — timing strict.",
+          "⚠️ Shandi : utiliser librement avant x700. Après x700 : un seul usage — garder la gauge pour x500.",
+        ],
+        sidereals: [
+          { name: 'Shandi', usage: 'Libre avant x700. Après x700 : un seul usage. Garder la gauge pour x500.' },
+          { name: 'Wei', usage: 'Hidden Sidereal à x380 — activer quand Kazeros réapparaît à 12h.' },
+          { name: 'Nineveh', usage: 'x500 Shield mechanic — activer dès que le boss spawn avec son shield + recast immédiat.' },
+        ],
+        roles: {
+          tank: "Gérer l'aggro lors des Team Meter. Orb Grab : être le premier à counter quand un allié est attrapé.",
+          support: "Shield avant le Clash x660. Gérer le Team Meter pour éviter les attaques spéciales au pire moment.",
+          dps: "x500 : Hyper Awakening sur le guard. Stagger x700 : counter chaque opportunité pour maximiser les dégâts.",
+        },
+        diffStats: { mecanique: 75, dps: 70, positionnement: 65, survie: 70 },
+        checklist: ["Potion HP", "Dark Grenade", "Sacred Charms", "Atropine ou Time Stop Potion", "Savoir lire les indicateurs de Clash (avant/arrière)", "Connaître le safespot x700 Stagger (mémoriser sa ligne)", "Surveiller le Team Meter en permanence"],
+      },
+
+      'finalday-g2': {
+        id: 'finalday-g2', name: 'Final Day — Gate 2', difficulty: 'NM/HM', ilvl: 1710,
+        size: 8, icon: '🌑', group: 'Final Day',
+        weakness: 'Archdémon/Dieu — Aucune', tauntable: 'Non',
+        description: "Diaspero, la Citadelle de l'Abîme. Gate 2 divisée en 3 sections (G2-1, G2-2, G2-3). Aucune cheatsheet — densité mécanique maximale. Le chemin est impitoyable.",
+        phases: [
+          { title: 'G2-1 : x999 HP — DPS 1 minute', desc: "1 minute pour infliger un maximum de dégâts. Phase d'ouverture — utiliser tous les buffs disponibles immédiatement.", tag: 'info' },
+          { title: 'G2-1 : x950 HP — Forced Clash', desc: "Clash forcé. Se positionner correctement et exécuter le clash.", tag: 'info' },
+          { title: 'G2-1 : x900 HP — Séquence 1', desc: "4 sous-phases enchaînées : (1) Stun Cloud — esquiver les nuages de stun. (2) Crater Destruction — détruire le cratère. (3) Black Hole — éviter l'aspiration. (4) Earthquake Stagger — stagger le boss pendant le tremblement.", tag: 'danger' },
+          { title: 'G2-1 : x750 HP — Séquence 2', desc: "(1) Flying Rocks + Stagger : esquiver les grands rectangles rouges et stagger. (2) x600 HP Stagger/Clash : DPS check au laser — le joueur aggro va à 3h ou 9h, raid leader utilise Kadan/Shandi verticalement sous les cônes. (3) Puddle/Grapple. (4) Clash/Guard/Grapple.", tag: 'danger' },
+          { title: 'G2-1 : x300 HP — Séquence Desert', desc: "6 sous-phases : (1) Forced Clash. (2) Spread & Guard. (3) Stack 2x Guard. (4) Twin Sword Phase — Inanna + recast (recast quand il reste 3 sec sur le buff). (5) Time Attack. (6) 3 Cone DPS Check — Kadan au milieu du cône central.", tag: 'danger' },
+          { title: 'G2-2 : x620/160 HP — Word Command', desc: "5 lettres : Co-op counter → observer la 3ème dash et la 4ème pulse. Même couleur = counter, opposé = ne pas counter. Rester derrière le boss. Réduit le timer d'enrage de 1 minute. 6 lettres : séquence Counter/Guard = C/C/G/G/C/G/C + Co-op à la fin.", tag: 'danger' },
+          { title: 'G2-2 : x500 HP — Time Attack', desc: "Barre jaune sous le HP de Kazeros — 50 secondes pour la vider en infligeant des dégâts. Sidereal Dark Armen + recast quand Kazeros est immobile. Échec = wipe.", tag: 'danger' },
+          { title: 'G2-2 : x310 HP — Stagger Check', desc: "Normal : Shield → Stagger → Guard. 2 joueurs Hyper Awakening pour retirer le shield. Stagger rapide, esquiver les telegraphs au sol. Juste avant que les balles violette et jaune se percutent à 1h → guard. Rewind : Guard → Stagger → Shield (ordre inversé).", tag: 'danger' },
+          { title: 'G2-3 : 75% HP — Time Attack', desc: "Barre jaune, 40 secondes. Infliger max de dégâts. Dark Armen + recast quand Kazeros est immobile. Échec = wipe.", tag: 'danger' },
+          { title: 'G2-3 : 50% HP — Sacrifice', desc: "Team Meter plein : Kazeros téléporte au centre, marque 2 joueurs bleus et 2 rouges. Former des paires, rester dans le rayon AoE. Quand le timer expire → l'un devient jaune. Les 2 jaunes se stackent. Le dernier vise le boss vers 6h ou 12h pour créer un trou. Échec = Kazeros détruit les 4 directions cardinales.", tag: 'danger' },
+          { title: 'G2-3 : 25% HP — Revival', desc: "Hidden Sidereal Dark Armen à 25%. Mémoriser le timing et activer précisément.", tag: 'danger' },
+        ],
+        tips: [
+          "📋 G2-1 : aucune cheatsheet disponible — connaître les 3 séquences par cœur avant d'entrer.",
+          "🗡️ Flying Rocks x750 : le DPS check laser exige que le joueur aggro soit à 3h ou 9h exactement.",
+          "🌵 Desert Phase : Inanna est OBLIGATOIRE pour la Twin Sword Phase — garder le recast pour les 3 dernières secondes.",
+          "📝 Word Command : 5 lettres = mémoriser la 3ème dash (couleur) vs la 4ème pulse. Même = counter, opposé = ne PAS counter.",
+          "⏱️ Time Attack : Dark Armen uniquement quand Kazeros est immobile pour maximiser les dégâts.",
+          "🔵🔴 Team Meter/Sacrifice : les joueurs non-marqués doivent laisser un maximum d'espace aux marqués — les flaques bleues réduisent l'ATK de 5% (stack x9).",
+        ],
+        sidereals: [
+          { name: 'Kadan', usage: 'x750 Flying Rock (DPS check cône). Desert Phase 3 Cone DPS Check (milieu du cône central). Hidden Sidereal pendant le guard 8-man split de la Desert Phase.' },
+          { name: 'Inanna', usage: 'Twin Sword Phase (Desert). 3 barres = tous debuffs retirés + réduction de dégâts + immunité. Recast quand il reste 3 sec sur le buff.' },
+          { name: 'Dark Armen', usage: 'x500 Time Attack (G2-2). 75% Time Attack (G2-3). Hidden Sidereal à 25% (G2-3). Toujours quand Kazeros est immobile.' },
+        ],
+        roles: {
+          tank: "Aggro précis lors des séquences. Flying Rocks : se positionner à 3h ou 9h pour le DPS check laser.",
+          support: "Splendid Sacred Bomb obligatoire. Soutien de stagger à x310. Gérer les purges de debuffs avec Inanna si disponible.",
+          dps: "Connaître les 3 séquences + G2-2 + G2-3 par cœur. DPS maximal sur chaque Time Attack. Word Command : ne jamais counter par réflexe.",
+        },
+        diffStats: { mecanique: 95, dps: 80, positionnement: 90, survie: 85 },
+        checklist: ["Potion HP", "Dark Grenade", "Splendid Sacred Bomb (OBLIGATOIRE)", "Atropine ou Time Stop Potion", "Connaître G2-1 (3 séquences), G2-2 et G2-3", "Savoir lire Word Command (5 vs 6 lettres)", "CD d'invincibilité disponible au pull", "Micro obligatoire"],
+      },
+    };
+
+    /* ── Toast ── */
+    function toast(msg, err = false) {
+      const el = document.getElementById('wiki-toast');
+      el.textContent = (err ? '❌ ' : '✅ ') + msg;
+      el.style.borderColor = err ? 'rgba(179,0,27,.5)' : 'rgba(201,146,42,.5)';
+      el.style.color = err ? '#ff8080' : 'var(--gold-light)';
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2800);
+    }
+
+    /* ── Charger raids ── */
+    async function loadRaids() {
+      allRaids = { ...DEFAULT_RAIDS };
+      try {
+        const snap = await getDocs(collection(db, 'wiki'));
+        snap.forEach(d => { allRaids[d.id] = { ...DEFAULT_RAIDS[d.id], ...d.data(), id: d.id }; });
+      } catch (e) { }
+      renderSidebar();
+      renderHome();
+    }
+
+    /* ── Sidebar ── */
+    function renderSidebar() {
+      const sb = document.getElementById('wiki-sidebar-list');
+      const groups = {};
+      Object.values(allRaids).forEach(r => {
+        if (!groups[r.group]) groups[r.group] = [];
+        groups[r.group].push(r);
+      });
+      sb.innerHTML = '';
+      Object.entries(groups).forEach(([grp, raids]) => {
+        const gl = document.createElement('div');
+        gl.innerHTML = `<div class="sidebar-group-label">${grp}</div>`;
+        raids.forEach(r => {
+          const item = document.createElement('div');
+          item.className = 'sidebar-item' + (currentRaidId === r.id ? ' active' : '');
+          item.dataset.id = r.id;
+          item.innerHTML = `${r.icon} <span style="flex:1">${r.name}</span><span class="diff-dot diff-${r.id.includes('hm') ? 'hm' : 'nm'}"></span>`;
+          item.addEventListener('click', () => renderRaid(r.id));
+          gl.appendChild(item);
+        });
+        sb.appendChild(gl);
+      });
+    }
+
+    /* ── Accueil ── */
+    function renderHome() {
+      currentRaidId = null;
+      document.getElementById('wiki-main').innerHTML = `
+        <div class="wiki-home">
+          <div class="wiki-header">
+            <div>
+              <div class="wiki-breadcrumb">📚 Wiki</div>
+              <div class="wiki-page-title">Wiki des Raids</div>
+              <div class="wiki-page-meta">Basé sur les guides Maxroll — Édité par les officiers Crimson Reign</div>
+            </div>
+            <div class="wiki-actions" id="wiki-home-actions"></div>
+          </div>
+          <div class="wiki-home-sub">Fiches tactiques condensées pour chaque gate. Sélectionne un boss dans la sidebar ou clique sur une carte.</div>
+          <div class="raid-cards-grid">
+            ${Object.values(allRaids).map(r => `
+              <div class="raid-card-thumb" data-id="${r.id}">
+                <span class="rct-arrow">→</span>
+                <div class="rct-icon">${r.icon}</div>
+                <div class="rct-name">${r.name}</div>
+                <div class="rct-tags">
+                  <span class="boss-tag nm">${r.difficulty}</span>
+                  <span class="boss-tag ilvl">⚔️ ${r.ilvl}</span>
+                  <span class="boss-tag size">👥 ${r.size}</span>
+                </div>
+                <div class="rct-desc">${(r.description || '').substring(0, 85)}…</div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+      if (isAdmin || isMod) {
+        document.getElementById('wiki-home-actions').innerHTML = `<button class="btn-wiki-new" id="btn-new-raid">＋ Nouvelle fiche</button>`;
+        document.getElementById('btn-new-raid').addEventListener('click', () => openEditor(null));
+      }
+      document.querySelectorAll('.raid-card-thumb').forEach(c => c.addEventListener('click', () => renderRaid(c.dataset.id)));
+    }
+
+    /* ── Fiche raid ── */
+    function renderRaid(id) {
+      const r = allRaids[id];
+      if (!r) return;
+      currentRaidId = id;
+      renderSidebar();
+
+      const diffColor = v => v >= 80 ? 'lethal' : v >= 60 ? 'high' : v >= 40 ? 'mid' : 'low';
+      const diffMap = { mecanique: 'Mécanique', dps: 'DPS Check', positionnement: 'Position', survie: 'Survie' };
+
+      const phasesHTML = (r.phases || []).map((p, i) => `
+        <div class="phase-item">
+          <div class="phase-num">${i + 1}</div>
+          <div class="phase-content">
+            <div class="phase-title">${p.title || ''}</div>
+            <div class="phase-desc">${p.desc || ''}</div>
+            ${p.tag ? `<span class="phase-tag ${p.tag}">${p.tag === 'danger' ? '⚠️ Danger' : p.tag === 'safe' ? '✅ Safe' : p.tag === 'hm-only' ? '🔴 HM Only' : 'ℹ️ Info'
+          }</span>` : ''}
+          </div>
+        </div>`).join('');
+
+      const tipsHTML = (r.tips || []).map(t => `
+        <div class="tip-item"><span>✦</span><span>${t}</span></div>`).join('');
+
+      const siderealsHTML = (r.sidereals || []).map(s => `
+        <div class="sidereal-item">
+          <div>
+            <div class="sidereal-name">✨ ${s.name}</div>
+            <div class="sidereal-desc">${s.usage}</div>
+          </div>
+        </div>`).join('');
+
+      const diffHTML = Object.entries(r.diffStats || {}).map(([k, v]) => `
+        <div class="diff-row">
+          <span class="diff-label">${diffMap[k] || k}</span>
+          <div class="diff-bar"><div class="diff-fill ${diffColor(v)}" style="width:${v}%"></div></div>
+          <span class="diff-val">${v}</span>
+        </div>`).join('');
+
+      const checklistHTML = (r.checklist || []).map(c => `
+        <div class="check-item"><input type="checkbox"/><span>${c}</span></div>`).join('');
+
+      document.getElementById('wiki-main').innerHTML = `
+        <div class="raid-fiche">
+          <div class="wiki-header">
+            <div>
+              <div class="wiki-breadcrumb">📚 Wiki <span>›</span> ${r.group} <span>›</span> ${r.name}</div>
+              <div class="wiki-page-title">${r.icon} ${r.name}</div>
+              <div class="wiki-page-meta">
+                <strong>${r.ilvl} iLvl</strong> · ${r.size} joueurs · ${r.difficulty}
+                ${r.weakness ? ` · Faiblesse : <strong>${r.weakness}</strong>` : ''}
+                ${r.lastEditBy ? ` · Modifié par <strong>${r.lastEditBy}</strong>` : ''}
+              </div>
+            </div>
+            <div class="wiki-actions" id="wiki-fiche-actions"></div>
+          </div>
+
+          <div class="boss-banner">
+            <div class="boss-icon">${r.icon}</div>
+            <div class="boss-info">
+              <div class="boss-name">${r.name}</div>
+              <div class="boss-tags">
+                <span class="boss-tag nm">${r.difficulty}</span>
+                <span class="boss-tag ilvl">⚔️ ${r.ilvl} iLvl</span>
+                <span class="boss-tag size">👥 ${r.size} joueurs</span>
+                ${r.weakness ? `<span class="boss-tag weak">🔥 ${r.weakness}</span>` : ''}
+              </div>
+              <div class="boss-desc">${r.description || ''}</div>
+            </div>
+          </div>
+
+          <div class="wiki-sections">
+            <div class="wiki-section" style="grid-column:1/-1">
+              <div class="wiki-section-header">⚔️ Phases & Mécaniques</div>
+              <div class="wiki-section-body"><div class="phase-list">${phasesHTML}</div></div>
+            </div>
+            <div class="wiki-section">
+              <div class="wiki-section-header">💡 Tips du roster</div>
+              <div class="wiki-section-body"><div class="tips-list">${tipsHTML}</div></div>
+            </div>
+            <div class="wiki-section">
+              <div class="wiki-section-header">✨ Sidereals</div>
+              <div class="wiki-section-body"><div class="sidereals-grid">${siderealsHTML}</div></div>
+            </div>
+            <div class="wiki-section" style="grid-column:1/-1">
+              <div class="wiki-section-header">🛡️ Rôles & Responsabilités</div>
+              <div class="wiki-section-body">
+                <div class="roles-grid">
+                  <div class="role-card"><div class="role-label">🗡️ Tank</div><div class="role-content">${r.roles?.tank || '—'}</div></div>
+                  <div class="role-card"><div class="role-label">💚 Support</div><div class="role-content">${r.roles?.support || '—'}</div></div>
+                  <div class="role-card" style="grid-column:1/-1"><div class="role-label">⚔️ DPS</div><div class="role-content">${r.roles?.dps || '—'}</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="wiki-section">
+              <div class="wiki-section-header">📊 Difficulté</div>
+              <div class="wiki-section-body"><div class="diff-bar-wrap">${diffHTML}</div></div>
+            </div>
+            <div class="wiki-section">
+              <div class="wiki-section-header">✅ Checklist pré-raid</div>
+              <div class="wiki-section-body"><div class="checklist">${checklistHTML}</div></div>
+            </div>
+          </div>
+        </div>`;
+
+      if (isAdmin || isMod) {
+        const el = document.getElementById('wiki-fiche-actions');
+        if (el) {
+          el.innerHTML = `<button class="btn-wiki-edit" id="btn-edit-wiki">✏️ Modifier</button>`;
+          document.getElementById('btn-edit-wiki').addEventListener('click', () => openEditor(r));
+        }
+      }
+    }
+
+    /* ── Éditeur ── */
+    function openEditor(r) {
+      const isNew = !r;
+      document.getElementById('edit-wiki-title').textContent = isNew ? 'Nouvelle fiche' : `Modifier — ${r.name}`;
+      document.getElementById('ew-name').value = r?.name || '';
+      document.getElementById('ew-diff').value = r?.difficulty || 'NM/HM';
+      document.getElementById('ew-ilvl').value = r?.ilvl || '';
+      document.getElementById('ew-size').value = r?.size || 8;
+      document.getElementById('ew-icon').value = r?.icon || '⚔️';
+      document.getElementById('ew-group').value = r?.group || '';
+      document.getElementById('ew-desc').value = r?.description || '';
+      document.getElementById('ew-tip-tank').value = r?.roles?.tank || '';
+      document.getElementById('ew-tip-support').value = r?.roles?.support || '';
+      document.getElementById('ew-tip-dps').value = r?.roles?.dps || '';
+      document.getElementById('ew-checklist').value = (r?.checklist || []).join('\n');
+      document.getElementById('ew-tips').value = (r?.tips || []).join('\n');
+      document.getElementById('ew-sidereals').value = (r?.sidereals || []).map(s => `${s.name}|${s.usage}`).join('\n');
+      renderPhaseEditor(r?.phases || [{ title: '', desc: '', tag: 'info' }]);
+      document.getElementById('popup-wiki-edit').style.display = 'flex';
+      window._editingRaidId = r?.id || null;
+    }
+
+    function renderPhaseEditor(phases) {
+      const c = document.getElementById('phases-editor');
+      c.innerHTML = '';
+      phases.forEach(p => addPhaseRow(p, c));
+    }
+
+    function addPhaseRow(p = {}, container) {
+      if (!container) container = document.getElementById('phases-editor');
+      const idx = container.children.length;
+      const div = document.createElement('div');
+      div.className = 'phase-editor-item';
+      div.innerHTML = `
+        <div class="phase-editor-num">Phase ${idx + 1}</div>
+        <button class="btn-remove-phase" title="Supprimer">✕</button>
+        <input type="text" placeholder="Titre" class="pe-title" value="${(p.title || '').replace(/"/g, '&quot;')}" style="margin-bottom:8px;"/>
+        <textarea class="pe-desc edit-textarea" rows="3" placeholder="Description…">${p.desc || ''}</textarea>
+        <div class="tag-select" style="margin-top:6px;">
+          <span class="tag-opt${p.tag === 'info' ? ' selected-info' : ''}" data-tag="info">ℹ️ Info</span>
+          <span class="tag-opt${p.tag === 'danger' ? ' selected-danger' : ''}" data-tag="danger">⚠️ Danger</span>
+          <span class="tag-opt${p.tag === 'safe' ? ' selected-safe' : ''}" data-tag="safe">✅ Safe</span>
+          <span class="tag-opt${p.tag === 'hm-only' ? ' selected-hm-only' : ''}" data-tag="hm-only">🔴 HM Only</span>
+        </div>`;
+      div.querySelector('.btn-remove-phase').addEventListener('click', () => { div.remove(); renumberPhases(); });
+      div.querySelectorAll('.tag-opt').forEach(opt => {
+        opt.addEventListener('click', () => {
+          div.querySelectorAll('.tag-opt').forEach(o => o.className = 'tag-opt');
+          opt.classList.add(`selected-${opt.dataset.tag}`);
+        });
+      });
+      container.appendChild(div);
+    }
+
+    function renumberPhases() {
+      document.querySelectorAll('.phase-editor-item').forEach((d, i) => { d.querySelector('.phase-editor-num').textContent = `Phase ${i + 1}`; });
+    }
+
+    document.getElementById('btn-add-phase').addEventListener('click', () => addPhaseRow());
+
+    document.getElementById('btn-save-wiki').addEventListener('click', async () => {
+      const name = document.getElementById('ew-name').value.trim();
+      if (!name) { toast('Nom requis.', true); return; }
+      const id = window._editingRaidId || (name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now());
+      const phases = [];
+      document.querySelectorAll('.phase-editor-item').forEach(d => {
+        const act = d.querySelector('.tag-opt[class*="selected"]');
+        phases.push({ title: d.querySelector('.pe-title').value.trim(), desc: d.querySelector('.pe-desc').value.trim(), tag: act ? act.dataset.tag : 'info' });
+      });
+      const sideRaw = document.getElementById('ew-sidereals').value.split('\n').map(s => s.trim()).filter(Boolean);
+      const sidereals = sideRaw.map(s => { const p = s.indexOf('|'); return p > -1 ? { name: s.slice(0, p).trim(), usage: s.slice(p + 1).trim() } : { name: s, usage: '' }; });
+      const data = {
+        id, name,
+        difficulty: document.getElementById('ew-diff').value,
+        ilvl: parseInt(document.getElementById('ew-ilvl').value) || 0,
+        size: parseInt(document.getElementById('ew-size').value) || 8,
+        icon: document.getElementById('ew-icon').value.trim() || '⚔️',
+        group: document.getElementById('ew-group').value.trim(),
+        description: document.getElementById('ew-desc').value.trim(),
+        phases, sidereals,
+        tips: document.getElementById('ew-tips').value.split('\n').map(s => s.trim()).filter(Boolean),
+        roles: { tank: document.getElementById('ew-tip-tank').value.trim(), support: document.getElementById('ew-tip-support').value.trim(), dps: document.getElementById('ew-tip-dps').value.trim() },
+        checklist: document.getElementById('ew-checklist').value.split('\n').map(s => s.trim()).filter(Boolean),
+        diffStats: allRaids[id]?.diffStats || { mecanique: 50, dps: 50, positionnement: 50, survie: 50 },
+        lastEditBy: currentUser?.displayName || 'Officier',
+        updatedAt: serverTimestamp(),
+      };
+      try {
+        await setDoc(doc(db, 'wiki', id), data);
+        allRaids[id] = data;
+        toast('Fiche sauvegardée !');
+        document.getElementById('popup-wiki-edit').style.display = 'none';
+        renderSidebar(); renderRaid(id);
+      } catch (e) { toast('Erreur : ' + e.message, true); }
+    });
+
+    document.getElementById('close-wiki-edit').addEventListener('click', () => document.getElementById('popup-wiki-edit').style.display = 'none');
+    document.getElementById('popup-wiki-edit').addEventListener('click', function (e) { if (e.target === this) this.style.display = 'none'; });
+
+    /* ── Auth ── */
+    onAuthStateChanged(auth, async user => {
+      if (!user) { window.location.href = 'connexion.html'; return; }
+      currentUser = user;
+      try {
+        const snap = await getDocs(query(collection(db, 'joueurs'), where('uid', '==', user.uid)));
+        if (!snap.empty) {
+          const m = snap.docs[0].data();
+          document.getElementById('user-name').textContent = m.nom || user.displayName || 'Invité';
+          const role = (m.role || '').trim();
+          localStorage.setItem('userRole', role);
+          isAdmin = role === 'Administrateur'; isMod = role === 'Modérateur';
+          const navLi = document.querySelector('li.nav-annonce');
+          if (navLi) { navLi.style.display = (isAdmin || isMod) ? 'list-item' : 'none'; }
+        }
+      } catch (e) { }
+      await loadRaids();
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', async () => { await signOut(auth); window.location.href = 'connexion.html'; });
+  </script>
+</head>
+
+<body>
+  <div id="user-info">Connecté en tant que : <span id="user-name">…</span></div>
+
+  <header>
+    <img src="Logo guilde.jpg" alt="Logo" class="logo gauche" />
+    <h1>Wiki Raids</h1>
+    <p
+      style="font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase;margin-top:5px;">
+      Guilde Crimson Reign</p>
+    <img src="Logo guilde.jpg" alt="Logo" class="logo droite" />
+    <nav>
+      <ul>
+        <li><a href="index.html">🏠</a></li>
+        <li class="nav-raid" style="position:relative;">
+          <button id="nav-raid-toggle" aria-haspopup="true" aria-expanded="false"><span>🗡️</span> Raid <span
+              style="font-size:10px;opacity:.6;">▼</span></button>
+          <div id="nav-raid-menu">
+            <a href="planning.html"><span>📅</span> Planning de Raid</a>
+            <a href="excel_raid.html"><span>📊</span> Excel Raid</a>
+            <a href="wiki.html"><span>📚</span> Wiki Raids</a>
+          </div>
+        </li>
+        <li class="nav-gestion" style="position:relative;">
+          <button id="nav-gestion-toggle" aria-haspopup="true" aria-expanded="false"><span>🧩</span> Gestion <span
+              style="font-size:10px;opacity:.6;">▼</span></button>
+          <div id="nav-gestion-menu"><a href="membre_guilde.html"><span>👥</span> Membres</a></div>
+        </li>
+        <li><a href="Objectifs.html">🎯 Objectifs</a></li>
+        <li><a href="Cagnotte.html">💰 Cagnotte</a></li>
+        <li class="nav-annonce" style="display:none;position:relative;">
+          <button id="nav-gear-toggle" aria-haspopup="true" aria-expanded="false">📢</button>
+          <div id="nav-gear-menu">
+            <a href="annonce.html" data-role="mod"><span>📝</span> Annonce</a>
+            <a href="admin.html" data-role="admin"><span>⚙️</span> Administration</a>
+          </div>
+        </li>
+        <li class="nav-ressources" style="position:relative;">
+          <button id="nav-ressources-toggle" aria-haspopup="true" aria-expanded="false"><span>📚</span> Ressources <span
+              style="font-size:10px;opacity:.6;">▼</span></button>
+          <div id="nav-ressources-menu">
+            <a href="https://www.playlostark.com/fr-fr/news" target="_blank" rel="noopener"><span>📰</span> News Lost
+              Ark</a>
+            <a href="https://www.playlostark.com/fr-fr/support/server-status" target="_blank"
+              rel="noopener"><span>🖥️</span> Server Status</a>
+            <a href="https://www.lostark.nexus" target="_blank" rel="noopener"><span>🛠️</span> Build Personnages</a>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main style="padding-top:1.5rem;padding-bottom:3rem;">
+    <div class="wiki-wrap">
+      <aside class="wiki-sidebar">
+        <div class="sidebar-title">✦ Fiches de raids</div>
+        <div id="wiki-sidebar-list"></div>
+      </aside>
+      <div class="wiki-content" id="wiki-main">
+        <div style="color:var(--text-dim);text-align:center;padding:3rem;">Chargement…</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Popup éditeur -->
+  <div id="popup-wiki-edit" class="popup">
+    <div class="popup-content">
+      <span class="close" id="close-wiki-edit">×</span>
+      <h2 id="edit-wiki-title">Modifier la fiche</h2>
+      <div class="edit-section">
+        <div class="edit-section-title">✦ Informations générales</div>
+        <div class="edit-row three">
+          <div><label>Nom</label><input type="text" id="ew-name" /></div>
+          <div><label>Difficulté</label><input type="text" id="ew-diff" placeholder="NM/HM" /></div>
+          <div><label>Icône</label><input type="text" id="ew-icon" style="font-size:1.3rem;text-align:center;" /></div>
+        </div>
+        <div class="edit-row">
+          <div><label>iLvl requis</label><input type="number" id="ew-ilvl" /></div>
+          <div><label>Taille</label><input type="number" id="ew-size" min="4" max="32" /></div>
+        </div>
+        <div style="margin-bottom:10px;"><label>Groupe (sidebar)</label><input type="text" id="ew-group"
+            placeholder="Mordum / Armoche / Final Day…" /></div>
+        <label>Description</label>
+        <textarea id="ew-desc" rows="3" class="edit-textarea" placeholder="Description du boss…"></textarea>
+      </div>
+      <div class="edit-section">
+        <div class="edit-section-title">✦ Phases & Mécaniques</div>
+        <div id="phases-editor"></div>
+        <button class="btn-add-phase" id="btn-add-phase">＋ Ajouter une phase</button>
+      </div>
+      <div class="edit-section">
+        <div class="edit-section-title">✦ Tips (une ligne par tip)</div>
+        <textarea id="ew-tips" rows="4" class="edit-textarea" placeholder="⚔️ Tip 1&#10;🛡️ Tip 2"></textarea>
+      </div>
+      <div class="edit-section">
+        <div class="edit-section-title">✦ Sidereals (format : Nom|Description)</div>
+        <textarea id="ew-sidereals" rows="4" class="edit-textarea"
+          placeholder="Nineveh|Utiliser à x235 HP&#10;Thirain|Dégâts libres"></textarea>
+      </div>
+      <div class="edit-section">
+        <div class="edit-section-title">✦ Rôles</div>
+        <label>🗡️ Tank</label><textarea id="ew-tip-tank" rows="2" class="edit-textarea"
+          style="margin-bottom:10px;"></textarea>
+        <label>💚 Support</label><textarea id="ew-tip-support" rows="2" class="edit-textarea"
+          style="margin-bottom:10px;"></textarea>
+        <label>⚔️ DPS</label><textarea id="ew-tip-dps" rows="2" class="edit-textarea"></textarea>
+      </div>
+      <div class="edit-section">
+        <div class="edit-section-title">✦ Checklist pré-raid (une ligne par item)</div>
+        <textarea id="ew-checklist" rows="5" class="edit-textarea"
+          placeholder="Potion HP&#10;Dark Grenade&#10;…"></textarea>
+      </div>
+      <button id="btn-save-wiki" style="width:100%;margin-top:4px;">💾 Sauvegarder la fiche</button>
+    </div>
+  </div>
+
+  <div id="wiki-toast"></div>
+  <button id="logout-btn">🚪 Déconnexion</button>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      function makeDropdown(t, m) {
+        const toggle = document.getElementById(t), menu = document.getElementById(m);
+        if (!toggle || !menu) return;
+        const close = () => { menu.style.display = 'none'; toggle.setAttribute('aria-expanded', 'false'); };
+        toggle.addEventListener('click', e => { e.preventDefault(); menu.style.display === 'block' ? close() : () => { menu.style.display = 'block'; toggle.setAttribute('aria-expanded', 'true'); }(); });
+        document.addEventListener('click', e => { if (!menu.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) close(); });
+      }
+      ['nav-raid-toggle|nav-raid-menu', 'nav-gestion-toggle|nav-gestion-menu', 'nav-gear-toggle|nav-gear-menu', 'nav-ressources-toggle|nav-ressources-menu'].forEach(p => {
+        const [t, m] = p.split('|'); makeDropdown(t, m);
+      });
+      const role = (localStorage.getItem('userRole') || '').trim();
+      const navLi = document.querySelector('li.nav-annonce');
+      if (navLi) navLi.style.display = (role === 'Administrateur' || role === 'Modérateur') ? 'list-item' : 'none';
+    });
+  </script>
+</body>
+
+</html>
