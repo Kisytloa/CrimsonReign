@@ -1,837 +1,635 @@
+
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-    <script>
-    // Ouvre la pop-up du raid ciblé si les paramètres sont présents
-    window.addEventListener('DOMContentLoaded', function() {
-        const params = new URLSearchParams(window.location.search);
-        const raidParam = params.get('raid');
-        const dateParam = params.get('date');
-        const timeParam = params.get('time');
-        if (raidParam && dateParam && timeParam) {
-            window._openRaidPopupParams = { raid: raidParam, date: dateParam, time: timeParam };
-        }
-    });
-    </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planning Raids — Bloodshadow</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root {
+      --event-raid:     #b3001b;
+      --event-event:    #c9922a;
+      --event-maint:    #4a5568;
+      --event-raid-bg:  rgba(179,0,27,0.15);
+      --event-event-bg: rgba(201,146,42,0.15);
+      --event-maint-bg: rgba(74,85,104,0.2);
+      --col-border:     rgba(179,0,27,0.12);
+      --hour-line:      rgba(255,255,255,0.04);
+      --today-glow:     rgba(179,0,27,0.08);
+    }
+    .planning-wrap { display:flex; flex-direction:column; gap:1.2rem; }
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planning de Raid — Bloodshadow</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
-    <link rel="stylesheet" href="style.css">
+    /* Toolbar */
+    .cal-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; background:linear-gradient(135deg,rgba(25,10,32,.95),rgba(20,8,28,.95)); border:1px solid rgba(179,0,27,.3); border-radius:14px; padding:14px 20px; }
+    .cal-nav { display:flex; align-items:center; gap:10px; }
+    .cal-nav-btn { width:36px; height:36px; border-radius:8px; border:1px solid rgba(179,0,27,.35); background:rgba(14,5,20,.7); color:var(--text-muted); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+    .cal-nav-btn:hover { border-color:var(--gold); color:var(--gold-light); }
+    .cal-week-label { font-family:var(--font-head); font-size:.9rem; letter-spacing:1.5px; color:var(--gold-light); text-transform:uppercase; min-width:220px; text-align:center; }
+    .cal-today-btn { padding:8px 16px; font-family:var(--font-head); font-size:.72rem; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); background:rgba(14,5,20,.7); border:1px solid rgba(179,0,27,.3); border-radius:8px; cursor:pointer; transition:all .2s; }
+    .cal-today-btn:hover { color:var(--gold-light); border-color:var(--gold); }
+    .cal-legend { display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+    .legend-dot { display:flex; align-items:center; gap:6px; font-family:var(--font-head); font-size:.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); }
+    .legend-dot span { width:10px; height:10px; border-radius:3px; }
+    .dot-raid  { background:var(--event-raid);  box-shadow:0 0 6px rgba(179,0,27,.5); }
+    .dot-event { background:var(--event-event); box-shadow:0 0 6px rgba(201,146,42,.4); }
+    .dot-maint { background:var(--event-maint); }
+    #btn-add-event { display:none; align-items:center; gap:8px; padding:9px 18px; font-family:var(--font-head); font-size:.75rem; letter-spacing:1px; text-transform:uppercase; background:linear-gradient(135deg,var(--red),#8a0010); border:none; border-radius:8px; color:#fff; cursor:pointer; transition:all .2s; box-shadow:0 0 14px rgba(179,0,27,.3); }
+    #btn-add-event:hover { transform:translateY(-2px); box-shadow:0 4px 20px rgba(179,0,27,.5); }
 
-    <style>
-        /* ── Admin controls ───────────────────────── */
-        #admin-raid-controls {
-            display: none;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        #admin-raid-controls.admin-visible {
-            display: flex !important;
-            flex-direction: column;
-            align-items: center;
-        }
+    /* Calendrier */
+    .cal-container { background:linear-gradient(160deg,rgba(18,8,24,.98),rgba(14,5,20,.98)); border:1px solid rgba(179,0,27,.2); border-radius:14px; overflow:hidden; }
+    .cal-header { display:grid; grid-template-columns:52px repeat(7,1fr); border-bottom:1px solid rgba(179,0,27,.2); background:rgba(10,3,16,.6); position:sticky; top:0; z-index:10; }
+    .cal-header-gutter { border-right:1px solid var(--col-border); }
+    .cal-day-header { padding:12px 8px 10px; text-align:center; border-right:1px solid var(--col-border); }
+    .cal-day-header:last-child { border-right:none; }
+    .cal-day-header.today { background:var(--today-glow); }
+    .day-name { font-family:var(--font-head); font-size:.65rem; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px; }
+    .day-num { font-family:var(--font-title); font-size:1.3rem; font-weight:900; color:var(--text); line-height:1; display:block; }
+    .cal-day-header.today .day-num { color:var(--gold-light); text-shadow:0 0 12px rgba(201,146,42,.4); }
+    .today-dot { width:5px; height:5px; border-radius:50%; background:var(--red); margin:4px auto 0; box-shadow:0 0 6px rgba(179,0,27,.7); }
+    .cal-body { display:grid; grid-template-columns:52px repeat(7,1fr); max-height:620px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--red) transparent; }
+    .cal-body::-webkit-scrollbar { width:4px; }
+    .cal-body::-webkit-scrollbar-thumb { background:var(--red); border-radius:4px; }
+    .cal-gutter { border-right:1px solid var(--col-border); }
+    .hour-label { height:60px; display:flex; align-items:flex-start; padding-top:6px; justify-content:center; font-family:var(--font-head); font-size:.58rem; letter-spacing:1px; color:rgba(138,122,154,.5); }
+    .cal-col { border-right:1px solid var(--col-border); position:relative; min-height:1440px; }
+    .cal-col:last-child { border-right:none; }
+    .cal-col.today-col { background:var(--today-glow); }
+    .hour-line { position:absolute; left:0; right:0; border-top:1px solid var(--hour-line); pointer-events:none; }
+    .hour-line.half { border-top-style:dashed; opacity:.5; }
+    .now-line { position:absolute; left:0; right:0; border-top:2px solid var(--red); z-index:5; pointer-events:none; }
+    .now-line::before { content:''; position:absolute; left:-4px; top:-4px; width:8px; height:8px; border-radius:50%; background:var(--red); box-shadow:0 0 8px rgba(179,0,27,.8); }
 
-        /* ── Badges HM / NM ───────────────────────── */
-        .raid-badge {
-            display: inline-block;
-            font-size: 0.85em;
-            font-weight: bold;
-            padding: 1px 7px;
-            border-radius: 8px;
-            margin-left: 5px;
-            color: #fff;
-        }
-        .raid-badge.hm { background: #b3001b; }
-        .raid-badge.nm { background: #2e7d32; }
+    /* Events */
+    .cal-event { position:absolute; left:3px; right:3px; border-radius:6px; padding:5px 8px; cursor:pointer; transition:transform .15s,box-shadow .15s; overflow:hidden; z-index:3; border-left:3px solid; }
+    .cal-event:hover { transform:scale(1.02); z-index:10; }
+    .cal-event.type-raid  { background:var(--event-raid-bg);  border-color:var(--event-raid);  box-shadow:0 2px 10px rgba(179,0,27,.2); }
+    .cal-event.type-raid:hover  { box-shadow:0 4px 18px rgba(179,0,27,.4); }
+    .cal-event.type-event { background:var(--event-event-bg); border-color:var(--event-event); box-shadow:0 2px 10px rgba(201,146,42,.15); }
+    .cal-event.type-event:hover { box-shadow:0 4px 18px rgba(201,146,42,.3); }
+    .cal-event.type-maint { background:var(--event-maint-bg); border-color:var(--event-maint); }
+    .event-title { font-family:var(--font-head); font-size:.72rem; font-weight:700; letter-spacing:.5px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; }
+    .event-time { font-size:.62rem; color:var(--text-muted); margin-top:2px; }
+    .event-icon { position:absolute; right:6px; top:5px; font-size:.8rem; opacity:.7; }
+    .event-reg-count { position:absolute; bottom:4px; right:5px; font-family:var(--font-head); font-size:.6rem; letter-spacing:.5px; color:var(--text-muted); background:rgba(0,0,0,.3); padding:1px 5px; border-radius:4px; }
+    .event-reg-count.full { color:#ff6b6b; }
+    .cal-col-empty { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:.65rem; color:rgba(138,122,154,.2); text-align:center; pointer-events:none; white-space:nowrap; }
 
-        /* ── FullCalendar overrides ────────────────── */
-        .fc-daygrid-day-frame {
-            min-height: 60px !important;
-        }
-        .fc-event-title, .fc-event-time {
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
-            max-width: 100%;
-            display: block;
-        }
-        .fc-event-time { display: none !important; }
-        .fc-event      { min-width: 0; }
+    /* Popup détail */
+    #popup-event-detail .popup-content { max-width:520px; max-height:88vh; overflow-y:auto; text-align:left; }
+    #popup-event-detail .popup-content::-webkit-scrollbar { width:4px; }
+    #popup-event-detail .popup-content::-webkit-scrollbar-thumb { background:var(--red); border-radius:4px; }
+    .event-detail-type { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; font-family:var(--font-head); font-size:.68rem; letter-spacing:1px; text-transform:uppercase; margin-bottom:12px; }
+    .event-detail-type.type-raid  { background:var(--event-raid-bg);  color:#ff6b6b;          border:1px solid rgba(179,0,27,.4); }
+    .event-detail-type.type-event { background:var(--event-event-bg); color:var(--gold-light); border:1px solid rgba(201,146,42,.4); }
+    .event-detail-type.type-maint { background:var(--event-maint-bg); color:#a0aec0;           border:1px solid rgba(74,85,104,.4); }
+    .event-detail-title { font-family:var(--font-head); font-size:1.2rem; font-weight:700; color:var(--gold-light); letter-spacing:1px; margin-bottom:10px; }
+    .event-detail-meta { display:flex; flex-direction:column; gap:8px; padding:12px 14px; background:rgba(10,3,16,.5); border:1px solid rgba(179,0,27,.15); border-radius:10px; margin-bottom:14px; }
+    .event-meta-row { display:flex; align-items:center; gap:10px; font-size:.85rem; color:var(--text-muted); }
+    .event-meta-row strong { color:var(--text); }
 
-        /* ── Boutons admin +/- ────────────────────── */
-        .admin-btns {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-        .admin-btn-add {
-            font-size: 1.6rem;
-            background: var(--gold);
-            color: #222;
-            border: none;
-            border-radius: 50%;
-            width: 44px; height: 44px;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.35);
-            transition: transform 0.2s;
-        }
-        .admin-btn-remove {
-            font-size: 1.6rem;
-            background: var(--red);
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 44px; height: 44px;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.35);
-            transition: transform 0.2s;
-        }
-        .admin-btn-add:hover, .admin-btn-remove:hover { transform: scale(1.1); }
+    /* Inscriptions */
+    .reg-section { background:rgba(10,3,16,.5); border:1px solid rgba(179,0,27,.2); border-radius:10px; padding:14px 16px; margin-bottom:12px; }
+    .reg-section-title { font-family:var(--font-head); font-size:.72rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid rgba(201,146,42,.2); display:flex; align-items:center; justify-content:space-between; }
+    .reg-count-badge { font-size:.7rem; padding:2px 10px; border-radius:20px; background:rgba(179,0,27,.15); border:1px solid rgba(179,0,27,.3); color:#ff9090; }
+    .reg-count-badge.ok { background:rgba(45,138,45,.15); border-color:rgba(45,138,45,.3); color:#90ff90; }
+    .reg-list { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+    .reg-item { display:flex; align-items:center; gap:10px; padding:8px 10px; background:rgba(14,5,20,.6); border-radius:8px; border-left:2px solid rgba(179,0,27,.3); transition:border-color .2s; }
+    .reg-item:hover { border-color:rgba(201,146,42,.4); }
+    .reg-item-info { flex:1; min-width:0; }
+    .reg-item-name { font-family:var(--font-head); font-size:.8rem; color:var(--text); }
+    .reg-item-class { font-size:.68rem; color:var(--text-muted); margin-top:1px; }
+    .reg-item-ilvl { font-family:var(--font-head); font-size:.75rem; font-weight:700; padding:2px 7px; border-radius:5px; background:rgba(201,146,42,.1); color:var(--gold); }
+    .reg-kick-btn { width:24px; height:24px; border-radius:5px; border:1px solid rgba(179,0,27,.3); background:rgba(179,0,27,.1); color:#ff6b6b; font-size:.7rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; flex-shrink:0; }
+    .reg-kick-btn:hover { background:rgba(179,0,27,.3); border-color:var(--red); }
+    .reg-join-panel { border-top:1px solid rgba(179,0,27,.15); padding-top:12px; }
+    .reg-join-panel label { font-family:var(--font-head); font-size:.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px; }
+    .reg-join-panel select { margin-bottom:10px; }
+    .btn-join { width:100%; padding:10px; font-family:var(--font-head); font-size:.75rem; letter-spacing:1px; text-transform:uppercase; cursor:pointer; border-radius:8px; border:none; background:linear-gradient(135deg,var(--red),#8a0010); color:#fff; box-shadow:0 0 10px rgba(179,0,27,.3); transition:all .2s; }
+    .btn-join:hover { transform:translateY(-2px); box-shadow:0 4px 16px rgba(179,0,27,.5); }
+    .btn-leave { width:100%; padding:10px; font-family:var(--font-head); font-size:.75rem; letter-spacing:1px; text-transform:uppercase; cursor:pointer; border-radius:8px; border:1px solid rgba(179,0,27,.4); background:rgba(179,0,27,.1); color:#ff8080; transition:all .2s; }
+    .btn-leave:hover { background:rgba(179,0,27,.2); }
+    .reg-empty { text-align:center; padding:14px; color:var(--text-dim); font-size:.82rem; font-style:italic; }
+    .reg-full-msg { text-align:center; padding:10px; border-radius:8px; background:rgba(179,0,27,.1); border:1px solid rgba(179,0,27,.2); color:#ff8080; font-family:var(--font-head); font-size:.72rem; letter-spacing:1px; }
+    .already-reg-msg { display:flex; align-items:center; gap:10px; margin-bottom:10px; padding:8px 12px; background:rgba(45,138,45,.1); border:1px solid rgba(45,138,45,.3); border-radius:8px; color:#90ff90; font-size:.85rem; }
 
-        .admin-btn-legend {
-            margin-top: 5px;
-            font-size: 0.85rem;
-            color: var(--text-dim);
-            text-align: center;
-        }
+    /* Popup créer */
+    #popup-create-event .popup-content { max-width:520px; text-align:left; }
+    .popup-section { background:rgba(10,3,16,.5); border:1px solid rgba(179,0,27,.2); border-radius:10px; padding:16px 18px; margin-bottom:14px; }
+    .popup-section-title { font-family:var(--font-head); font-size:.75rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid rgba(201,146,42,.2); }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .form-row > * { margin-bottom:0; }
+    .type-selector { display:flex; gap:8px; margin-bottom:14px; }
+    .type-btn { flex:1; padding:9px 8px; border-radius:8px; border:1px solid rgba(179,0,27,.25); background:rgba(14,5,20,.7); font-family:var(--font-head); font-size:.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); cursor:pointer; transition:all .2s; text-align:center; }
+    .type-btn.active-raid  { border-color:var(--event-raid);  color:#ff6b6b;          background:var(--event-raid-bg); }
+    .type-btn.active-event { border-color:var(--event-event); color:var(--gold-light); background:var(--event-event-bg); }
+    .type-btn.active-maint { border-color:var(--event-maint); color:#a0aec0;           background:var(--event-maint-bg); }
 
-        /* ── Wrapper calendrier ───────────────────── */
-        .planning-container { width: 100%; }
+    /* Bouton Discord */
+    #btn-discord {
+      display:none; align-items:center; gap:8px; padding:9px 18px;
+      font-family:var(--font-head); font-size:.75rem; letter-spacing:1px; text-transform:uppercase;
+      background:linear-gradient(135deg,#5865F2,#3c45c4); border:none; border-radius:8px;
+      color:#fff; cursor:pointer; transition:all .2s; box-shadow:0 0 14px rgba(88,101,242,.3);
+    }
+    #btn-discord:hover { transform:translateY(-2px); box-shadow:0 4px 20px rgba(88,101,242,.5); }
+    #btn-discord:disabled { opacity:.5; cursor:not-allowed; transform:none; }
 
-        #calendar {
-            width: 100%;
-            overflow-x: auto;
-        }
+    /* Popup Discord */
+    #popup-discord .popup-content { max-width:480px; text-align:left; }
+    .discord-preview {
+      background:#36393f; border-radius:8px; padding:16px; margin:14px 0;
+      border-left:4px solid #b3001b; font-family:'Segoe UI',sans-serif;
+    }
+    .discord-preview-guild { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+    .discord-preview-avatar { width:32px; height:32px; border-radius:50%; background:#b3001b; display:flex; align-items:center; justify-content:center; font-size:.9rem; }
+    .discord-preview-name { font-weight:700; color:#fff; font-size:.9rem; }
+    .discord-preview-title { color:#fff; font-weight:700; font-size:1rem; margin-bottom:6px; }
+    .discord-preview-body { color:#dcddde; font-size:.82rem; line-height:1.6; white-space:pre-wrap; }
+    .discord-preview-footer { color:#72767d; font-size:.72rem; margin-top:10px; border-top:1px solid rgba(255,255,255,.08); padding-top:8px; }
+    .webhook-warning { background:rgba(255,200,0,.08); border:1px solid rgba(255,200,0,.25); border-radius:8px; padding:10px 12px; font-size:.78rem; color:#ffd966; margin-bottom:12px; }
 
-        /* ── Liste raids du jour ──────────────────── */
-        #raid-list-today {
-            width: 100%;
-            max-width: 700px;
-            margin: 14px auto 0;
-            padding: 0;
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        /* ── Popup détail raid ────────────────────── */
-        #raid-players-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        #raid-players-list li {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 12px;
-            background: rgba(10,3,16,0.6);
-            border-radius: 8px;
-            border-left: 2px solid rgba(179,0,27,0.4);
-            font-size: 0.88rem;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        #popup-inscription-section {
-            margin-top: 18px;
-            padding-top: 14px;
-            border-top: 1px solid rgba(255,255,255,0.07);
-        }
-
-        /* ── Popup contenu scrollable sur mobile ──── */
-        .popup-content {
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        /* ══════════════════════════════════════════
-           RESPONSIVE MOBILE
-        ══════════════════════════════════════════ */
-        @media (max-width: 700px) {
-            /* Calendrier : passer en vue liste sur mobile */
-            #calendar .fc-toolbar {
-                flex-wrap: wrap;
-                gap: 6px;
-            }
-
-            #calendar .fc-toolbar-title {
-                font-size: 1rem !important;
-                text-align: center;
-                width: 100%;
-            }
-
-            #calendar .fc-toolbar-chunk {
-                display: flex;
-                justify-content: center;
-                gap: 4px;
-            }
-
-            /* Cellules jours plus compactes */
-            .fc-daygrid-day-frame {
-                min-height: 48px !important;
-            }
-
-            /* Texte événements plus petit */
-            .fc-event-title {
-                font-size: 0.7rem !important;
-            }
-
-            /* En-têtes colonnes jours abrégés */
-            .fc-col-header-cell-cushion {
-                font-size: 0.72rem !important;
-                padding: 4px 2px !important;
-            }
-
-            /* Numéros de jours */
-            .fc-daygrid-day-number {
-                font-size: 0.75rem !important;
-                padding: 3px 5px !important;
-            }
-
-            /* Popup plein écran mobile */
-            .popup-content {
-                width: 96vw !important;
-                max-width: 96vw !important;
-                padding: 20px 14px !important;
-                margin: 10px auto !important;
-                max-height: 88vh;
-                overflow-y: auto;
-            }
-
-            /* Liste inscrits : stack vertical */
-            #raid-players-list li {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-            }
-
-            /* Select full-width */
-            .popup-content select,
-            .popup-content input[type="date"],
-            .popup-content input[type="time"] {
-                width: 100% !important;
-                font-size: 1rem !important;
-            }
-
-            /* Bouton s'inscrire full-width */
-            #popup-inscrire-btn,
-            #add-raid-btn,
-            #remove-raid-btn {
-                width: 100% !important;
-            }
-
-            /* Bouton déconnexion repositionné */
-            #logout-btn {
-                bottom: 12px !important;
-                right: 12px !important;
-                padding: 12px 18px !important;
-                font-size: 0.9rem !important;
-            }
-
-            /* H2 planning */
-            #planning h2 {
-                font-size: 1.2rem;
-            }
-
-            /* Boutons admin plus compacts */
-            .admin-btns { gap: 10px; }
-        }
-
-        @media (max-width: 420px) {
-            /* Ultra-petit : masquer le texte des boutons nav, garder icônes */
-            nav ul { gap: 4px !important; }
-
-            #calendar .fc-toolbar {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .fc-event-title { font-size: 0.62rem !important; }
-
-            .fc-daygrid-day-frame { min-height: 38px !important; }
-        }
-    </style>
+    /* Toast */
+    #toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px); background:linear-gradient(135deg,rgba(22,12,28,.98),rgba(18,8,24,.98)); border:1px solid rgba(201,146,42,.5); border-radius:30px; padding:12px 24px; font-family:var(--font-head); font-size:.8rem; letter-spacing:1px; color:var(--gold-light); box-shadow:0 8px 24px rgba(0,0,0,.6); z-index:99999; opacity:0; transition:opacity .3s,transform .3s; pointer-events:none; white-space:nowrap; }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  </style>
 </head>
-
 <body>
-    <div id="user-info">Vous êtes connecté en tant que : <span id="user-name">Invité</span></div>
+  <div id="user-info">Connecté en tant que : <span id="user-name">…</span></div>
+  <div id="toast"></div>
 
-    <header>
-        <h1>Planning de Raid</h1>
-        <nav>
-            <ul>
-                <li><a href="index.html" aria-label="Accueil" title="Accueil">🏠</a></li>
+  <header>
+    <img src="Logo guilde.jpg" alt="Logo Bloodshadow" class="logo gauche" />
+    <h1>Planning</h1>
+    <p style="font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase;margin-top:4px;">Guilde Bloodshadow</p>
+    <img src="Logo guilde.jpg" alt="Logo Bloodshadow" class="logo droite" />
+    <nav><ul>
+      <li><a href="index.html">🏠</a></li>
+      <li class="nav-raid" style="position:relative;">
+        <button id="nav-raid-toggle" aria-haspopup="true" aria-expanded="false"><span>🗡️</span> Raid <span style="font-size:10px;opacity:.6;">▼</span></button>
+        <div id="nav-raid-menu">
+          <a href="planning.html"><span>📅</span> Planning de Raid</a>
+          <a href="excel_raid.html"><span>📊</span> Excel Raid</a>
+        </div>
+      </li>
+      <li class="nav-gestion" style="position:relative;">
+        <button id="nav-gestion-toggle" aria-haspopup="true" aria-expanded="false"><span>🧩</span> Gestion <span style="font-size:10px;opacity:.6;">▼</span></button>
+        <div id="nav-gestion-menu"><a href="membre_guilde.html"><span>👥</span> Membres de la Guilde</a></div>
+      </li>
+      <li><a href="Objectifs.html">🎯 Objectifs</a></li>
+      <li><a href="Cagnotte.html">💰 Cagnotte</a></li>
+      <li class="nav-annonce" style="display:none;position:relative;">
+        <button id="nav-gear-toggle" aria-haspopup="true" aria-expanded="false">📢</button>
+        <div id="nav-gear-menu">
+          <a href="annonce.html" data-role="mod"><span>📝</span> Annonce</a>
+          <a href="admin.html" data-role="admin"><span>⚙️</span> Administration</a>
+        </div>
+      </li>
+      <li class="nav-ressources" style="position:relative;">
+        <button id="nav-ressources-toggle" aria-haspopup="true" aria-expanded="false"><span>📚</span> Ressources <span style="font-size:10px;opacity:.6;">▼</span></button>
+        <div id="nav-ressources-menu">
+          <a href="https://www.playlostark.com/fr-fr/news" target="_blank" rel="noopener"><span>📰</span> News Lost Ark</a>
+          <a href="https://www.playlostark.com/fr-fr/support/server-status" target="_blank" rel="noopener"><span>🖥️</span> Server Status</a>
+          <a href="https://www.lostark.nexus" target="_blank" rel="noopener"><span>🛠️</span> Build Personnages</a>
+        </div>
+      </li>
+    </ul></nav>
+  </header>
 
-                <li class="nav-raid" style="position:relative;">
-                    <button id="nav-raid-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Raid">
-                        <span>🗡️</span> Raid <span style="font-size:10px;opacity:.6;">▼</span>
-                    </button>
-                    <div id="nav-raid-menu">
-                        <a href="planning.html"><span>📅</span> Planning de Raid</a>
-                        <a href="excel_raid.html"><span>📊</span> Excel Raid</a>
-                    </div>
-                </li>
+  <main>
+    <div class="planning-wrap">
+      <div class="cal-toolbar">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" id="prev-week">◀</button>
+          <span class="cal-week-label" id="week-label">—</span>
+          <button class="cal-nav-btn" id="next-week">▶</button>
+          <button class="cal-today-btn" id="btn-today">Aujourd'hui</button>
+        </div>
+        <div class="cal-legend">
+          <div class="legend-dot"><span class="dot-raid"></span> Raid</div>
+          <div class="legend-dot"><span class="dot-event"></span> Event</div>
+          <div class="legend-dot"><span class="dot-maint"></span> Maintenance</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button id="btn-discord">🔔 Envoyer sur Discord</button>
+          <button id="btn-add-event">＋ Ajouter un événement</button>
+        </div>
+      </div>
+      <div class="cal-container">
+        <div class="cal-header" id="cal-header"><div class="cal-header-gutter"></div></div>
+        <div class="cal-body" id="cal-body"><div class="cal-gutter" id="cal-gutter"></div></div>
+      </div>
+    </div>
+  </main>
 
-                <li class="nav-gestion" style="position:relative;">
-                    <button id="nav-gestion-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Gestion">
-                        <span>🧩</span> Gestion <span style="font-size:10px;opacity:.6;">▼</span>
-                    </button>
-                    <div id="nav-gestion-menu">
-                        <a href="membre_guilde.html"><span>👥</span> Membres de la Guilde</a>
-                    </div>
-                </li>
+  <!-- Popup détail + inscriptions -->
+  <div id="popup-event-detail" class="popup">
+    <div class="popup-content">
+      <span class="close" id="close-detail">×</span>
+      <div id="detail-type-badge" class="event-detail-type"></div>
+      <div id="detail-title" class="event-detail-title"></div>
+      <div class="event-detail-meta" id="detail-meta"></div>
+      <p id="detail-desc" style="display:none;font-size:.88rem;color:var(--text-muted);line-height:1.6;margin-bottom:12px;"></p>
+      <div class="reg-section" id="reg-section">
+        <div class="reg-section-title">
+          <span>✦ Participants</span>
+          <span class="reg-count-badge" id="reg-count-badge">0</span>
+        </div>
+        <div class="reg-list" id="reg-list"></div>
+        <div class="reg-join-panel" id="reg-join-panel"></div>
+      </div>
+      <div id="detail-admin-actions" style="display:none;margin-top:10px;">
+        <button id="btn-edit-event" style="width:100%;">✏️ Modifier cet événement</button>
+      </div>
+    </div>
+  </div>
 
-                <li class="nav-annonce" style="display:none;position:relative;">
-                    <button id="nav-gear-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Annonce / Administration">📢</button>
-                    <div id="nav-gear-menu">
-                        <a href="annonce.html" data-role="mod"><span>📝</span> Annonce</a>
-                        <a href="admin.html"   data-role="admin"><span>⚙️</span> Administration</a>
-                    </div>
-                </li>
+  <!-- Popup créer/modifier -->
+  <div id="popup-create-event" class="popup">
+    <div class="popup-content">
+      <span class="close" id="close-create">×</span>
+      <h2 id="create-title-h2">Créer un événement</h2>
+      <div class="popup-section">
+        <div class="popup-section-title">✦ Type</div>
+        <div class="type-selector">
+          <button class="type-btn active-raid" data-type="raid">⚔️ Raid</button>
+          <button class="type-btn" data-type="event">🎉 Event</button>
+          <button class="type-btn" data-type="maint">🔧 Maintenance</button>
+        </div>
+      </div>
+      <div class="popup-section">
+        <div class="popup-section-title">✦ Informations</div>
+        <label>Titre</label>
+        <input type="text" id="ev-title" placeholder="Ex: Brelshaza Gate 1-2" />
+        <label>Description (optionnel)</label>
+        <textarea id="ev-desc" placeholder="Détails, prérequis iLvl…" rows="3" style="width:100%;background:rgba(14,5,20,.8);border:1px solid rgba(179,0,27,.3);border-radius:8px;padding:10px 14px;color:var(--text);font-size:.88rem;resize:vertical;outline:none;font-family:inherit;box-sizing:border-box;"></textarea>
+      </div>
+      <div class="popup-section">
+        <div class="popup-section-title">✦ Date & Heure</div>
+        <div class="form-row">
+          <div><label>Date</label><input type="date" id="ev-date" /></div>
+          <div><label>Limite de joueurs</label><input type="number" id="ev-max" placeholder="Ex: 8" min="1" max="32" /></div>
+        </div>
+        <div class="form-row" style="margin-top:10px;">
+          <div><label>Début</label><input type="time" id="ev-start" value="20:00" /></div>
+          <div><label>Fin</label><input type="time" id="ev-end" value="23:00" /></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:4px;">
+        <button id="ev-submit" style="flex:1;">💾 Enregistrer</button>
+        <button id="ev-delete" class="btn-danger" style="display:none;flex:1;">🗑 Supprimer</button>
+      </div>
+    </div>
+  </div>
 
-                <li class="nav-ressources" style="position:relative;">
-                    <button id="nav-ressources-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Menu Ressources">
-                        <span>📚</span> Ressources <span style="font-size:10px;opacity:.6;">▼</span>
-                    </button>
-                    <div id="nav-ressources-menu">
-                        <a href="https://www.playlostark.com/fr-fr/news" target="_blank" rel="noopener"><span>📰</span> News Lost Ark</a>
-                        <a href="https://www.playlostark.com/fr-fr/support/server-status" target="_blank" rel="noopener"><span>🖥️</span> Server Status</a>
-                        <a href="https://www.lostark.nexus" target="_blank" rel="noopener"><span>🛠️</span> Build Personnages</a>
-                    </div>
-                </li>
-            </ul>
-        </nav>
-    </header>
+  <!-- Popup Discord -->
+  <div id="popup-discord" class="popup">
+    <div class="popup-content">
+      <span class="close" id="close-discord">×</span>
+      <h2>🔔 Envoyer sur Discord</h2>
+      <div class="webhook-warning">⚠️ Le webhook est stocké localement. Ne le partage jamais publiquement.</div>
+      <div class="popup-section">
+        <div class="popup-section-title">✦ Configuration Webhook</div>
+        <label>URL du Webhook Discord</label>
+        <input type="text" id="webhook-url" placeholder="https://discord.com/api/webhooks/..." style="font-size:.78rem;" />
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+          <input type="checkbox" id="webhook-save" style="width:auto;margin:0;" checked />
+          <label style="margin:0;font-size:.75rem;text-transform:none;letter-spacing:0;color:var(--text-muted);">Mémoriser le webhook</label>
+        </div>
+      </div>
+      <div class="popup-section">
+        <div class="popup-section-title">✦ Aperçu</div>
+        <div class="discord-preview">
+          <div class="discord-preview-guild">
+            <div class="discord-preview-avatar">🩸</div>
+            <span class="discord-preview-name">Bloodshadow Bot</span>
+          </div>
+          <div class="discord-preview-title" id="dp-title"></div>
+          <div class="discord-preview-body" id="dp-body"></div>
+          <div class="discord-preview-footer" id="dp-footer"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button id="btn-send-discord" style="flex:1;background:linear-gradient(135deg,#5865F2,#3c45c4);border:none;color:#fff;">📨 Envoyer</button>
+        <button id="btn-cancel-discord" style="flex:1;" class="btn-danger">Annuler</button>
+      </div>
+    </div>
+  </div>
 
-    <main>
-    <div class="planning-container">
-        <section id="planning">
-            <h2>Planning de Raid</h2>
+  <button id="logout-btn">🚪 Déconnexion</button>
 
-            <div id="admin-raid-controls">
-                <div class="admin-btns">
-                    <button id="show-add-raid-popup" class="admin-btn-add" title="Ajouter un raid">+</button>
-                    <button id="show-remove-raid-popup" class="admin-btn-remove" title="Retirer un raid">−</button>
-                </div>
-                <div class="admin-btn-legend"><b>+</b> Ajouter &nbsp;·&nbsp; <b>−</b> Retirer un raid</div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-firestore.js";
+
+    const app  = initializeApp({ apiKey:"AIzaSyBfJubhqQFQNo8fxVLKh1DKlfisJhZYwGI", authDomain:"bloodshadowsite-d35ce.firebaseapp.com", projectId:"bloodshadowsite-d35ce", storageBucket:"bloodshadowsite-d35ce.firebasestorage.app", messagingSenderId:"368188025874", appId:"1:368188025874:web:cfdd31f87651f1a3737ccb" });
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    /* État */
+    let isAdmin=false, currentUser=null, currentMembre=null;
+    let currentWeekStart=getMonday(new Date()), allEvents=[], editingEventId=null, selectedType='raid', detailEventId=null;
+
+    /* Icônes */
+    const FD = "https://static.wikia.nocookie.net/lostark_gamepedia/images/";
+    const px = p => `https://wsrv.nl/?url=${encodeURIComponent(FD+p)}&w=64&h=64&output=webp&q=80`;
+    const CI = {
+      "Berserker":px("b/b8/ClassIcon-Warrior-Berserker.png/revision/latest?cb=20220211161248"),
+      "Paladin":px("6/66/ClassIcon-Warrior-Paladin.png/revision/latest?cb=20220211161249"),
+      "Destructeur":px("3/3b/ClassIcon-Warrior-Destroyer.png/revision/latest?cb=20230901222333"),
+      "Gunlancer":px("e/eb/ClassIcon-Warrior-Gunlancer.png/revision/latest?cb=20220211161248"),
+      "Slayer":px("1/15/ClassIcon-Warrior-Slayer.png/revision/latest?cb=20230901222441"),
+      "Paladine":"assets/class-icons/valkyrie.png","Valkyrie":"assets/class-icons/valkyrie.png",
+      "Guardian Knight":"assets/class-icons/guardian-knight.png","Dragon Knight":"assets/class-icons/guardian-knight.png",
+      "Sorcière":px("6/63/ClassIcon-Mage-Sorceress.png/revision/latest?cb=20220211161242"),
+      "Arcaniste":px("d/d4/ClassIcon-Mage-Arcanist.png/revision/latest?cb=20230901213545"),
+      "Barde":px("1/1b/ClassIcon-Mage-Bard.png/revision/latest?cb=20220211161241"),
+      "Invocatrice":px("e/e3/ClassIcon-Mage-Summoner.png/revision/latest?cb=20230901214149"),
+      "Elementiste":px("e/e8/ClassIcon-Martial_Artist-Wardancer.png/revision/latest?cb=20220211161246"),
+      "Spirite":px("1/19/ClassIcon-Martial_Artist-Soulfist.png/revision/latest?cb=20220211161245"),
+      "Lancière":px("5/5c/ClassIcon-Martial_Artist-Glaivier.png/revision/latest?cb=20230901215814"),
+      "Pugiliste":px("6/64/ClassIcon-Martial_Artist-Scrapper.png/revision/latest?cb=20220211161244"),
+      "Striker":px("b/b0/ClassIcon-Martial_Artist-Striker.png/revision/latest?cb=20220211161245"),
+      "Breaker":"assets/class-icons/breaker.png",
+      "Sanguelame":px("0/0a/ClassIcon-Assassin-Deathblade.png/revision/latest?cb=20220211161236"),
+      "Démoniste":px("7/74/ClassIcon-Assassin-Shadowhunter.png/revision/latest?cb=20220211161234"),
+      "Faucheuse":px("4/40/ClassIcon-Assassin-Reaper.png/revision/latest?cb=20230901211242"),
+      "Dévoreuse d'âme":px("c/c3/ClassIcon-Assassin-Souleater.png/revision/latest?cb=20231125011727"),
+      "Gunner":px("d/da/ClassIcon-Gunner-Deadeye.png/revision/latest?cb=20220211161238"),
+      "Sagittaire":px("f/fd/ClassIcon-Gunner-Sharpshooter.png/revision/latest?cb=20220211161240"),
+      "Artilleur":px("a/a8/ClassIcon-Gunner-Artillerist.png/revision/latest?cb=20220211161238"),
+      "Machiniste":px("a/ad/ClassIcon-Gunner.png/revision/latest?cb=20220211161237"),
+      "Fusilière":px("3/38/ClassIcon-Gunner-Gunslinger.png/revision/latest?cb=20220211161239"),
+      "Artiste":px("d/da/ClassIcon-Specialist-Artist.png/revision/latest?cb=20230901210029"),
+      "Helètempète":"assets/class-icons/heletempete.png",
+      "Ame sauvage":"assets/class-icons/ame-sauvage.png",
+    };
+    const getIcon = c => { if(!c)return CI["Berserker"]; const k=c.replace(/\*/g,'').trim(); return CI[k]||CI[Object.keys(CI).find(i=>i.toLowerCase()===k.toLowerCase())]||CI["Berserker"]; };
+    const iconHTML = (c,s=28) => `<img src="${getIcon(c)}" alt="${c}" title="${c}" style="width:${s}px;height:${s}px;border-radius:6px;object-fit:cover;border:1px solid rgba(255,255,255,.12);flex-shrink:0;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/><span style="display:none;width:${s}px;height:${s}px;border-radius:6px;background:rgba(179,0,27,.2);border:1px solid rgba(179,0,27,.3);align-items:center;justify-content:center;font-size:${Math.round(s*.6)}px;flex-shrink:0;">⚔️</span>`;
+
+    /* Dates */
+    function getMonday(d){const r=new Date(d),day=r.getDay();r.setDate(r.getDate()+(day===0?-6:1-day));r.setHours(0,0,0,0);return r;}
+    const addDays=(d,n)=>{const r=new Date(d);r.setDate(r.getDate()+n);return r;};
+    const fmtDate=d=>d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const fmtShort=d=>d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
+    const dateKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const DAYS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+    const TI={raid:'⚔️',event:'🎉',maint:'🔧'};
+    const TL={raid:'Raid',event:'Event Guilde',maint:'Maintenance'};
+
+    /* Toast */
+    function toast(msg,err=false){const el=document.getElementById('toast');el.textContent=(err?'❌ ':'✅ ')+msg;el.style.borderColor=err?'rgba(179,0,27,.5)':'rgba(201,146,42,.5)';el.style.color=err?'#ff8080':'var(--gold-light)';el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800);}
+
+    /* Render calendrier */
+    function renderCalendar(){
+      const header=document.getElementById('cal-header'),body=document.getElementById('cal-body'),gutter=document.getElementById('cal-gutter');
+      const today=new Date();today.setHours(0,0,0,0);
+      document.getElementById('week-label').textContent=`${fmtShort(currentWeekStart)} — ${fmtShort(addDays(currentWeekStart,6))}`;
+      header.innerHTML='<div class="cal-header-gutter"></div>';
+      for(let i=0;i<7;i++){const day=addDays(currentWeekStart,i),isTod=day.getTime()===today.getTime(),div=document.createElement('div');div.className='cal-day-header'+(isTod?' today':'');div.innerHTML=`<span class="day-name">${DAYS[i]}</span><span class="day-num">${day.getDate()}</span>${isTod?'<div class="today-dot"></div>':''}`;header.appendChild(div);}
+      gutter.innerHTML='';
+      for(let h=0;h<24;h++){const l=document.createElement('div');l.className='hour-label';l.textContent=`${String(h).padStart(2,'0')}h`;gutter.appendChild(l);}
+      body.innerHTML='';body.appendChild(gutter);
+      const cols=[];
+      for(let i=0;i<7;i++){
+        const day=addDays(currentWeekStart,i),isTod=day.getTime()===today.getTime(),col=document.createElement('div');
+        col.className='cal-col'+(isTod?' today-col':'');col.dataset.date=dateKey(day);
+        for(let h=0;h<24;h++){const l=document.createElement('div');l.className='hour-line';l.style.top=`${h*60}px`;col.appendChild(l);const lh=document.createElement('div');lh.className='hour-line half';lh.style.top=`${h*60+30}px`;col.appendChild(lh);}
+        if(isTod){const now=new Date(),nl=document.createElement('div');nl.className='now-line';nl.id='now-line';nl.style.top=`${now.getHours()*60+now.getMinutes()}px`;col.appendChild(nl);}
+        body.appendChild(col);cols.push(col);
+      }
+      const wS=dateKey(currentWeekStart),wE=dateKey(addDays(currentWeekStart,6));
+      const evW=allEvents.filter(ev=>ev.date>=wS&&ev.date<=wE);
+      if(!evW.length)cols.forEach(c=>{const e=document.createElement('div');e.className='cal-col-empty';e.textContent='Aucun événement';c.appendChild(e);});
+      evW.forEach(ev=>{
+        const ci=Math.round((new Date(ev.date)-currentWeekStart)/86400000);
+        if(ci<0||ci>6)return;
+        const col=cols[ci],[sh,sm]=ev.startTime.split(':').map(Number),[eh,em]=ev.endTime.split(':').map(Number);
+        const top=sh*60+sm,h=Math.max((eh*60+em)-top,30),regs=ev.registrations||[],maxP=ev.maxPlayers||null,full=maxP&&regs.length>=maxP;
+        const el=document.createElement('div');el.className=`cal-event type-${ev.type}`;el.style.top=`${top}px`;el.style.height=`${h}px`;
+        el.innerHTML=`<span class="event-icon">${TI[ev.type]}</span><div class="event-title">${ev.title}</div>${h>40?`<div class="event-time">${ev.startTime} – ${ev.endTime}</div>`:''}${ev.type!=='maint'?`<div class="event-reg-count ${full?'full':''}">${regs.length}${maxP?'/'+maxP:''} 👤</div>`:''}`;
+        el.addEventListener('click',()=>openDetail(ev));col.appendChild(el);
+      });
+      body.scrollTop=18*60-60;
+    }
+
+    /* Popup détail */
+    function openDetail(ev){
+      detailEventId=ev.id;
+      document.getElementById('detail-type-badge').className=`event-detail-type type-${ev.type}`;
+      document.getElementById('detail-type-badge').textContent=`${TI[ev.type]} ${TL[ev.type]}`;
+      document.getElementById('detail-title').textContent=ev.title;
+      const dateObj=new Date(ev.date+'T00:00:00');
+      document.getElementById('detail-meta').innerHTML=`<div class="event-meta-row"><span>📅</span><span><strong>${fmtDate(dateObj)}</strong></span></div><div class="event-meta-row"><span>🕐</span><span><strong>${ev.startTime}</strong> → <strong>${ev.endTime}</strong></span></div>${ev.maxPlayers?`<div class="event-meta-row"><span>👥</span><span>Limite : <strong>${ev.maxPlayers} joueurs</strong></span></div>`:''}`;
+      const d=document.getElementById('detail-desc');
+      if(ev.description){d.textContent=ev.description;d.style.display='block';}else d.style.display='none';
+      const aa=document.getElementById('detail-admin-actions');aa.style.display=isAdmin?'block':'none';
+      if(isAdmin)document.getElementById('btn-edit-event').onclick=()=>{closeP('popup-event-detail');openCreate(ev);};
+      renderReg(ev);
+      document.getElementById('popup-event-detail').style.display='flex';
+    }
+
+    function renderReg(ev){
+      if(ev.type==='maint'){document.getElementById('reg-section').style.display='none';return;}
+      document.getElementById('reg-section').style.display='block';
+      const regs=ev.registrations||[],maxP=ev.maxPlayers||null,full=maxP&&regs.length>=maxP;
+      const badge=document.getElementById('reg-count-badge');
+      badge.textContent=`${regs.length}${maxP?' / '+maxP:''}`;
+      badge.className='reg-count-badge'+(regs.length>0&&!full?' ok':'');
+      const list=document.getElementById('reg-list');
+      if(!regs.length){list.innerHTML='<div class="reg-empty">Aucun participant pour l\'instant.</div>';}
+      else{
+        list.innerHTML=regs.map(r=>`
+          <div class="reg-item">
+            <div style="display:flex;align-items:center;">${iconHTML(r.classe,28)}</div>
+            <div class="reg-item-info">
+              <div class="reg-item-name">${r.membreNom}</div>
+              <div class="reg-item-class">${r.persoNom} · ${r.classe}</div>
             </div>
-
-            <ul id="raid-list-today"></ul>
-            <div id="calendar"></div>
-        </section>
-
-        <div class="raid-actions">
-
-            <!-- Popup Ajouter un Raid -->
-            <div id="add-raid-popup" class="popup" style="display:none;">
-                <div class="popup-content">
-                    <span id="close-add-raid-popup" class="close">&times;</span>
-                    <h2>Ajouter un Raid</h2>
-                    <label for="raid-select">Choisir un Raid :</label>
-                    <select id="raid-select">
-                        <option value="Behemoth">Behemoth - iLvl 1620</option>
-                        <option value="Prélude Echidna NM">Prélude Echidna NM - iLvl 1620</option>
-                        <option value="Prélude Echidna HM">Prélude Echidna HM - iLvl 1630</option>
-                        <option value="Aegir NM">Aegir NM - iLvl 1660</option>
-                        <option value="Aegir HM">Aegir HM - iLvl 1680</option>
-                        <option value="Brelshaza NM">Brelshaza NM - iLvl 1670</option>
-                        <option value="Brelshaza HM">Brelshaza HM - iLvl 1690</option>
-                        <option value="Mordum NM">Mordum NM - iLvl 1680</option>
-                        <option value="Mordum HM">Mordum HM - iLvl 1700</option>
-                        <option value="Mordum HM G3">Mordum HM G3 - iLvl 1700</option>
-                        <option value="Armoche NM ">Armoche NM - iLvl 1700</option>
-                        <option value="Armoche HM">Armoche HM - iLvl 1720</option>
-                        <option value="Final Day NM ">Final Day NM - iLvl 1710</option>
-                        <option value="Final Day HM">Final Day HM - iLvl 1730</option>
-                    </select>
-                    <label for="raid-date">Date :</label>
-                    <input type="date" id="raid-date">
-                    <label for="raid-time">Heure :</label>
-                    <input type="time" id="raid-time" min="00:00" max="23:59">
-                    <button id="add-raid-btn">Ajouter le Raid</button>
-                </div>
-            </div>
-
-            <!-- Popup Retirer un Raid -->
-            <div id="remove-raid-popup" class="popup" style="display:none;">
-                <div class="popup-content">
-                    <span id="close-remove-raid-popup" class="close">&times;</span>
-                    <h2>Retirer un Raid</h2>
-                    <label for="raid-remove-select">Sélectionner un Raid :</label>
-                    <select id="raid-remove-select">
-                        <option value="">-- Sélectionner un raid --</option>
-                    </select>
-                    <button id="remove-raid-btn">Retirer le Raid</button>
-                </div>
-            </div>
-
-            <!-- Popup Détails du raid -->
-            <div id="raid-popup" class="popup">
-                <div class="popup-content">
-                    <span id="close-popup" class="close">&times;</span>
-                    <h2 id="raid-name"></h2>
-                    <p id="raid-date-time"></p>
-                    <h3>Joueurs inscrits :</h3>
-                    <ul id="raid-players-list"></ul>
-                    <div id="popup-inscription-section">
-                        <h4>S'inscrire à ce raid :</h4>
-                        <label for="popup-character-select">Personnage :</label>
-                        <select id="popup-character-select">
-                            <option value="">-- Sélectionner un personnage --</option>
-                        </select>
-                        <button id="popup-inscrire-btn">S'inscrire</button>
-                    </div>
-                </div>
-            </div>
-
-        </div><!-- .raid-actions -->
-    </div><!-- .planning-container -->
-    </main>
-
-    <button id="logout-btn">🚪 Déconnexion</button>
-
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-
-    <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-auth.js";
-import { getFirestore, collection, query, where, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.17.0/firebase-firestore.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyBfJubhqQFQNo8fxVLKh1DKlfisJhZYwGI",
-    authDomain: "bloodshadowsite-d35ce.firebaseapp.com",
-    projectId: "bloodshadowsite-d35ce",
-    storageBucket: "bloodshadowsite-d35ce.firebasestorage.app",
-    messagingSenderId: "368188025874",
-    appId: "1:368188025874:web:cfdd31f87651f1a3737ccb",
-    measurementId: "G-1PJ7HXSP6J"
-};
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
-
-// ── Auth ──────────────────────────────────────────────────
-onAuthStateChanged(auth, async (user) => {
-    if (!user) { window.location.href = 'connexion.html'; return; }
-    const q    = query(collection(db, 'joueurs'), where('uid', '==', user.uid));
-    const snap = await getDocs(q);
-    if (!snap.empty) {
-        const membre  = snap.docs[0].data();
-        const role    = (membre.role || '').trim();
-        window._userRole = role;
-        document.getElementById('user-name').textContent = membre.nom;
-        document.getElementById('admin-raid-controls').classList.toggle('admin-visible', role === 'Administrateur');
-        const annonceLi = document.querySelector('li.nav-annonce');
-        if (annonceLi) {
-            annonceLi.style.display = (role === 'Administrateur' || role === 'Modérateur') ? 'list-item' : 'none';
-            const adminLink = document.querySelector('#nav-gear-menu a[data-role="admin"]');
-            if (adminLink) adminLink.style.display = (role === 'Administrateur') ? 'flex' : 'none';
-        }
+            <span class="reg-item-ilvl">${parseFloat(r.ilvl).toLocaleString('fr-FR')}</span>
+            ${isAdmin?`<button class="reg-kick-btn" data-uid="${r.uid}" title="Retirer">✕</button>`:''}
+          </div>`).join('');
+        if(isAdmin)list.querySelectorAll('.reg-kick-btn').forEach(b=>b.addEventListener('click',()=>kickPlayer(ev,b.dataset.uid)));
+      }
+      const panel=document.getElementById('reg-join-panel');
+      if(!currentMembre||!currentUser){panel.innerHTML='';return;}
+      const already=regs.find(r=>r.uid===currentUser.uid);
+      const persos=(currentMembre.personnages||[]).sort((a,b)=>(parseFloat(b.ilvl)||0)-(parseFloat(a.ilvl)||0));
+      if(already){
+        panel.innerHTML=`<div class="already-reg-msg">✅ Inscrit avec <strong style="margin-left:4px;">${already.persoNom}</strong> (${already.classe})</div><button class="btn-leave" id="btn-leave">↩ Se désinscrire</button>`;
+        panel.querySelector('#btn-leave').addEventListener('click',()=>leaveRaid(ev));
+      } else if(full){
+        panel.innerHTML='<div class="reg-full-msg">🔒 Raid complet</div>';
+      } else if(!persos.length){
+        panel.innerHTML='<div class="reg-empty">Ajoute un personnage dans ton profil pour t\'inscrire.</div>';
+      } else {
+        panel.innerHTML=`<label>Choisir ton personnage</label><select id="reg-sel">${persos.map(p=>`<option value="${p.nom}" data-classe="${p.classe}" data-ilvl="${p.ilvl}">${p.nom} — ${p.classe} (${parseFloat(p.ilvl).toLocaleString('fr-FR')})</option>`).join('')}</select><button class="btn-join" id="btn-join">⚔️ S'inscrire au raid</button>`;
+        panel.querySelector('#btn-join').addEventListener('click',()=>{const s=panel.querySelector('#reg-sel'),o=s.options[s.selectedIndex];joinRaid(ev,s.value,o.dataset.classe,o.dataset.ilvl);});
+      }
     }
-});
 
-document.getElementById('logout-btn').addEventListener('click', async () => {
-    await signOut(auth);
-    window.location.href = 'connexion.html';
-});
-
-// ── Toast ─────────────────────────────────────────────────
-function afficherMessage(msg) {
-    let d = document.getElementById('confirmation-message');
-    if (!d) {
-        d = document.createElement('div');
-        d.id = 'confirmation-message';
-        d.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#f0c040;padding:10px 22px;border-radius:10px;z-index:9999;font-family:Cinzel,serif;font-size:.85rem;letter-spacing:1px;border:1px solid rgba(201,146,42,0.4);box-shadow:0 4px 16px rgba(0,0,0,0.5);';
-        document.body.appendChild(d);
+    async function joinRaid(ev,persoNom,classe,ilvl){
+      const regs=[...(ev.registrations||[])];
+      if(regs.find(r=>r.uid===currentUser.uid)){toast('Tu es déjà inscrit !',true);return;}
+      regs.push({uid:currentUser.uid,membreNom:currentMembre.nom||'Invité',persoNom,classe,ilvl:parseFloat(ilvl)});
+      await updateDoc(doc(db,'planning',ev.id),{registrations:regs});
+      toast(`Inscrit avec ${persoNom} !`);
     }
-    d.textContent = msg;
-    d.style.display = 'block';
-    setTimeout(() => { d.style.display = 'none'; }, 2200);
-}
 
-// ── Données ───────────────────────────────────────────────
-const calendarEl       = document.getElementById('calendar');
-const raidRemoveSelect = document.getElementById('raid-remove-select');
-let calendar;
-let raids = [];
-let currentRaidId = null;
-
-// Sélecteurs inscription (formulaire inline non utilisé sur cette page mais référencés)
-const memberSelect    = document.getElementById('member-select')    || { value: '' };
-const characterSelect = document.getElementById('character-select') || { innerHTML: '' };
-
-async function loadData() {
-    try {
-        const joueursSnapshot = await getDocs(collection(db, 'joueurs'));
-        const raidsSnapshot   = await getDocs(collection(db, 'raids'));
-        raids = [];
-        raidsSnapshot.forEach(d => {
-            const r = d.data();
-            raids.push({ id: d.id, nom: r.nom, date: r.date, time: r.time, date_ajout: r.date_ajout, inscriptions: r.inscriptions || [] });
-        });
-        raids.sort((a, b) => new Date(b.date_ajout) - new Date(a.date_ajout));
-        mettreAJourListeRaids(raids);
-        return { raids, joueursSnapshot };
-    } catch (e) {
-        console.error('Erreur chargement données :', e);
-        return { raids: [], joueursSnapshot: [] };
+    async function leaveRaid(ev){
+      const regs=(ev.registrations||[]).filter(r=>r.uid!==currentUser.uid);
+      await updateDoc(doc(db,'planning',ev.id),{registrations:regs});
+      toast('Tu t\'es désinscrit.');
     }
-}
 
-function updateCharacterList(joueursSnapshot) {
-    if (!characterSelect.innerHTML) return;
-    const sel = memberSelect.value;
-    characterSelect.innerHTML = '<option value="">-- Sélectionner un personnage --</option>';
-    joueursSnapshot.forEach(d => {
-        const j = d.data();
-        if (j.nom === sel) {
-            j.personnages.forEach(p => {
-                const o = document.createElement('option');
-                o.value = p.nom;
-                o.textContent = `${p.nom} - ${p.classe} (${p.ilvl})`;
-                characterSelect.appendChild(o);
-            });
-        }
+    async function kickPlayer(ev,uid){
+      if(!confirm('Retirer ce joueur ?'))return;
+      const regs=(ev.registrations||[]).filter(r=>r.uid!==uid);
+      await updateDoc(doc(db,'planning',ev.id),{registrations:regs});
+      toast('Joueur retiré.');
+    }
+
+    /* Créer/modifier event */
+    function openCreate(ev=null){
+      document.getElementById('create-title-h2').textContent=ev?"Modifier l'événement":"Créer un événement";
+      document.getElementById('ev-delete').style.display=ev?'block':'none';
+      document.getElementById('ev-submit').textContent=ev?'💾 Mettre à jour':'💾 Enregistrer';
+      if(ev){editingEventId=ev.id;document.getElementById('ev-title').value=ev.title;document.getElementById('ev-desc').value=ev.description||'';document.getElementById('ev-date').value=ev.date;document.getElementById('ev-start').value=ev.startTime;document.getElementById('ev-end').value=ev.endTime;document.getElementById('ev-max').value=ev.maxPlayers||'';setType(ev.type);}
+      else{editingEventId=null;document.getElementById('ev-title').value='';document.getElementById('ev-desc').value='';document.getElementById('ev-date').value=dateKey(new Date());document.getElementById('ev-start').value='20:00';document.getElementById('ev-end').value='23:00';document.getElementById('ev-max').value='';setType('raid');}
+      document.getElementById('popup-create-event').style.display='flex';
+    }
+
+    function setType(t){selectedType=t;document.querySelectorAll('.type-btn').forEach(b=>{b.className='type-btn';if(b.dataset.type===t)b.classList.add(`active-${t}`);});}
+
+    async function saveEvent(){
+      const title=document.getElementById('ev-title').value.trim(),date=document.getElementById('ev-date').value,start=document.getElementById('ev-start').value,end=document.getElementById('ev-end').value,desc=document.getElementById('ev-desc').value.trim(),maxP=parseInt(document.getElementById('ev-max').value)||null;
+      if(!title||!date||!start||!end){toast('Remplis tous les champs !',true);return;}
+      if(start>=end){toast("L'heure de fin doit être après le début !",true);return;}
+      const data={title,date,startTime:start,endTime:end,type:selectedType,description:desc,maxPlayers:maxP};
+      try{
+        if(editingEventId){await updateDoc(doc(db,'planning',editingEventId),data);toast('Événement mis à jour !');}
+        else{await addDoc(collection(db,'planning'),{...data,registrations:[]});toast('Événement créé !');}
+        closeP('popup-create-event');
+      }catch(e){toast('Erreur : '+e.message,true);}
+    }
+
+    async function delEvent(){
+      if(!editingEventId)return;
+      if(!confirm('Supprimer définitivement ?'))return;
+      await deleteDoc(doc(db,'planning',editingEventId));
+      toast('Supprimé.');closeP('popup-create-event');
+    }
+
+    /* Écoute temps réel */
+    function listenEvents(){
+      onSnapshot(collection(db,'planning'),snap=>{
+        allEvents=snap.docs.map(d=>({id:d.id,...d.data()}));
+        renderCalendar();
+        if(detailEventId){const ev=allEvents.find(e=>e.id===detailEventId);if(ev)renderReg(ev);}
+      });
+    }
+
+    const closeP=id=>document.getElementById(id).style.display='none';
+    ['popup-event-detail','popup-create-event'].forEach(id=>document.getElementById(id).addEventListener('click',function(e){if(e.target===this){closeP(id);if(id==='popup-event-detail')detailEventId=null;}}));
+    document.getElementById('close-detail').addEventListener('click',()=>{closeP('popup-event-detail');detailEventId=null;});
+    document.getElementById('close-create').addEventListener('click',()=>closeP('popup-create-event'));
+    document.getElementById('prev-week').addEventListener('click',()=>{currentWeekStart=addDays(currentWeekStart,-7);renderCalendar();});
+    document.getElementById('next-week').addEventListener('click',()=>{currentWeekStart=addDays(currentWeekStart,7);renderCalendar();});
+    document.getElementById('btn-today').addEventListener('click',()=>{currentWeekStart=getMonday(new Date());renderCalendar();setTimeout(()=>{document.getElementById('cal-body').scrollTop=new Date().getHours()*60-60;},50);});
+    document.querySelectorAll('.type-btn').forEach(b=>b.addEventListener('click',()=>setType(b.dataset.type)));
+    document.getElementById('ev-submit').addEventListener('click',saveEvent);
+    document.getElementById('ev-delete').addEventListener('click',delEvent);
+    document.getElementById('btn-add-event').addEventListener('click',()=>openCreate());
+    setInterval(()=>{const l=document.getElementById('now-line');if(l){const n=new Date();l.style.top=`${n.getHours()*60+n.getMinutes()}px`;}},60000);
+
+    /* ── Discord Webhook ── */
+    const DAYS_FULL=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+
+    function buildDiscordContent(){
+      const wS=dateKey(currentWeekStart),wE=dateKey(addDays(currentWeekStart,6));
+      const raids=allEvents.filter(ev=>ev.type==='raid'&&ev.date>=wS&&ev.date<=wE).sort((a,b)=>a.date.localeCompare(b.date)||a.startTime.localeCompare(b.startTime));
+      const wLabel=`${fmtDate(currentWeekStart)} → ${fmtDate(addDays(currentWeekStart,6))}`;
+      if(!raids.length)return{title:`⚔️ Planning Raids — ${wLabel}`,body:'Aucun raid prévu cette semaine.',footer:''};
+      let body='';
+      raids.forEach(ev=>{
+        const d=new Date(ev.date+'T00:00:00'),day=DAYS_FULL[d.getDay()];
+        const regs=ev.registrations||[],maxP=ev.maxPlayers?'/'+ev.maxPlayers:'';
+        body+=`**${day} ${d.getDate()} — ${ev.title}**\n`;
+        body+=`🕐 ${ev.startTime} – ${ev.endTime}`;
+        if(ev.description)body+=`  |  ${ev.description}`;
+        body+=`\n👥 Inscrits (${regs.length}${maxP}) :`;
+        if(!regs.length){body+=' *Personne pour l\'instant*';}
+        else{body+='\n'+regs.map(r=>`  • **${r.membreNom}** — ${r.persoNom} (${r.classe}, ${parseFloat(r.ilvl).toLocaleString('fr-FR')})`).join('\n');}
+        body+='\n\n';
+      });
+      const now=new Date(),footer=`Bloodshadow • Généré le ${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`;
+      return{title:`⚔️ Planning Raids — Semaine du ${wLabel}`,body:body.trim(),footer};
+    }
+
+    function openDiscordPopup(){
+      const{title,body,footer}=buildDiscordContent();
+      document.getElementById('dp-title').textContent=title;
+      document.getElementById('dp-body').textContent=body;
+      document.getElementById('dp-footer').textContent=footer;
+      document.getElementById('webhook-url').value=localStorage.getItem('bs_webhook')||'';
+      document.getElementById('popup-discord').style.display='flex';
+    }
+
+    async function sendToDiscord(){
+      const url=document.getElementById('webhook-url').value.trim();
+      if(!url||(!url.startsWith('https://discord.com/api/webhooks/')&&!url.startsWith('https://discordapp.com/api/webhooks/'))){toast('URL de webhook invalide !',true);return;}
+      if(document.getElementById('webhook-save').checked)localStorage.setItem('bs_webhook',url);
+      const{title,body,footer}=buildDiscordContent();
+      const payload={username:'Bloodshadow Bot',embeds:[{color:0xb3001b,title,description:body,footer:{text:footer},thumbnail:{url:'https://bloodshadowwebsite.vercel.app/Logo%20guilde.jpg'}}]};
+      const btn=document.getElementById('btn-send-discord');
+      btn.disabled=true;btn.textContent='⏳ Envoi…';
+      try{
+        const res=await fetch('/api/discord-webhook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({webhookUrl:url,payload})});
+        const data=await res.json();
+        if(data.success){toast('Message envoyé sur Discord ! 🎉');closeP('popup-discord');}
+        else{toast('Erreur Discord : '+(data.error||'inconnue'),true);}
+      }catch(e){toast('Erreur réseau : '+e.message,true);}
+      btn.disabled=false;btn.textContent='📨 Envoyer';
+    }
+
+    document.getElementById('btn-discord').addEventListener('click',openDiscordPopup);
+    document.getElementById('btn-send-discord').addEventListener('click',sendToDiscord);
+    document.getElementById('close-discord').addEventListener('click',()=>closeP('popup-discord'));
+    document.getElementById('btn-cancel-discord').addEventListener('click',()=>closeP('popup-discord'));
+    document.getElementById('popup-discord').addEventListener('click',function(e){if(e.target===this)closeP('popup-discord');});
+
+    /* Auth */
+    onAuthStateChanged(auth,async user=>{
+      if(!user){window.location.href='connexion.html';return;}
+      currentUser=user;
+      const snap=await getDocs(query(collection(db,'joueurs'),where('uid','==',user.uid)));
+      if(!snap.empty){
+        currentMembre=snap.docs[0].data();
+        const role=(currentMembre.role||'').trim();
+        document.getElementById('user-name').textContent=currentMembre.nom||user.displayName||'Invité';
+        localStorage.setItem('userRole',role);
+        isAdmin=(role==='Administrateur');
+        if(isAdmin){document.getElementById('btn-add-event').style.display='inline-flex';document.getElementById('btn-discord').style.display='inline-flex';}
+        const navLi=document.querySelector('li.nav-annonce');
+        if(navLi)navLi.style.display=(role==='Administrateur'||role==='Modérateur')?'list-item':'none';
+        const al=document.querySelector('#nav-gear-menu a[data-role="admin"]');
+        if(al)al.style.display=isAdmin?'flex':'none';
+      }
+      listenEvents();
     });
-}
+    document.getElementById('logout-btn').addEventListener('click',async()=>{await signOut(auth);window.location.href='connexion.html';});
+  </script>
 
-// ── Calendrier ────────────────────────────────────────────
-function normaliseHeure(h) {
-    const ampm = /^([0-9]{1,2}):([0-9]{2})([ap]m)?$/i.exec(h);
-    if (ampm) {
-        let hh = parseInt(ampm[1], 10);
-        const mm = ampm[2], suf = ampm[3];
-        if (suf) { if (suf.toLowerCase()==='pm' && hh<12) hh+=12; if (suf.toLowerCase()==='am' && hh===12) hh=0; }
-        return (hh<10?'0':'')+hh+':'+mm;
-    }
-    if (/^\d{1,2}:\d{2}$/.test(h)) { const [hh,mm]=h.split(':'); return (hh.length===1?'0':'')+hh+':'+mm; }
-    return h;
-}
-
-function initialiserCalendrier(raidData) {
-    if (calendar) { calendar.destroy(); }
-
-    // Vue adaptée au mobile
-    const isMobile = window.innerWidth <= 600;
-
-    calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: isMobile ? 'listMonth' : 'dayGridMonth',
-        headerToolbar: {
-            left:   'prev,next today',
-            center: 'title',
-            right:  isMobile ? '' : 'dayGridMonth,listMonth'
-        },
-        firstDay: 3,
-        fixedWeekCount: false,
-        height: 'auto',
-        events: raidData.map(r => {
-            const heure   = normaliseHeure(r.time);
-            let nomRaid   = r.nom.replace(/^\s*\d{1,2}\s*(a|p|am|pm)\s*:*/i,'').replace(/\.\.\.$/, '');
-            let badge = '';
-            if (/\bHM\b/i.test(nomRaid)) badge = '<span class="raid-badge hm">HM</span>';
-            else if (/\bNM\b/i.test(nomRaid)) badge = '<span class="raid-badge nm">NM</span>';
-            return {
-                id: r.id,
-                title: `${heure} - ${nomRaid}`,
-                start: `${r.date}T${heure}:00`,
-                description: r.inscriptions || [],
-                extendedProps: { badgeHtml: badge }
-            };
-        }),
-        eventDidMount: function(info) {
-            if (info.event.extendedProps.badgeHtml) {
-                const titleEl = info.el.querySelector('.fc-event-title');
-                if (titleEl) titleEl.innerHTML += ' ' + info.event.extendedProps.badgeHtml;
-            }
-            // Tooltip sur desktop uniquement
-            if (window.innerWidth > 700) {
-                info.el.addEventListener('mouseenter', function() {
-                    let tt = document.getElementById('raid-tooltip');
-                    if (tt) tt.remove();
-                    tt = document.createElement('div');
-                    tt.id = 'raid-tooltip';
-                    tt.style.cssText = 'position:fixed;background:rgba(20,8,28,0.97);color:#eee;padding:8px 14px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.5);z-index:9999;font-size:14px;max-width:300px;pointer-events:none;border:1px solid rgba(179,0,27,0.35);';
-                    let content = `<strong>${info.event.title}</strong><div style="height:6px;"></div>`;
-                    if (info.event.extendedProps.description && info.event.extendedProps.description.length > 0) {
-                        content += info.event.extendedProps.description.map(m => `<span style="display:block;margin-bottom:6px;">${m}</span>`).join('');
-                    } else { content += '<em>Aucun inscrit</em>'; }
-                    tt.innerHTML = content;
-                    document.body.appendChild(tt);
-                    info.el.addEventListener('mousemove', e => { tt.style.left=(e.clientX+18)+'px'; tt.style.top=(e.clientY+12)+'px'; });
-                });
-                info.el.addEventListener('mouseleave', () => { const tt=document.getElementById('raid-tooltip'); if(tt) tt.remove(); });
-            }
-        },
-        eventClick: function(info) { afficherDetailsRaid(info.event.id); }
-    });
-    calendar.render();
-}
-
-// ── Re-render calendrier au resize ───────────────────────
-let resizeTimer;
-window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => { loadData().then(({raids}) => initialiserCalendrier(raids)); }, 300);
-});
-
-// ── Formatter date FR ─────────────────────────────────────
-function formatDate(iso) {
-    return new Date(iso).toLocaleString('fr-FR', { weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
-}
-
-// ── Détails raid popup ────────────────────────────────────
-async function afficherDetailsRaid(raidId) {
-    const raidDetails = raids.find(r => r.id === raidId);
-    if (!raidDetails) return;
-    currentRaidId = raidId;
-
-    document.getElementById('raid-name').textContent = raidDetails.nom;
-    const dateObj = new Date(raidDetails.date + 'T' + raidDetails.time + ':00');
-    document.getElementById('raid-date-time').textContent =
-        dateObj.toLocaleDateString('fr-FR', { weekday:'long', year:'numeric', month:'long', day:'numeric' }) + ' à ' + raidDetails.time;
-
-    const list = document.getElementById('raid-players-list');
-    list.innerHTML = '';
-    if (raidDetails.inscriptions && raidDetails.inscriptions.length > 0) {
-        raidDetails.inscriptions.forEach((player, idx) => {
-            const li = document.createElement('li');
-            const sp = document.createElement('span');
-            sp.textContent = player;
-            const rm = document.createElement('span');
-            rm.textContent = '✖';
-            rm.title = 'Se désinscrire';
-            rm.style.cssText = 'color:#FF5252;font-weight:bold;cursor:pointer;margin-left:auto;flex-shrink:0;';
-            rm.onclick = async () => {
-                if (confirm('Êtes-vous sûr de vouloir vous désinscrire ?')) {
-                    await updateDoc(doc(db, 'raids', raidDetails.id), {
-                        inscriptions: raidDetails.inscriptions.filter((_,i)=>i!==idx)
-                    });
-                    afficherMessage('Vous avez été désinscrit du raid.');
-                    loadData().then(({raids}) => { initialiserCalendrier(raids); afficherDetailsRaid(raidDetails.id); });
-                }
-            };
-            li.appendChild(sp);
-            li.appendChild(rm);
-            list.appendChild(li);
-        });
-    } else {
-        const li = document.createElement('li');
-        li.textContent = "Aucune inscription pour l'instant.";
-        list.appendChild(li);
-    }
-
-    // Personnages du membre connecté
-    const popupCharSel = document.getElementById('popup-character-select');
-    popupCharSel.innerHTML = '<option value="">-- Sélectionner un personnage --</option>';
-    let membreConnecte = null;
-    const user = auth.currentUser;
-    if (user) {
-        const q    = query(collection(db, 'joueurs'), where('uid', '==', user.uid));
-        const snap = await getDocs(q);
-        if (!snap.empty) membreConnecte = snap.docs[0].data();
-    }
-    if (membreConnecte) {
-        membreConnecte.personnages.forEach(p => {
-            const o = document.createElement('option');
-            o.value = p.nom;
-            o.textContent = `${p.nom} - ${p.classe} (${p.ilvl})`;
-            popupCharSel.appendChild(o);
-        });
-    }
-
-    // Listener inscription (une seule fois)
-    if (!window._popupInscriptionListenerAdded) {
-        document.getElementById('popup-inscrire-btn').addEventListener('click', async function() {
-            function getISOWeek(dateStr) {
-                const d = new Date(dateStr); d.setHours(0,0,0,0);
-                d.setDate(d.getDate()+3-(d.getDay()+6)%7);
-                const w1 = new Date(d.getFullYear(),0,4);
-                return 1+Math.round(((d-w1)/86400000-3+(w1.getDay()+6)%7)/7);
-            }
-            if (!membreConnecte) { alert('Aucun membre connecté.'); return; }
-            const personnageNom = popupCharSel.value;
-            if (!personnageNom) { alert('Veuillez sélectionner un personnage.'); return; }
-            const personnage = membreConnecte.personnages.find(p=>p.nom===personnageNom);
-            if (!personnage) { alert('Personnage introuvable.'); return; }
-            const raid = raids.find(r=>r.id===currentRaidId);
-            if (!raid) { alert('Raid introuvable.'); return; }
-
-            // Vérif doublon hebdomadaire
-            const raidWeek = getISOWeek(raid.date), raidYear = new Date(raid.date).getFullYear();
-            for (const r of raids) {
-                if (r.nom===raid.nom) {
-                    if (getISOWeek(r.date)===raidWeek && new Date(r.date).getFullYear()===raidYear) {
-                        if (r.inscriptions && r.inscriptions.some(i=>i.includes(`(${personnageNom},`))) {
-                            alert('Ce personnage a déjà participé à ce raid cette semaine.'); return;
-                        }
-                    }
-                }
-            }
-
-            // Vérif iLvl
-            const ilvlMin = { 'Behemoth':1620,'Prélude Echidna NM':1620,'Prélude Echidna HM':1630,'Aegir NM':1660,'Aegir HM':1680,'Brelshaza NM':1670,'Brelshaza HM':1690,'Mordum NM':1680,'Mordum HM':1700,'Kazéros NM':1700,'Kazéros HM':1720,'Final Day NM':1710,'Final Day HM':1730 };
-            const reqMin = ilvlMin[raid.nom.trim()] || 0;
-            if (parseFloat(personnage.ilvl) < reqMin) { alert(`iLvl minimum requis : ${reqMin}`); return; }
-
-            const inscription = `${membreConnecte.nom} (${personnageNom}, ${personnage.classe}, ilvl: ${personnage.ilvl})`;
-            if (!raid.inscriptions.includes(inscription)) {
-                raid.inscriptions.push(inscription);
-                await updateDoc(doc(db, 'raids', currentRaidId), { inscriptions: raid.inscriptions });
-                afficherMessage('Inscription réussie !');
-                afficherDetailsRaid(currentRaidId);
-            } else {
-                alert('Le membre est déjà inscrit à ce raid.');
-            }
-        });
-        window._popupInscriptionListenerAdded = true;
-    }
-
-    document.getElementById('raid-popup').style.display = 'block';
-}
-
-// Fermer popup détails
-document.getElementById('close-popup').addEventListener('click', () => {
-    document.getElementById('raid-popup').style.display = 'none';
-});
-window.addEventListener('click', e => {
-    const p = document.getElementById('raid-popup');
-    if (e.target === p) p.style.display = 'none';
-});
-
-// ── Ajouter / Retirer raids ───────────────────────────────
-async function ajouterRaid() {
-    if (window._userRole !== 'Administrateur') { alert('Seul un administrateur peut ajouter un raid.'); return; }
-    const nom  = document.getElementById('raid-select').value;
-    const date = document.getElementById('raid-date').value;
-    let   time = document.getElementById('raid-time').value;
-    if (!nom || !date || !time) { alert('Remplissez tous les champs'); return; }
-    if (/^\d{1,2}:\d{2}$/.test(time)) { const [h,m]=time.split(':'); if(h.length===1) time='0'+h+':'+m; }
-    else { alert("L'heure doit être au format 24h (ex: 20:30)"); return; }
-    await addDoc(collection(db, 'raids'), { nom, date, time, date_ajout: new Date().toISOString(), inscriptions: [] });
-    loadData().then(({raids}) => { initialiserCalendrier(raids); mettreAJourListeRaids(raids); });
-}
-
-async function retirerRaid() {
-    if (window._userRole !== 'Administrateur') { alert('Seul un administrateur peut retirer un raid.'); return; }
-    const raidId = document.getElementById('raid-remove-select').value;
-    if (!raidId) { alert('Sélectionnez un raid à retirer.'); return; }
-    await deleteDoc(doc(db, 'raids', raidId));
-    loadData().then(({raids}) => { initialiserCalendrier(raids); mettreAJourListeRaids(raids); });
-}
-
-function mettreAJourListeRaids(raidData) {
-    raidData.sort((a,b) => new Date(a.date+'T'+a.time+':00') - new Date(b.date+'T'+b.time+':00'));
-    raidRemoveSelect.innerHTML = '<option value="">-- Sélectionner un raid --</option>';
-    raidData.forEach(r => {
-        const o = document.createElement('option');
-        o.value = r.id;
-        o.textContent = `${r.nom} - ${formatDate(r.date+'T'+r.time+':00')}`;
-        raidRemoveSelect.appendChild(o);
-    });
-}
-
-// ── Event listeners admin popups ─────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-    const addRaidBtn       = document.getElementById('add-raid-btn');
-    const addRaidPopup     = document.getElementById('add-raid-popup');
-    const removeRaidBtn    = document.getElementById('remove-raid-btn');
-    const removeRaidPopup  = document.getElementById('remove-raid-popup');
-    const showAddBtn       = document.getElementById('show-add-raid-popup');
-    const closeAddBtn      = document.getElementById('close-add-raid-popup');
-    const showRemoveBtn    = document.getElementById('show-remove-raid-popup');
-    const closeRemoveBtn   = document.getElementById('close-remove-raid-popup');
-
-    if (addRaidBtn) addRaidBtn.addEventListener('click', async () => {
-        await ajouterRaid();
-        addRaidPopup.style.display = 'none';
-        afficherMessage('Le raid a bien été ajouté !');
-    });
-    if (removeRaidBtn) removeRaidBtn.addEventListener('click', async () => {
-        await retirerRaid();
-        removeRaidPopup.style.display = 'none';
-        afficherMessage('Le raid a bien été supprimé !');
-    });
-    if (showAddBtn)    showAddBtn.addEventListener('click',    () => { if (window._userRole==='Administrateur') addRaidPopup.style.display='block'; });
-    if (closeAddBtn)   closeAddBtn.addEventListener('click',   () => { addRaidPopup.style.display='none'; });
-    if (showRemoveBtn) showRemoveBtn.addEventListener('click', () => { if (window._userRole==='Administrateur') removeRaidPopup.style.display='block'; });
-    if (closeRemoveBtn)closeRemoveBtn.addEventListener('click',() => { removeRaidPopup.style.display='none'; });
-
-    window.addEventListener('click', e => {
-        if (e.target===addRaidPopup)    addRaidPopup.style.display='none';
-        if (e.target===removeRaidPopup) removeRaidPopup.style.display='none';
-    });
-});
-
-// ── Init ─────────────────────────────────────────────────
-loadData().then(({ raids, joueursSnapshot }) => {
-    initialiserCalendrier(raids);
-    mettreAJourListeRaids(raids);
-    updateCharacterList(joueursSnapshot);
-    // Ouvrir popup si lien direct vers un raid
-    const params = new URLSearchParams(window.location.search);
-    const raidIdParam = params.get('raidId');
-    if (raidIdParam) {
-        let attempts = 0;
-        function tryOpen() {
-            if (raids.find(r => r.id === raidIdParam)) { afficherDetailsRaid(raidIdParam); return; }
-            if (++attempts < 4) setTimeout(tryOpen, 400);
-        }
-        setTimeout(tryOpen, 800);
-    }
-});
-    </script>
-
-    <!-- Dropdowns nav + uniformisation calendrier -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        function makeDropdown(toggleId, menuId) {
-            const toggle = document.getElementById(toggleId);
-            const menu   = document.getElementById(menuId);
-            if (!toggle || !menu) return;
-            const close = () => { menu.style.display='none'; toggle.setAttribute('aria-expanded','false'); };
-            const open  = () => { menu.style.display='block'; toggle.setAttribute('aria-expanded','true'); };
-            toggle.addEventListener('click', e => { e.preventDefault(); menu.style.display==='block' ? close() : open(); });
-            document.addEventListener('click', e => { if (!menu.contains(e.target) && e.target!==toggle && !toggle.contains(e.target)) close(); });
-            document.addEventListener('keydown', e => { if (e.key==='Escape') close(); });
-        }
-        makeDropdown('nav-raid-toggle',       'nav-raid-menu');
-        makeDropdown('nav-gestion-toggle',    'nav-gestion-menu');
-        makeDropdown('nav-gear-toggle',       'nav-gear-menu');
-        makeDropdown('nav-ressources-toggle', 'nav-ressources-menu');
-
-        // Rôle fallback localStorage
-        const role  = (localStorage.getItem('userRole')||'').trim();
-        const navLi = document.querySelector('li.nav-annonce');
-        if (navLi) {
-            navLi.style.display = (role==='Administrateur'||role==='Modérateur') ? 'list-item' : 'none';
-            const adminLink = document.querySelector('#nav-gear-menu a[data-role="admin"]');
-            if (adminLink) adminLink.style.display = (role==='Administrateur') ? 'flex' : 'none';
-        }
-
-        // Uniformiser les événements FullCalendar
-        function uniformizeEvents() {
-            document.querySelectorAll('.fc-event').forEach(el => {
-                el.style.borderRadius = '6px';
-                el.style.overflow = 'hidden';
-            });
-        }
-        setTimeout(uniformizeEvents, 600);
-        document.querySelectorAll('.fc-prev-button,.fc-next-button,.fc-today-button,.fc-button').forEach(btn => {
-            btn.addEventListener('click', () => setTimeout(uniformizeEvents, 500));
-        });
-    });
-    </script>
-
+  <script>
+  document.addEventListener('DOMContentLoaded',function(){
+    function makeDropdown(t,m){const toggle=document.getElementById(t),menu=document.getElementById(m);if(!toggle||!menu)return;const close=()=>{menu.style.display='none';toggle.setAttribute('aria-expanded','false');};const open=()=>{menu.style.display='block';toggle.setAttribute('aria-expanded','true');};toggle.addEventListener('click',e=>{e.preventDefault();menu.style.display==='block'?close():open();});document.addEventListener('click',e=>{if(!menu.contains(e.target)&&e.target!==toggle&&!toggle.contains(e.target))close();});document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});}
+    makeDropdown('nav-raid-toggle','nav-raid-menu');
+    makeDropdown('nav-gestion-toggle','nav-gestion-menu');
+    makeDropdown('nav-gear-toggle','nav-gear-menu');
+    makeDropdown('nav-ressources-toggle','nav-ressources-menu');
+  });
+  </script>
 </body>
 </html>
